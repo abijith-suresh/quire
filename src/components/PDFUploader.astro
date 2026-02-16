@@ -1,83 +1,36 @@
 ---
-
 ---
 
-<div id="pdf-uploader" class="pdf-uploader">
-  <div id="drop-zone" class="drop-zone">
+<div id="pdf-uploader" class="pdf-uploader" data-astro-cid-pdfuploader>
+  <div id="drop-zone" class="drop-zone" data-dropzone>
     <p>Drag and drop a PDF file here, or click to select</p>
-    <input type="file" id="file-input" accept="application/pdf" />
+    <input type="file" id="file-input" accept="application/pdf" data-fileinput />
   </div>
-  <p id="error-message" class="error-message"></p>
+  <p id="error-message" class="error-message" data-errormessage></p>
 </div>
 
 <script>
+  import { PDFUploaderController } from '../scripts/pdf-uploader-controller';
   import { pdfService } from '../scripts/pdf-service';
 
-  const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
-  const fileInput = document.getElementById('file-input') as HTMLInputElement;
-  const errorMessage = document.getElementById('error-message') as HTMLParagraphElement;
-
-  function showError(message: string) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-    setTimeout(() => {
-      errorMessage.style.display = 'none';
-    }, 5000);
-  }
-
-  async function handleFile(file: File) {
-    if (file.type !== 'application/pdf') {
-      showError('Please upload a valid PDF file');
-      return;
-    }
-
+  function initializePDFUploader() {
     try {
-      await pdfService.loadPDF(file);
-
-      // Dispatch custom event for other components
-      const event = new CustomEvent('pdf-loaded', {
-        detail: {
-          fileName: pdfService.getFileName(),
-          pageCount: pdfService.getPageCount(),
-        },
-      });
-      document.dispatchEvent(event);
+      new PDFUploaderController(
+        'drop-zone',
+        'file-input',
+        'error-message',
+        pdfService
+      );
     } catch (error) {
-      showError('Failed to load PDF: ' + (error as Error).message);
+      console.error('Failed to initialize PDF uploader:', error);
     }
   }
 
-  // Click to upload
-  dropZone.addEventListener('click', () => {
-    fileInput.click();
-  });
-
-  fileInput.addEventListener('change', (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      handleFile(file);
-    }
-  });
-
-  // Drag and drop
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('drag-over');
-  });
-
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('drag-over');
-  });
-
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-
-    const file = e.dataTransfer?.files[0];
-    if (file) {
-      handleFile(file);
-    }
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePDFUploader);
+  } else {
+    initializePDFUploader();
+  }
 </script>
 
 <style>

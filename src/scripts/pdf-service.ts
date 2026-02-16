@@ -1,16 +1,12 @@
 import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from './interfaces';
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-export interface PDFPageInfo {
-  pageNumber: number;
-  width: number;
-  height: number;
-}
-
-class PDFService {
+export class PDFService implements IPDFService {
   private pdfDocument: PDFDocument | null = null;
   private pdfjsDocument: pdfjsLib.PDFDocumentProxy | null = null;
   private fileName: string = '';
@@ -106,6 +102,16 @@ class PDFService {
     this.pdfjsDocument = null;
     this.fileName = '';
     this.arrayBuffer = null;
+  }
+
+  dispatchLoadedEvent(): void {
+    const event = new CustomEvent<PDFLoadedEvent>('pdf-loaded', {
+      detail: {
+        fileName: this.fileName,
+        pageCount: this.getPageCount(),
+      },
+    });
+    document.dispatchEvent(event);
   }
 }
 

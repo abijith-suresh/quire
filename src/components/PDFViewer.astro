@@ -1,63 +1,39 @@
 ---
-const INITIAL_PAGE_LIMIT = 5;
 ---
 
-<div id="pdf-viewer" class="pdf-viewer" style="display: none;">
+<div id="pdf-viewer" class="pdf-viewer" style="display: none;" data-astro-cid-pdfviewer>
   <div class="viewer-header">
-    <h3 id="pdf-name" aria-label="PDF filename">No PDF loaded</h3>
-    <p id="page-info"></p>
+    <h3 id="pdf-name" aria-label="PDF filename" data-pdfname>No PDF loaded</h3>
+    <p id="page-info" data-pageinfo></p>
   </div>
-  <div id="pages-container" class="pages-container"></div>
+  <div id="pages-container" class="pages-container" data-pagescontainer></div>
 </div>
 
-<script define:vars={{ INITIAL_PAGE_LIMIT }}>
+<script>
+  import { PDFViewerController } from '../scripts/pdf-viewer-controller';
   import { pdfService } from '../scripts/pdf-service';
 
-  const viewer = document.getElementById('pdf-viewer');
-  const pdfName = document.getElementById('pdf-name');
-  const pageInfo = document.getElementById('page-info');
-  const pagesContainer = document.getElementById('pages-container');
+  const INITIAL_PAGE_LIMIT = 5;
 
-  document.addEventListener('pdf-loaded', async (event) => {
-    const { fileName, pageCount } = event.detail;
-
-    // Show viewer
-    viewer.style.display = 'block';
-    pdfName.textContent = fileName;
-
-    const pagesToRender = Math.min(pageCount, INITIAL_PAGE_LIMIT);
-    pageInfo.textContent = `Showing ${pagesToRender} of ${pageCount} pages`;
-
-    // Clear previous pages
-    pagesContainer.innerHTML = '';
-
-    // Render pages
-    for (let i = 1; i <= pagesToRender; i++) {
-      await renderPage(i);
-    }
-  });
-
-  async function renderPage(pageNumber) {
-    const pageWrapper = document.createElement('div');
-    pageWrapper.className = 'page-wrapper';
-
-    const canvas = document.createElement('canvas');
-    canvas.className = 'page-canvas';
-
-    const pageLabel = document.createElement('span');
-    pageLabel.className = 'page-label';
-    pageLabel.textContent = `Page ${pageNumber}`;
-
-    pageWrapper.appendChild(canvas);
-    pageWrapper.appendChild(pageLabel);
-    pagesContainer.appendChild(pageWrapper);
-
+  function initializePDFViewer() {
     try {
-      await pdfService.renderPage(pageNumber, canvas, 1.0);
+      new PDFViewerController(
+        'pdf-viewer',
+        'pdf-name',
+        'page-info',
+        'pages-container',
+        pdfService,
+        INITIAL_PAGE_LIMIT
+      );
     } catch (error) {
-      console.error(`Failed to render page ${pageNumber}:`, error);
-      pageLabel.textContent = `Page ${pageNumber} (Error)`;
+      console.error('Failed to initialize PDF viewer:', error);
     }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePDFViewer);
+  } else {
+    initializePDFViewer();
   }
 </script>
 
