@@ -1,0 +1,70 @@
+---
+
+---
+
+<div id="pdf-uploader" class="pdf-uploader" data-astro-cid-pdfuploader>
+  <div id="drop-zone" class="drop-zone" data-dropzone>
+    <p>Drag and drop a PDF file here, or click to select</p>
+    <input type="file" id="file-input" accept="application/pdf" data-fileinput />
+  </div>
+  <p id="error-message" class="error-message" data-errormessage></p>
+</div>
+
+<script>
+  import { PDFUploaderController } from '../scripts/pdf-uploader-controller';
+  import { pdfService } from '../scripts/pdf-service';
+
+  function initializePDFUploader() {
+    try {
+      new PDFUploaderController('drop-zone', 'file-input', 'error-message', pdfService);
+    } catch (error) {
+      console.error('Failed to initialize PDF uploader:', error);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePDFUploader);
+  } else {
+    initializePDFUploader();
+  }
+</script>
+
+<style>
+  .pdf-uploader {
+    margin: 20px 0;
+  }
+
+  .drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .drop-zone:hover {
+    border-color: #666;
+    background-color: #f9f9f9;
+  }
+
+  .drop-zone.drag-over {
+    border-color: #4caf50;
+    background-color: #f0f8f0;
+  }
+
+  .drop-zone p {
+    margin: 0;
+    color: #666;
+  }
+
+  input[type='file'] {
+    display: none;
+  }
+
+  .error-message {
+    color: #f44336;
+    margin-top: 10px;
+    display: none;
+  }
+</style>

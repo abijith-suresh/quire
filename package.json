@@ -18,8 +18,9 @@
   },
   "dependencies": {
     "astro": "^5.17.1",
+    "file-saver": "^2.0.5",
     "pdf-lib": "^1.17.1",
-    "file-saver": "^2.0.5"
+    "pdfjs-dist": "^5.4.624"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
@@ -28,6 +29,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/file-saver": "^2.0.7",
+    "@types/pdfjs-dist": "^2.10.378",
     "@vitest/ui": "^4.0.18",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.0.1",
