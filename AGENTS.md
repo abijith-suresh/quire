@@ -158,3 +158,43 @@ When adding features or files:
 ## Deployment
 
 Automatically deploys to GitHub Pages on every push to `main` branch via GitHub Actions workflow.
+
+## Git Workflow
+
+### Branch Naming Conventions
+
+All branches should follow the `type/description` format:
+
+| Prefix      | Purpose               | Example                   |
+| ----------- | --------------------- | ------------------------- |
+| `feat/`     | New features          | `feat/add-search-modal`   |
+| `fix/`      | Bug fixes             | `fix/header-alignment`    |
+| `docs/`     | Documentation changes | `docs/update-readme`      |
+| `refactor/` | Code refactoring      | `refactor/simplify-utils` |
+| `chore/`    | Maintenance tasks     | `chore/update-deps`       |
+
+### Commit Message Format
+
+Use Conventional Commits format:
+
+```
+type(scope): subject
+```
+
+**Types:** `feat`, `fix`, `docs`, `refactor`, `chore`, `test`
+
+**Guidelines:**
+
+- Use present tense ("add" not "added")
+- Keep subject under 50 characters
+- Reference issue numbers: `fix: resolve header bug (#42)`
+
+### Pull Request Workflow
+
+1. Create branch from main: `git checkout -b feat/your-feature-name`
+2. Make atomic commits with clear messages
+3. Push branch: `git push -u origin feat/your-feature-name`
+4. Create PR: `gh pr create --title "feat: add feature" --body "Description"`
+5. Wait for CI checks (lint, format, build) to pass
+6. Merge using regular merge commit (not squash) with a clean message
+7. Delete branch after merge
