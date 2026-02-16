@@ -82,6 +82,7 @@ bun run preview
 ## Coding Conventions
 
 ### JavaScript
+
 - Use ES6+ features
 - Prefer `const` and `let` over `var`
 - Use arrow functions where appropriate
@@ -89,18 +90,21 @@ bun run preview
 - Module imports/exports (ES modules)
 
 ### Astro Components
+
 - Use `.astro` extension
 - Keep logic in frontmatter (`---` block)
 - Use client directives (`client:load`, `client:visible`) sparingly
 - Props destructuring: `const { propName } = Astro.props`
 
 ### Styling
+
 - Tailwind CSS utility classes
 - No inline styles
 - Responsive design with Tailwind breakpoints
 - Dark mode support (optional future feature)
 
 ### File Naming
+
 - Components: PascalCase (`PDFDropzone.astro`)
 - Scripts: camelCase (`pdf-utils.js`)
 - Pages: lowercase with dashes (`merge.astro`)
@@ -145,6 +149,7 @@ None required - all operations are client-side.
 ## Atomic Commit Guidelines
 
 When adding features or files:
+
 1. Create/modify files
 2. Test the changes work
 3. Commit with descriptive message
