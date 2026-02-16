@@ -14,7 +14,7 @@ export default [
     ignores: ['dist/', 'node_modules/', '.astro/'],
   },
   {
-    files: ['**/*.mjs', '**/*.js'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.astro'],
     languageOptions: {
       globals: {
         console: 'readonly',
