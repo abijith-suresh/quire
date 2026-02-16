@@ -49,9 +49,10 @@ pasta/
 │   │   └── pdf-viewer-controller.ts    # Viewer UI logic
 │   └── styles/
 │       └── global.css          # Tailwind directives
-├── astro.config.mjs
+├── astro.config.ts
+├── commitlint.config.ts
+├── eslint.config.ts
 ├── package.json
-├── tailwind.config.mjs
 └── README.md
 ```
 
