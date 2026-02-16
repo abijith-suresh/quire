@@ -27,8 +27,8 @@ pasta/
 │       └── deploy.yml          # GitHub Pages deployment
 ├── public/                      # Static assets
 ├── src/
-│   ├── components/              # Astro components
-│   │   ├── PDFDropzone.astro   # File upload with drag-drop
+│   ├── components/              # Astro components (UI layer)
+│   │   ├── PDFUploader.astro   # File upload with drag-drop
 │   │   ├── PDFViewer.astro     # Page thumbnails/preview
 │   │   ├── Toolbar.astro       # Action buttons
 │   │   └── Layout.astro        # Base layout
@@ -42,8 +42,11 @@ pasta/
 │   │   ├── compress.astro      # Compress/optimize
 │   │   ├── watermark.astro     # Add watermark
 │   │   └── convert.astro       # Convert to/from images
-│   ├── scripts/
-│   │   └── pdf-utils.js        # Shared pdf-lib utilities
+│   ├── scripts/                 # Business logic layer
+│   │   ├── interfaces.ts       # TypeScript interfaces/contracts
+│   │   ├── pdf-service.ts      # PDF operations service
+│   │   ├── pdf-uploader-controller.ts  # Uploader UI logic
+│   │   └── pdf-viewer-controller.ts    # Viewer UI logic
 │   └── styles/
 │       └── global.css          # Tailwind directives
 ├── astro.config.mjs
@@ -107,6 +110,41 @@ bun run preview
 
 - Components: PascalCase (`PDFDropzone.astro`)
 - Scripts: camelCase (`pdf-utils.js`)
+- Controllers: PascalCase with Controller suffix (`PDFUploaderController.ts`)
+- Interfaces: PascalCase with I prefix (`IPDFService.ts`)
+
+## Clean Architecture
+
+The project follows clean architecture principles with clear separation of concerns:
+
+### Layers
+
+1. **Components** (`src/components/`): UI layer
+   - Pure Astro components handling HTML structure and styling
+   - Import and initialize controllers in `<script>` tags
+   - No business logic in components
+
+2. **Controllers** (`src/scripts/*-controller.ts`): Presentation layer
+   - Handle user interactions and DOM manipulation
+   - Depend on service interfaces (DIP)
+   - Manage component lifecycle
+
+3. **Services** (`src/scripts/pdf-service.ts`): Business logic layer
+   - Handle PDF operations (load, render, manipulate)
+   - Implement service interfaces
+   - Use dependency injection pattern
+
+4. **Interfaces** (`src/scripts/interfaces.ts`): Contracts layer
+   - Define clear contracts between layers
+   - Enable testability and loose coupling
+   - Follow Interface Segregation Principle
+
+### Key Principles
+
+- **Single Responsibility**: Each class has one reason to change
+- **Dependency Inversion**: Controllers depend on abstractions (interfaces)
+- **Separation of Concerns**: UI, logic, and data layers are separate
+- **Event-Driven**: Components communicate via custom events (e.g., `pdf-loaded`)
 - Pages: lowercase with dashes (`merge.astro`)
 - Assets: lowercase with dashes
 
