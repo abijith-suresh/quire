@@ -1,73 +1,191 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PDFUploader from '../components/app/PDFUploader.astro';
 
 const base = import.meta.env.BASE_URL;
 ---
 
-<Layout title="Pasta - PDF Editor">
+<Layout title="Pasta — Editor">
   <Fragment slot="head">
     <link
-      href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
   </Fragment>
-  <main class="container">
-    <header class="editor-header">
-      <a href={base} class="back-link">&larr; Back</a>
-      <h1>Pasta Editor</h1>
+
+  <div
+    class="font-['Work_Sans',sans-serif] bg-white text-[#111] h-dvh flex flex-col overflow-hidden"
+  >
+    <!-- Dark Header -->
+    <header id="toolbar" class="bg-[#111] text-white h-14 flex items-center px-6 flex-shrink-0">
+      <a
+        href={base}
+        class="font-['Bebas_Neue',sans-serif] text-2xl tracking-wide text-white no-underline"
+        >Pasta</a
+      >
+      <span class="w-px h-6 bg-[#555] mx-5"></span>
+      <span id="editor-page-count" class="text-sm text-[#888]"></span>
+      <span class="flex-1"></span>
+      <span id="selection-info" class="text-sm text-[#888]"></span>
+      <span class="w-px h-6 bg-[#555] mx-5"></span>
+      <a href={base} class="text-sm text-[#888] hover:text-white no-underline transition-colors"
+        >&#8592; Back</a
+      >
     </header>
 
-    <div id="uploader-section">
-      <PDFUploader />
-    </div>
-
-    <div id="editor-section" style="display: none;">
-      <div id="toolbar" class="toolbar">
-        <div class="toolbar-left">
-          <span id="editor-page-count" class="page-count"></span>
-          <span id="selection-info" class="selection-info"></span>
+    <!-- Uploader Section — full-page centered upload -->
+    <div id="uploader-section" class="flex-1 flex items-center justify-center min-h-0">
+      <div class="w-full max-w-lg px-6">
+        <div
+          id="drop-zone"
+          class="border-2 border-dashed border-[#ddd] hover:border-[#111] transition-colors py-20 text-center cursor-pointer"
+        >
+          <p class="font-['Bebas_Neue',sans-serif] text-4xl text-[#111] mb-2">Drop PDF here</p>
+          <p class="text-[11px] uppercase tracking-[0.15em] text-[#888]">or click to browse</p>
         </div>
-        <div class="toolbar-actions">
-          <button id="btn-select-all" class="btn btn-secondary" title="Select / Deselect All"
-            >Select All</button
-          >
-          <button id="btn-rotate" class="btn btn-secondary" title="Rotate selected pages 90°"
-            >Rotate</button
-          >
-          <button
-            id="btn-delete"
-            class="btn btn-secondary btn-danger"
-            title="Toggle deletion on selected pages">Delete</button
-          >
-          <button id="btn-add-pdf" class="btn btn-secondary" title="Add another PDF">Add PDF</button
-          >
-          <button
-            id="btn-extract"
-            class="btn btn-secondary"
-            title="Extract selected pages as separate PDF">Extract</button
-          >
-          <button
-            id="btn-download"
-            class="btn btn-primary"
-            title="Download final PDF with all changes applied">Download</button
-          >
-        </div>
+        <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+        <p
+          id="error-message"
+          class="text-[#ff0000] text-xs mt-3 text-center"
+          style="display: none;"
+        >
+        </p>
       </div>
-
-      <div id="pages-grid" class="pages-grid"></div>
-      <input type="file" id="add-pdf-input" accept="application/pdf" style="display: none;" />
     </div>
-  </main>
+
+    <!-- Editor Section — hidden initially, shown on PDF load -->
+    <div id="editor-section" class="min-h-0" style="display: none;">
+      <div class="flex h-[calc(100dvh-3.5rem)]">
+        <!-- Sidebar -->
+        <aside class="w-56 border-r border-[#ddd] flex-col flex-shrink-0 hidden md:flex">
+          <div class="flex-1 overflow-y-auto min-h-0">
+            <!-- Upload -->
+            <div class="p-4 border-b border-[#ddd]">
+              <p class="text-[11px] uppercase tracking-wider text-[#888] mb-2">Upload</p>
+              <button
+                id="btn-add-pdf"
+                class="w-full border border-dashed border-[#ddd] hover:border-[#111] transition-colors py-6 text-center cursor-pointer bg-transparent"
+              >
+                <span class="text-[11px] text-[#888] uppercase tracking-wider">+ Add PDF</span>
+              </button>
+            </div>
+
+            <!-- Selection -->
+            <div class="p-4 border-b border-[#ddd]">
+              <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Selection</p>
+              <button
+                id="btn-select-all"
+                class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+                >Select All</button
+              >
+            </div>
+
+            <!-- Actions -->
+            <div class="p-4 border-b border-[#ddd]">
+              <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Actions</p>
+              <button
+                id="btn-rotate"
+                class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+                >Rotate</button
+              >
+              <button
+                id="btn-delete"
+                class="w-full text-left text-xs text-[#ff0000] hover:bg-[#fff5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+                >Delete</button
+              >
+              <button
+                id="btn-extract"
+                class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+                >Extract</button
+              >
+            </div>
+          </div>
+
+          <!-- Export — pinned to bottom -->
+          <div class="p-4 border-t border-[#ddd] flex-shrink-0">
+            <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
+            <button
+              id="btn-download"
+              class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors"
+              >Download</button
+            >
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-h-0">
+          <!-- Dense Page Grid — only this scrolls -->
+          <div class="flex-1 overflow-y-auto p-4">
+            <div
+              id="pages-grid"
+              class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3"
+            >
+            </div>
+          </div>
+
+          <!-- Mobile toolbar -->
+          <div
+            class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center"
+          >
+            <button
+              onclick="document.getElementById('btn-select-all')?.click()"
+              class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
+              >Select All</button
+            >
+            <button
+              onclick="document.getElementById('btn-rotate')?.click()"
+              class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
+              >Rotate</button
+            >
+            <button
+              onclick="document.getElementById('btn-delete')?.click()"
+              class="text-[11px] uppercase tracking-wider text-[#ff0000] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
+              >Delete</button
+            >
+            <button
+              onclick="document.getElementById('btn-add-pdf')?.click()"
+              class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
+              >Add PDF</button
+            >
+            <button
+              onclick="document.getElementById('btn-extract')?.click()"
+              class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
+              >Extract</button
+            >
+            <button
+              onclick="document.getElementById('btn-download')?.click()"
+              class="text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer"
+              >Download</button
+            >
+          </div>
+
+          <!-- Status Bar -->
+          <div
+            class="h-8 bg-[#f5f5f5] border-t border-[#ddd] flex items-center px-5 text-[11px] text-[#888] flex-shrink-0"
+          >
+            <span id="status-page-count"></span>
+            <span class="flex-1 text-center" id="status-selection"></span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 bg-[#ff0000] inline-block"></span>
+              Ready
+            </span>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <input type="file" id="add-pdf-input" accept="application/pdf" class="hidden" />
+  </div>
 </Layout>
 
 <script>
   import { EditorController } from '../controllers/editor-controller';
+  import { PDFUploaderController } from '../controllers/pdf-uploader-controller';
   import { pdfService } from '../services/pdf-service';
   import { pdfOperationsService } from '../services/pdf-operations-service';
 
-  function initializeEditor() {
+  function initialize() {
     try {
+      new PDFUploaderController('drop-zone', 'file-input', 'error-message', pdfService);
       new EditorController(
         'pages-grid',
         'toolbar',
@@ -78,163 +196,61 @@ const base = import.meta.env.BASE_URL;
         pdfOperationsService
       );
     } catch (error) {
-      console.error('Failed to initialize editor:', error);
+      console.error('Failed to initialize:', error);
     }
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeEditor);
+    document.addEventListener('DOMContentLoaded', initialize);
   } else {
-    initializeEditor();
+    initialize();
   }
 </script>
 
-<style>
-  body {
-    font-family:
-      'Work Sans',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
-    padding: 20px;
-    background-color: #fafafa;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .editor-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-
-  .editor-header h1 {
-    margin: 0;
-    color: #333;
-  }
-
-  .back-link {
-    color: #666;
-    text-decoration: none;
-    font-size: 0.9em;
-  }
-
-  .back-link:hover {
-    color: #333;
-  }
-
-  .toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .page-count {
-    font-size: 0.9em;
-    color: #666;
-  }
-
-  .selection-info {
-    font-size: 0.85em;
-    color: #1976d2;
-    font-weight: 500;
-  }
-
-  .toolbar-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: all 0.2s;
-  }
-
-  .btn-secondary {
-    background: #fff;
-    color: #333;
-  }
-
-  .btn-secondary:hover {
-    background: #f0f0f0;
-    border-color: #bbb;
-  }
-
-  .btn-primary {
-    background: #1976d2;
-    color: #fff;
-    border-color: #1976d2;
-  }
-
-  .btn-primary:hover {
-    background: #1565c0;
-  }
-
-  .btn-danger {
-    color: #d32f2f;
-  }
-
-  .btn-danger:hover {
-    background: #ffebee;
-    border-color: #d32f2f;
-  }
-
-  .pages-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: center;
-  }
-</style>
-
 <style is:global>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* When controller sets display:block, this ensures it fills the flex column */
+  #editor-section[style*='block'] {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Page thumbnails — Swiss industrial style */
   .editor-page {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     background: #fff;
-    padding: 8px;
-    border-radius: 6px;
-    border: 2px solid transparent;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: all 0.2s;
-    width: 160px;
     user-select: none;
   }
 
-  .editor-page:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  .editor-page.selected {
+    ring: 2px solid #ff0000;
   }
 
   .editor-page.selected {
-    border-color: #1976d2;
-    background: #e3f2fd;
+    outline: 2px solid #ff0000;
+    outline-offset: 2px;
+  }
+
+  .editor-page.selected::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    background: #ff0000;
+    z-index: 1;
   }
 
   .editor-page.marked-deleted {
@@ -247,13 +263,15 @@ const base = import.meta.env.BASE_URL;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(211, 47, 47, 0.85);
-    color: #fff;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    font-weight: 700;
+    background: rgba(255, 255, 255, 0.6);
+    color: #ff0000;
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
     pointer-events: none;
+    z-index: 1;
   }
 
   .editor-page.dragging {
@@ -261,24 +279,28 @@ const base = import.meta.env.BASE_URL;
   }
 
   .editor-page.drag-over {
-    border-color: #4caf50;
-    background: #f0f8f0;
+    outline: 2px solid #111;
+    outline-offset: 2px;
   }
 
   .canvas-container {
+    aspect-ratio: 3 / 4;
+    width: 100%;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 144px;
-    height: 200px;
-    transition: transform 0.2s;
+    border: 1px solid #ddd;
+    transition: border-color 0.2s;
+  }
+
+  .editor-page:hover .canvas-container {
+    border-color: #111;
   }
 
   .editor-page .page-canvas {
     max-width: 100%;
     max-height: 100%;
-    border: 1px solid #eee;
   }
 
   .page-controls {
@@ -286,28 +308,39 @@ const base = import.meta.env.BASE_URL;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-top: 6px;
-    padding: 0 2px;
+    margin-top: 4px;
+    padding: 0;
   }
 
   .page-controls .page-label {
-    font-size: 0.8em;
-    color: #666;
+    font-size: 9px;
+    color: #888;
   }
 
   .btn-page-rotate {
     background: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: none;
     cursor: pointer;
-    font-size: 1em;
-    padding: 2px 6px;
-    color: #666;
-    transition: all 0.2s;
+    font-size: 10px;
+    padding: 0;
+    color: #ddd;
+    opacity: 0;
+    transition:
+      opacity 0.2s,
+      color 0.2s;
+  }
+
+  .editor-page:hover .btn-page-rotate {
+    opacity: 1;
   }
 
   .btn-page-rotate:hover {
-    background: #f0f0f0;
-    color: #333;
+    color: #888;
+  }
+
+  /* Drop zone drag-over state */
+  #drop-zone.drag-over {
+    border-color: #111;
+    background: #f5f5f5;
   }
 </style>

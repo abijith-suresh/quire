@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Redesigned editor page with V6 hybrid Swiss layout: dark header, sidebar with grouped actions, dense responsive grid, mobile toolbar, and status bar
+- Full-page centered uploader replaces inline upload component
+- Swiss industrial styling for page thumbnails (no rounded corners, no shadows, red accent)
+- Mobile toolbar delegates clicks to sidebar buttons (no duplicate IDs)
 - Redesigned landing page with full-viewport hero, feature list with grid layout, and CTA section
 - Simplified Layout component to minimal shell without opinionated styles
 
