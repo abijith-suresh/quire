@@ -1,4 +1,4 @@
-import type { IPDFService } from './interfaces';
+import type { IPDFService } from '../types/interfaces';
 
 export class PDFUploaderController {
   private dropZone: HTMLDivElement;

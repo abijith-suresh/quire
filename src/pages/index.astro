@@ -1,49 +1,105 @@
 ---
-import PDFUploader from '../components/PDFUploader.astro';
-import PDFViewer from '../components/PDFViewer.astro';
+import Layout from '../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL;
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Pasta - PDF Manipulation Tool</title>
-  </head>
-  <body>
-    <main class="container">
-      <h1>Pasta</h1>
-      <p class="subtitle">Client-side PDF manipulation tool</p>
+<Layout title="Pasta - PDF Manipulation Tool">
+  <main class="container">
+    <h1>Pasta</h1>
+    <p class="subtitle">
+      Client-side PDF manipulation tool. All operations happen entirely in your browser — no files
+      are uploaded to any server.
+    </p>
 
-      <PDFUploader />
-      <PDFViewer />
-    </main>
-  </body>
-</html>
+    <div class="features">
+      <div class="feature">
+        <h3>Merge</h3>
+        <p>Combine multiple PDFs into one document</p>
+      </div>
+      <div class="feature">
+        <h3>Split</h3>
+        <p>Extract specific pages as a separate PDF</p>
+      </div>
+      <div class="feature">
+        <h3>Reorder</h3>
+        <p>Drag and drop to rearrange page order</p>
+      </div>
+      <div class="feature">
+        <h3>Rotate</h3>
+        <p>Rotate any page 90°, 180°, or 270°</p>
+      </div>
+      <div class="feature">
+        <h3>Delete</h3>
+        <p>Remove unwanted pages from your PDF</p>
+      </div>
+    </div>
+
+    <a href={`${base}app`} class="cta-button">Get Started</a>
+  </main>
+</Layout>
 
 <style>
-  body {
-    font-family:
-      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #fafafa;
-  }
-
   .container {
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
+    text-align: center;
+    padding-top: 40px;
   }
 
   h1 {
     margin: 0 0 10px 0;
     color: #333;
+    font-size: 2.5em;
   }
 
   .subtitle {
-    margin: 0 0 30px 0;
+    margin: 0 0 40px 0;
     color: #666;
+    font-size: 1.1em;
+    line-height: 1.6;
+  }
+
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .feature {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    width: 200px;
+    text-align: left;
+  }
+
+  .feature h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+  }
+
+  .feature p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 14px 32px;
+    background: #1976d2;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    transition: background 0.2s;
+  }
+
+  .cta-button:hover {
+    background: #1565c0;
   }
 </style>
