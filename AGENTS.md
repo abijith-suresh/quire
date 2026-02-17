@@ -24,31 +24,31 @@ Pasta is a fully client-side PDF manipulation tool built with Astro. All operati
 pasta/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # GitHub Pages deployment
-├── public/                      # Static assets
+│       └── deploy.yml                  # GitHub Pages deployment
+├── public/                              # Static assets
 ├── src/
-│   ├── components/              # Astro components (UI layer)
-│   │   ├── PDFUploader.astro   # File upload with drag-drop
-│   │   ├── PDFViewer.astro     # Page thumbnails/preview
-│   │   ├── Toolbar.astro       # Action buttons
-│   │   └── Layout.astro        # Base layout
-│   ├── pages/                   # Route pages
-│   │   ├── index.astro         # Home/dashboard
-│   │   ├── merge.astro         # Merge PDFs
-│   │   ├── split.astro         # Split PDF
-│   │   ├── reorder.astro       # Reorder pages
-│   │   ├── rotate.astro        # Rotate pages
-│   │   ├── delete.astro        # Delete pages
-│   │   ├── compress.astro      # Compress/optimize
-│   │   ├── watermark.astro     # Add watermark
-│   │   └── convert.astro       # Convert to/from images
-│   ├── scripts/                 # Business logic layer
-│   │   ├── interfaces.ts       # TypeScript interfaces/contracts
-│   │   ├── pdf-service.ts      # PDF operations service
+│   ├── components/
+│   │   └── app/
+│   │       ├── PDFUploader.astro       # File upload with drag-drop
+│   │       └── PDFViewer.astro         # Page thumbnails/preview
+│   ├── controllers/
+│   │   ├── editor-controller.ts        # Editor page UI logic
 │   │   ├── pdf-uploader-controller.ts  # Uploader UI logic
 │   │   └── pdf-viewer-controller.ts    # Viewer UI logic
-│   └── styles/
-│       └── global.css          # Tailwind directives
+│   ├── layouts/
+│   │   └── Layout.astro                # Base layout with head slot
+│   ├── pages/
+│   │   ├── index.astro                 # Landing page (Swiss modernist)
+│   │   └── app.astro                   # PDF editor page
+│   ├── services/
+│   │   ├── pdf-operations-service.ts   # PDF build/extract operations
+│   │   └── pdf-service.ts              # PDF load/render service
+│   ├── styles/
+│   │   └── global.css                  # Tailwind CSS v4 entry point
+│   ├── types/
+│   │   └── interfaces.ts               # TypeScript interfaces/contracts
+│   └── utils/
+│       └── download.ts                 # File download utility
 ├── astro.config.ts
 ├── commitlint.config.ts
 ├── eslint.config.ts
