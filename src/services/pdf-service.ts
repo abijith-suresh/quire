@@ -1,7 +1,7 @@
 import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from './interfaces';
+import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from '../types/interfaces';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -11,6 +11,7 @@ export class PDFService implements IPDFService {
   private pdfjsDocument: pdfjsLib.PDFDocumentProxy | null = null;
   private fileName: string = '';
   private arrayBuffer: ArrayBuffer | null = null;
+  private currentFile: File | null = null;
 
   async loadPDF(file: File): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -20,6 +21,7 @@ export class PDFService implements IPDFService {
         try {
           this.arrayBuffer = reader.result as ArrayBuffer;
           this.fileName = file.name;
+          this.currentFile = file;
 
           // Load with pdf-lib for manipulation
           this.pdfDocument = await PDFDocument.load(this.arrayBuffer);
@@ -102,13 +104,20 @@ export class PDFService implements IPDFService {
     this.pdfjsDocument = null;
     this.fileName = '';
     this.arrayBuffer = null;
+    this.currentFile = null;
+  }
+
+  getFile(): File | null {
+    return this.currentFile;
   }
 
   dispatchLoadedEvent(): void {
+    if (!this.currentFile) return;
     const event = new CustomEvent<PDFLoadedEvent>('pdf-loaded', {
       detail: {
         fileName: this.fileName,
         pageCount: this.getPageCount(),
+        file: this.currentFile,
       },
     });
     document.dispatchEvent(event);

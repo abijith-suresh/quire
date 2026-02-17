@@ -1,4 +1,4 @@
-import type { IPDFService, PDFLoadedEvent } from './interfaces';
+import type { IPDFService, PDFLoadedEvent } from '../types/interfaces';
 
 export class PDFViewerController {
   private viewer: HTMLDivElement;

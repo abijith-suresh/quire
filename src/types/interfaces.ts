@@ -7,6 +7,25 @@ export interface PDFPageInfo {
 export interface PDFLoadedEvent {
   fileName: string;
   pageCount: number;
+  file: File;
+}
+
+export interface PageState {
+  id: string;
+  sourceFile: File;
+  sourcePageNumber: number;
+  rotation: number;
+  markedForDeletion: boolean;
+}
+
+export interface PDFOperationResult {
+  data: Uint8Array;
+  suggestedFileName: string;
+}
+
+export interface IPDFOperationsService {
+  buildPDF(pages: PageState[]): Promise<PDFOperationResult>;
+  buildPDFFromSubset(pages: PageState[], indices: number[]): Promise<PDFOperationResult>;
 }
 
 export interface IPDFRenderer {
