@@ -1,0 +1,295 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PDFUploader from '../components/app/PDFUploader.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title="Pasta - PDF Editor">
+  <main class="container">
+    <header class="editor-header">
+      <a href={base} class="back-link">&larr; Back</a>
+      <h1>Pasta Editor</h1>
+    </header>
+
+    <div id="uploader-section">
+      <PDFUploader />
+    </div>
+
+    <div id="editor-section" style="display: none;">
+      <div id="toolbar" class="toolbar">
+        <div class="toolbar-left">
+          <span id="editor-page-count" class="page-count"></span>
+          <span id="selection-info" class="selection-info"></span>
+        </div>
+        <div class="toolbar-actions">
+          <button id="btn-select-all" class="btn btn-secondary" title="Select / Deselect All"
+            >Select All</button
+          >
+          <button id="btn-rotate" class="btn btn-secondary" title="Rotate selected pages 90°"
+            >Rotate</button
+          >
+          <button
+            id="btn-delete"
+            class="btn btn-secondary btn-danger"
+            title="Toggle deletion on selected pages">Delete</button
+          >
+          <button id="btn-add-pdf" class="btn btn-secondary" title="Add another PDF">Add PDF</button
+          >
+          <button
+            id="btn-extract"
+            class="btn btn-secondary"
+            title="Extract selected pages as separate PDF">Extract</button
+          >
+          <button
+            id="btn-download"
+            class="btn btn-primary"
+            title="Download final PDF with all changes applied">Download</button
+          >
+        </div>
+      </div>
+
+      <div id="pages-grid" class="pages-grid"></div>
+      <input type="file" id="add-pdf-input" accept="application/pdf" style="display: none;" />
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { EditorController } from '../controllers/editor-controller';
+  import { pdfService } from '../services/pdf-service';
+  import { pdfOperationsService } from '../services/pdf-operations-service';
+
+  function initializeEditor() {
+    try {
+      new EditorController(
+        'pages-grid',
+        'toolbar',
+        'uploader-section',
+        'editor-section',
+        'add-pdf-input',
+        pdfService,
+        pdfOperationsService
+      );
+    } catch (error) {
+      console.error('Failed to initialize editor:', error);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEditor);
+  } else {
+    initializeEditor();
+  }
+</script>
+
+<style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .editor-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .editor-header h1 {
+    margin: 0;
+    color: #333;
+  }
+
+  .back-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9em;
+  }
+
+  .back-link:hover {
+    color: #333;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-count {
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  .selection-info {
+    font-size: 0.85em;
+    color: #1976d2;
+    font-weight: 500;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary {
+    background: #fff;
+    color: #333;
+  }
+
+  .btn-secondary:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+  }
+
+  .btn-primary {
+    background: #1976d2;
+    color: #fff;
+    border-color: #1976d2;
+  }
+
+  .btn-primary:hover {
+    background: #1565c0;
+  }
+
+  .btn-danger {
+    color: #d32f2f;
+  }
+
+  .btn-danger:hover {
+    background: #ffebee;
+    border-color: #d32f2f;
+  }
+
+  .pages-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+</style>
+
+<style is:global>
+  .editor-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    padding: 8px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 160px;
+    user-select: none;
+  }
+
+  .editor-page:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .editor-page.selected {
+    border-color: #1976d2;
+    background: #e3f2fd;
+  }
+
+  .editor-page.marked-deleted {
+    opacity: 0.4;
+  }
+
+  .editor-page.marked-deleted::after {
+    content: 'DELETED';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(211, 47, 47, 0.85);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  .editor-page.dragging {
+    opacity: 0.3;
+  }
+
+  .editor-page.drag-over {
+    border-color: #4caf50;
+    background: #f0f8f0;
+  }
+
+  .canvas-container {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 144px;
+    height: 200px;
+    transition: transform 0.2s;
+  }
+
+  .editor-page .page-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    border: 1px solid #eee;
+  }
+
+  .page-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+
+  .page-controls .page-label {
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  .btn-page-rotate {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    padding: 2px 6px;
+    color: #666;
+    transition: all 0.2s;
+  }
+
+  .btn-page-rotate:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+</style>
