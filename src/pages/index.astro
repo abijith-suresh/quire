@@ -2,19 +2,13 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/shared/Nav.astro';
 import Footer from '../components/shared/Footer.astro';
+import { contentSlide } from '../utils/transitions';
 
 const base = import.meta.env.BASE_URL;
 ---
 
 <Layout title="Pasta - Client-Side PDF Editor">
-  <Fragment slot="head">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-  </Fragment>
-
-  <div class="page">
+  <div class="page" transition:animate={contentSlide}>
     <Nav base={base} currentPage="home" />
     <section class="hero">
       <div class="hero-grid">
@@ -40,7 +34,7 @@ const base = import.meta.env.BASE_URL;
 
     <section class="features">
       <div class="features-inner">
-        <div class="features-header">
+        <div class="features-header animate-on-scroll">
           <h2 class="features-title">Features</h2>
           <p class="features-subtitle">Five core operations, zero compromises.</p>
         </div>
@@ -78,8 +72,14 @@ const base = import.meta.env.BASE_URL;
                 text: 'Remove unwanted pages cleanly from any PDF.',
                 accent: true,
               },
-            ].map((f) => (
-              <div class:list={['feature-row', { 'feature-row-last': f.accent }]}>
+            ].map((f, i) => (
+              <div
+                class:list={[
+                  'feature-row animate-on-scroll',
+                  { 'feature-row-last': f.accent },
+                  `stagger-${Math.min(i + 1, 8)}`,
+                ]}
+              >
                 <span class="feature-num">{f.num}</span>
                 <h3 class:list={['feature-name', { 'feature-name-red': f.accent }]}>{f.title}</h3>
                 <p class="feature-desc">{f.text}</p>
@@ -90,11 +90,11 @@ const base = import.meta.env.BASE_URL;
       </div>
     </section>
 
-    <section class="bottom-cta">
+    <section class="bottom-cta animate-on-scroll">
       <div class="bottom-cta-inner">
         <h2 class="bottom-title">Start<br />editing.</h2>
         <div class="bottom-action">
-          <a href={`${base}app`} class="cta-filled">Launch Pasta</a>
+          <a href={`${base}app`} class="cta-filled press-feedback">Launch Pasta</a>
         </div>
       </div>
     </section>
@@ -109,6 +109,32 @@ const base = import.meta.env.BASE_URL;
     background-color: #ffffff;
     color: #111;
     min-height: 100vh;
+  }
+
+  /* Hero entrance animations */
+  .hero-label {
+    animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+
+  .hero-title {
+    animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+  }
+
+  .hero-tagline {
+    animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+  }
+
+  .hero-right-inner {
+    animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-label,
+    .hero-title,
+    .hero-tagline,
+    .hero-right-inner {
+      animation: none;
+    }
   }
 
   /* Hero */
