@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tailwind CSS v4 integration via `@tailwindcss/vite` plugin
 - Global CSS entry point (`src/styles/global.css`)
 - Head slot in Layout for per-page font injection
+- Tailwind `@theme` block with shared design tokens (fonts, colors)
+- Shared Nav component with responsive links and active state support
+- Shared Footer component with Product/Company/Legal link groups
+- SEO pages: features, about, blog, privacy, terms, changelog, FAQ
 
 ### Changed
 
@@ -22,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mobile toolbar delegates clicks to sidebar buttons (no duplicate IDs)
 - Redesigned landing page with full-viewport hero, feature list with grid layout, and CTA section
 - Simplified Layout component to minimal shell without opinionated styles
+- Landing page now uses shared Nav and Footer components
+
+### Fixed
+
+- Feature description text squeezed into narrow column on mobile (grid-column fix)
+- Viewport meta tag missing initial-scale=1.0
 
 ## [0.3.0] - 2026-02-17
 

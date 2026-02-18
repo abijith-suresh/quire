@@ -1,0 +1,90 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/shared/Nav.astro';
+import Footer from '../components/shared/Footer.astro';
+const base = import.meta.env.BASE_URL;
+
+const sections = [
+  {
+    num: '01',
+    title: 'Acceptance of Terms',
+    content:
+      'By accessing and using Pasta, you agree to be bound by these terms. If you do not agree, please do not use the application.',
+  },
+  {
+    num: '02',
+    title: 'No Warranty',
+    content:
+      'Pasta is provided "as is" without warranty of any kind, express or implied. We make no guarantees regarding the accuracy, reliability, or completeness of PDF operations performed by the tool.',
+  },
+  {
+    num: '03',
+    title: 'Limitation of Liability',
+    content:
+      'In no event shall the authors or contributors be liable for any damages arising from the use or inability to use Pasta, including but not limited to data loss or corruption of PDF files.',
+  },
+  {
+    num: '04',
+    title: 'Open Source License',
+    content:
+      'Pasta is open-source software. The source code is available on GitHub and is subject to its respective license terms. You are free to inspect, modify, and distribute the code in accordance with the license.',
+  },
+  {
+    num: '05',
+    title: 'Permitted Use',
+    content:
+      'You may use Pasta for any lawful purpose, including personal and commercial use. You are solely responsible for the content of the PDF files you process using the tool.',
+  },
+  {
+    num: '06',
+    title: 'Changes to Terms',
+    content:
+      'We reserve the right to modify these terms at any time. Changes will be reflected on this page. Continued use of Pasta after changes constitutes acceptance of the updated terms.',
+  },
+];
+---
+
+<Layout title="Terms of Service — Pasta">
+  <Fragment slot="head">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </Fragment>
+
+  <div class="font-body bg-white text-primary min-h-screen">
+    <Nav base={base} />
+
+    <section class="px-6 md:px-16 lg:px-24 pt-24 pb-16 border-b border-border">
+      <div class="max-w-7xl mx-auto">
+        <p class="text-xs font-light text-muted uppercase tracking-[0.2em] mb-4">Legal</p>
+        <h1 class="font-display text-[clamp(3rem,7vw,6rem)] leading-[0.9] text-primary">
+          Terms of<br />Service.
+        </h1>
+      </div>
+    </section>
+
+    <section class="px-6 md:px-16 lg:px-24 py-16">
+      <div class="max-w-7xl mx-auto border-t-2 border-primary">
+        {
+          sections.map((s, i) => (
+            <div
+              class:list={[
+                'grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_10rem_1fr] gap-4 py-8 border-b',
+                i === sections.length - 1 ? 'border-primary border-b-2' : 'border-border',
+              ]}
+            >
+              <span class="text-xs text-muted">{s.num}</span>
+              <h2 class="font-display text-xl text-primary">{s.title}</h2>
+              <p class="col-span-full md:col-auto text-body font-light leading-relaxed">
+                {s.content}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <Footer base={base} />
+  </div>
+</Layout>

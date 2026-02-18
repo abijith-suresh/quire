@@ -28,9 +28,12 @@ pasta/
 ├── public/                              # Static assets
 ├── src/
 │   ├── components/
-│   │   └── app/
-│   │       ├── PDFUploader.astro       # File upload with drag-drop
-│   │       └── PDFViewer.astro         # Page thumbnails/preview
+│   │   ├── app/
+│   │   │   ├── PDFUploader.astro       # File upload with drag-drop
+│   │   │   └── PDFViewer.astro         # Page thumbnails/preview
+│   │   └── shared/
+│   │       ├── Nav.astro               # Shared navigation bar
+│   │       └── Footer.astro            # Shared footer with link groups
 │   ├── controllers/
 │   │   ├── editor-controller.ts        # Editor page UI logic
 │   │   ├── pdf-uploader-controller.ts  # Uploader UI logic
@@ -39,7 +42,14 @@ pasta/
 │   │   └── Layout.astro                # Base layout with head slot
 │   ├── pages/
 │   │   ├── index.astro                 # Landing page (Swiss modernist)
-│   │   └── app.astro                   # PDF editor page
+│   │   ├── app.astro                   # PDF editor page
+│   │   ├── features.astro              # Features overview page
+│   │   ├── about.astro                 # About / mission page
+│   │   ├── blog.astro                  # Blog listing page
+│   │   ├── privacy.astro               # Privacy policy page
+│   │   ├── terms.astro                 # Terms of service page
+│   │   ├── changelog.astro             # Changelog page
+│   │   └── faq.astro                   # FAQ page
 │   ├── services/
 │   │   ├── pdf-operations-service.ts   # PDF build/extract operations
 │   │   └── pdf-service.ts              # PDF load/render service
