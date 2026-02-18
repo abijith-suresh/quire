@@ -9,4 +9,167 @@
   --color-body: #555;
   --color-border: #ddd;
   --color-hover: #f5f5f5;
+
+  --animate-fade-in: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-up: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scale-in: scaleIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* View Transition keyframes */
+@keyframes contentFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Entrance animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Scroll-triggered animations */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays */
+.stagger-1 {
+  transition-delay: 50ms;
+}
+.stagger-2 {
+  transition-delay: 100ms;
+}
+.stagger-3 {
+  transition-delay: 150ms;
+}
+.stagger-4 {
+  transition-delay: 200ms;
+}
+.stagger-5 {
+  transition-delay: 250ms;
+}
+.stagger-6 {
+  transition-delay: 300ms;
+}
+.stagger-7 {
+  transition-delay: 350ms;
+}
+.stagger-8 {
+  transition-delay: 400ms;
+}
+
+/* Micro-interactions */
+.press-feedback {
+  transition: transform 0.15s ease;
+}
+
+.press-feedback:active {
+  transform: scale(0.97);
+}
+
+.link-slide {
+  position: relative;
+}
+
+.link-slide::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-slide:hover::after {
+  width: 100%;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .press-feedback:active {
+    transform: none;
+  }
+
+  .link-slide::after {
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
