@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Astro View Transitions for SPA-like page navigation (no full page reloads)
+- Scroll-triggered entrance animations with IntersectionObserver
+- Staggered list reveal animations on features, FAQ, changelog, blog, and legal pages
+- Hero entrance animations on landing page (sequential slideUp/fadeIn)
+- CSS animation keyframes: contentFadeOut, contentFadeIn, fadeIn, slideUp, slideInLeft, scaleIn
+- Micro-interactions: press-feedback on CTA buttons, link-slide underline on nav/footer links
+- Nav persistence across page transitions via transition:persist
+- prefers-reduced-motion support to disable all custom animations
+- Google Fonts preconnect hints for faster font loading
 - Swiss modernist landing page with Bebas Neue + Work Sans typography
 - Tailwind CSS v4 integration via `@tailwindcss/vite` plugin
 - Global CSS entry point (`src/styles/global.css`)
@@ -20,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Centralized Google Fonts loading in Layout.astro (removed from all pages)
+- Editor page overflow:hidden scoped to body:has([data-page="editor"]) to prevent leak
+- Editor script supports astro:page-load for View Transition re-initialization
 - Redesigned editor page with V6 hybrid Swiss layout: dark header, sidebar with grouped actions, dense responsive grid, mobile toolbar, and status bar
 - Full-page centered uploader replaces inline upload component
 - Swiss industrial styling for page thumbnails (no rounded corners, no shadows, red accent)

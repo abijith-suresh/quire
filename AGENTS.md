@@ -39,7 +39,7 @@ pasta/
 │   │   ├── pdf-uploader-controller.ts  # Uploader UI logic
 │   │   └── pdf-viewer-controller.ts    # Viewer UI logic
 │   ├── layouts/
-│   │   └── Layout.astro                # Base layout with head slot
+│   │   └── Layout.astro                # Base layout with ViewTransitions
 │   ├── pages/
 │   │   ├── index.astro                 # Landing page (Swiss modernist)
 │   │   ├── app.astro                   # PDF editor page
@@ -50,15 +50,18 @@ pasta/
 │   │   ├── terms.astro                 # Terms of service page
 │   │   ├── changelog.astro             # Changelog page
 │   │   └── faq.astro                   # FAQ page
+│   ├── scripts/
+│   │   └── scroll-animations.ts        # IntersectionObserver for scroll animations
 │   ├── services/
 │   │   ├── pdf-operations-service.ts   # PDF build/extract operations
 │   │   └── pdf-service.ts              # PDF load/render service
 │   ├── styles/
-│   │   └── global.css                  # Tailwind CSS v4 entry point
+│   │   └── global.css                  # Tailwind CSS v4 + animation utilities
 │   ├── types/
 │   │   └── interfaces.ts               # TypeScript interfaces/contracts
 │   └── utils/
-│       └── download.ts                 # File download utility
+│       ├── download.ts                 # File download utility
+│       └── transitions.ts              # View Transition animation config
 ├── astro.config.ts
 ├── commitlint.config.ts
 ├── eslint.config.ts
