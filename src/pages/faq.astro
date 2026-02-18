@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/shared/Nav.astro';
 import Footer from '../components/shared/Footer.astro';
+import { contentSlide } from '../utils/transitions';
 const base = import.meta.env.BASE_URL;
 
 const questions = [
@@ -49,20 +50,17 @@ const questions = [
 ---
 
 <Layout title="FAQ — Pasta">
-  <Fragment slot="head">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-  </Fragment>
-
-  <div class="font-body bg-white text-primary min-h-screen">
+  <div class="font-body bg-white text-primary min-h-screen" transition:animate={contentSlide}>
     <Nav base={base} currentPage="faq" />
 
     <section class="px-6 md:px-16 lg:px-24 pt-24 pb-16 border-b border-border">
       <div class="max-w-7xl mx-auto">
-        <p class="text-xs font-light text-muted uppercase tracking-[0.2em] mb-4">Support</p>
-        <h1 class="font-display text-[clamp(3rem,7vw,6rem)] leading-[0.9] text-primary">
+        <p class="text-xs font-light text-muted uppercase tracking-[0.2em] mb-4 animate-on-scroll">
+          Support
+        </p>
+        <h1
+          class="font-display text-[clamp(3rem,7vw,6rem)] leading-[0.9] text-primary animate-on-scroll stagger-1"
+        >
           Questions<br />& Answers.
         </h1>
       </div>
@@ -74,8 +72,9 @@ const questions = [
           questions.map((item, i) => (
             <div
               class:list={[
-                'grid grid-cols-[3rem_1fr] gap-4 py-8 border-b',
+                'grid grid-cols-[3rem_1fr] gap-4 py-8 border-b animate-on-scroll',
                 i === questions.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >
               <span class="text-xs text-muted">{item.num}</span>
