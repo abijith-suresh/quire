@@ -1,0 +1,94 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/shared/Nav.astro';
+import Footer from '../components/shared/Footer.astro';
+const base = import.meta.env.BASE_URL;
+
+const questions = [
+  {
+    num: '01',
+    q: 'How does client-side processing work?',
+    a: "Pasta uses pdf-lib and pdf.js — JavaScript libraries that run entirely in your browser. When you upload a PDF, it's read into your browser's memory and processed locally. No data is sent to any server.",
+  },
+  {
+    num: '02',
+    q: 'Is my data private?',
+    a: "Yes. Your files never leave your device. There are no uploads, no server-side processing, and no data collection of any kind. You can verify this by inspecting the network tab in your browser's developer tools.",
+  },
+  {
+    num: '03',
+    q: 'Which browsers are supported?',
+    a: 'Pasta works in all modern browsers including Chrome, Firefox, Safari, and Edge. We recommend using the latest version for the best experience.',
+  },
+  {
+    num: '04',
+    q: 'Is there a file size limit?',
+    a: "There is no hard file size limit. However, since processing happens in your browser, very large files (100+ MB) may be slower depending on your device's available memory and processing power.",
+  },
+  {
+    num: '05',
+    q: 'Is Pasta free to use?',
+    a: 'Yes. Pasta is completely free and open source. There are no premium tiers, no subscriptions, and no hidden costs.',
+  },
+  {
+    num: '06',
+    q: 'Can I contribute to the project?',
+    a: 'Absolutely. Pasta is open source and hosted on GitHub. You can report issues, suggest features, or submit pull requests.',
+  },
+  {
+    num: '07',
+    q: 'Does Pasta work offline?',
+    a: 'Once the page is loaded, most operations work without an internet connection. However, you need to be online to initially load the application.',
+  },
+  {
+    num: '08',
+    q: 'What PDF operations are supported?',
+    a: 'Pasta supports merge, split, reorder, rotate, delete, compress, watermark, and convert operations. All operations are performed client-side.',
+  },
+];
+---
+
+<Layout title="FAQ — Pasta">
+  <Fragment slot="head">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </Fragment>
+
+  <div class="font-body bg-white text-primary min-h-screen">
+    <Nav base={base} currentPage="faq" />
+
+    <section class="px-6 md:px-16 lg:px-24 pt-24 pb-16 border-b border-border">
+      <div class="max-w-7xl mx-auto">
+        <p class="text-xs font-light text-muted uppercase tracking-[0.2em] mb-4">Support</p>
+        <h1 class="font-display text-[clamp(3rem,7vw,6rem)] leading-[0.9] text-primary">
+          Questions<br />& Answers.
+        </h1>
+      </div>
+    </section>
+
+    <section class="px-6 md:px-16 lg:px-24 py-16">
+      <div class="max-w-7xl mx-auto border-t-2 border-primary">
+        {
+          questions.map((item, i) => (
+            <div
+              class:list={[
+                'grid grid-cols-[3rem_1fr] gap-4 py-8 border-b',
+                i === questions.length - 1 ? 'border-primary border-b-2' : 'border-border',
+              ]}
+            >
+              <span class="text-xs text-muted">{item.num}</span>
+              <div>
+                <h2 class="font-display text-xl text-primary mb-3">{item.q}</h2>
+                <p class="text-body font-light leading-relaxed">{item.a}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <Footer base={base} />
+  </div>
+</Layout>

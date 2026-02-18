@@ -1,0 +1,90 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/shared/Nav.astro';
+import Footer from '../components/shared/Footer.astro';
+const base = import.meta.env.BASE_URL;
+
+const sections = [
+  {
+    num: '01',
+    title: 'No Data Collection',
+    content:
+      'Pasta does not collect, store, or transmit any personal data. We do not use analytics, tracking pixels, or any form of user monitoring.',
+  },
+  {
+    num: '02',
+    title: 'Client-Side Processing',
+    content:
+      'All PDF operations run entirely in your browser using JavaScript. Your files are never uploaded to any server. Documents are processed in memory and discarded when you close the tab.',
+  },
+  {
+    num: '03',
+    title: 'No Cookies',
+    content:
+      'Pasta does not use cookies, local storage, or any other client-side storage mechanism to track users or store personal information.',
+  },
+  {
+    num: '04',
+    title: 'No Third-Party Services',
+    content:
+      'We do not integrate with any third-party analytics, advertising, or tracking services. The only external resources loaded are Google Fonts for typography.',
+  },
+  {
+    num: '05',
+    title: 'Open Source',
+    content:
+      'Pasta is fully open source. You can inspect the complete source code on GitHub to verify these privacy claims for yourself.',
+  },
+  {
+    num: '06',
+    title: 'Contact',
+    content:
+      'If you have questions about this privacy policy, you can open an issue on our GitHub repository.',
+  },
+];
+---
+
+<Layout title="Privacy Policy — Pasta">
+  <Fragment slot="head">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </Fragment>
+
+  <div class="font-body bg-white text-primary min-h-screen">
+    <Nav base={base} />
+
+    <section class="px-6 md:px-16 lg:px-24 pt-24 pb-16 border-b border-border">
+      <div class="max-w-7xl mx-auto">
+        <p class="text-xs font-light text-muted uppercase tracking-[0.2em] mb-4">Legal</p>
+        <h1 class="font-display text-[clamp(3rem,7vw,6rem)] leading-[0.9] text-primary">
+          Privacy<br />Policy.
+        </h1>
+      </div>
+    </section>
+
+    <section class="px-6 md:px-16 lg:px-24 py-16">
+      <div class="max-w-7xl mx-auto border-t-2 border-primary">
+        {
+          sections.map((s, i) => (
+            <div
+              class:list={[
+                'grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_10rem_1fr] gap-4 py-8 border-b',
+                i === sections.length - 1 ? 'border-primary border-b-2' : 'border-border',
+              ]}
+            >
+              <span class="text-xs text-muted">{s.num}</span>
+              <h2 class="font-display text-xl text-primary">{s.title}</h2>
+              <p class="col-span-full md:col-auto text-body font-light leading-relaxed">
+                {s.content}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <Footer base={base} />
+  </div>
+</Layout>

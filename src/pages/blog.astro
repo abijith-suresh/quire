@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/shared/Nav.astro';
+import Footer from '../components/shared/Footer.astro';
+const base = import.meta.env.BASE_URL;
+
+const posts = [
+  {
+    date: 'Feb 2026',
+    label: 'Update',
+    title: 'Introducing watermark and convert features',
+    excerpt:
+      'Two new operations join the Pasta toolkit: add custom text watermarks to your documents and convert between PDF and image formats — all client-side.',
+  },
+  {
+    date: 'Jan 2026',
+    label: 'Design',
+    title: 'The new Swiss-inspired editor',
+    excerpt:
+      'We redesigned the entire editor interface around Swiss modernist principles — clean grids, strong typography, and maximum clarity.',
+  },
+  {
+    date: 'Dec 2025',
+    label: 'Launch',
+    title: 'Why we built Pasta',
+    excerpt:
+      "PDF tools shouldn't require uploading your files to a server. Here's the story behind Pasta and why client-side processing matters.",
+  },
+];
+---
+
+<Layout title="Blog — Pasta">
+  <Fragment slot="head">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </Fragment>
+
+  <div class="font-body bg-white text-primary min-h-screen">
+    <Nav base={base} currentPage="blog" />
+
+    <section class="px-6 md:px-16 lg:px-24 pt-24 pb-16 border-b border-border">
+      <div class="max-w-7xl mx-auto">
+        <p class="text-xs font-light text-muted uppercase tracking-[0.2em] mb-4">Journal</p>
+        <h1 class="font-display text-[clamp(3rem,7vw,6rem)] leading-[0.9] text-primary">Notes.</h1>
+      </div>
+    </section>
+
+    <section class="px-6 md:px-16 lg:px-24 py-16">
+      <div class="max-w-7xl mx-auto border-t-2 border-primary">
+        {
+          posts.map((post, i) => (
+            <div
+              class:list={[
+                'grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-8 border-b',
+                i === posts.length - 1 ? 'border-primary border-b-2' : 'border-border',
+              ]}
+            >
+              <div>
+                <p class="text-xs text-muted font-light">{post.date}</p>
+                <p class="text-[0.65rem] uppercase tracking-[0.15em] text-accent font-medium mt-1">
+                  {post.label}
+                </p>
+              </div>
+              <div>
+                <h2 class="font-display text-2xl text-primary mb-2">{post.title}</h2>
+                <p class="text-body font-light leading-relaxed">{post.excerpt}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <Footer base={base} />
+  </div>
+</Layout>
