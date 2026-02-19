@@ -2,7 +2,7 @@
 
 ## Overview
 
-Pasta is a fully client-side PDF manipulation tool built with Astro. All operations (merge, split, reorder, rotate, delete, compress, watermark, convert) happen entirely in the browser using pdf-lib. No files are sent to any server.
+Pasta is a fully client-side PDF manipulation tool built with Astro. All operations happen entirely in the browser using pdf-lib. No files are sent to any server.
 
 ## Repository
 
@@ -37,7 +37,6 @@ pasta/
 │   ├── content/
 │   │   ├── config.ts                   # Astro 5 Content Collections config (glob loader)
 │   │   ├── blog/
-│   │   │   ├── introducing-watermark-and-convert.md
 │   │   │   ├── the-new-swiss-editor.md
 │   │   │   └── why-we-built-pasta.md
 │   │   └── changelog/
@@ -105,9 +104,6 @@ bun run preview
 3. **Reorder**: Drag and drop to reorder pages
 4. **Rotate**: Rotate pages 90°/180°/270°
 5. **Delete**: Remove specific pages
-6. **Compress**: Reduce file size
-7. **Watermark**: Add text or image watermarks
-8. **Convert**: PDF to images or images to PDF
 
 ## Coding Conventions
 
@@ -151,17 +147,17 @@ The project follows clean architecture principles with clear separation of conce
    - Import and initialize controllers in `<script>` tags
    - No business logic in components
 
-2. **Controllers** (`src/scripts/*-controller.ts`): Presentation layer
+2. **Controllers** (`src/controllers/*-controller.ts`): Presentation layer
    - Handle user interactions and DOM manipulation
    - Depend on service interfaces (DIP)
    - Manage component lifecycle
 
-3. **Services** (`src/scripts/pdf-service.ts`): Business logic layer
+3. **Services** (`src/services/pdf-service.ts`): Business logic layer
    - Handle PDF operations (load, render, manipulate)
    - Implement service interfaces
    - Use dependency injection pattern
 
-4. **Interfaces** (`src/scripts/interfaces.ts`): Contracts layer
+4. **Interfaces** (`src/types/interfaces.ts`): Contracts layer
    - Define clear contracts between layers
    - Enable testability and loose coupling
    - Follow Interface Segregation Principle
@@ -175,17 +171,6 @@ The project follows clean architecture principles with clear separation of conce
 - Pages: lowercase with dashes (`merge.astro`)
 - Assets: lowercase with dashes
 
-## Dependencies to Install
-
-```bash
-# Core
-bun add pdf-lib
-bun add file-saver
-
-# Development
-bun add -D @tailwindcss/vite
-```
-
 ## GitHub Pages Configuration
 
 - Build command: `bun run build`
@@ -198,19 +183,52 @@ None required - all operations are client-side.
 
 ## Testing Strategy
 
-- Manual testing in browsers
-- Test with various PDF sizes and types
-- Verify no data leaves the browser (check network tab)
+- Unit tests via Vitest (`bun run test`) — covers services and utilities
+- E2E tests via Playwright (`bun run test:e2e`) — covers core user flows
+- Manual testing in browsers for visual/interaction verification
+- Verify no data leaves the browser (network tab should show zero PDF-related requests)
 
-## Future Enhancements
+## Roadmap
 
-- [ ] OCR support (client-side Tesseract.js)
-- [ ] Form filling
-- [ ] Electronic signatures
-- [ ] Batch operations
-- [ ] Full decryption of user-password PDFs on download (currently pdf-lib cannot decrypt content streams; re-render via pdf.js canvas as images would be required)
-- [ ] PDF encryption/decryption
-- [ ] Progress indicators for large files
+### v1.1 — Polish
+
+- Keyboard shortcuts (`Ctrl+A`, `Delete`, `R`, `Ctrl+S`) for editor operations
+- Toast notifications for operation success/error feedback
+- Loading states and progress indicators during PDF load/build
+- Extract magic numbers and hardcoded strings to `src/constants.ts`
+- Move inline styles in `password-prompt.ts` to Tailwind utility classes
+
+### v1.2 — New Operations
+
+- **Compress**: Reduce file size via pdf-lib save options (`useObjectStreams: true`)
+- **Watermark**: Diagonal text watermark on all pages using `page.drawText()`
+- **Images → PDF**: Embed JPEG/PNG files as pages using `embedJpg()`/`embedPng()`
+
+### v1.3 — Power User
+
+- **Password protect output**: Encrypt the saved PDF with a user password
+- **Page numbering**: Add configurable page numbers via `page.drawText()`
+- **Insert blank pages**: Add spacer pages at any position
+- **Metadata editing**: Edit PDF title, author, subject, and keywords
+
+### v1.4 — Advanced Editing
+
+- **Redaction**: Draw permanent opaque boxes over sensitive content
+- **Crop pages**: Adjust the crop/media box to trim margins or scanner borders
+- **Normalize page sizes**: Scale all pages to a uniform size (A4/Letter) when merging
+
+### v2.0 — Workflow
+
+- **Form filling**: Fill AcroForm fields client-side using pdf-lib
+- **Simple e-signatures**: Draw or type a signature and embed it on a page
+- **PWA / offline support**: Service worker + manifest so Pasta works fully offline
+
+### Not planned
+
+- OCR (Tesseract.js) — out of scope; this is a manipulation tool, not a document-understanding tool
+- Cryptographic digital signatures — require a certificate authority; not feasible client-side
+- PDF-to-images export via canvas re-render — lossy, produces inaccessible image-only PDFs
+- Batch processing mode — adds UI complexity for a narrow use case
 
 ## Atomic Commit Guidelines
 
@@ -271,4 +289,4 @@ type(scope): subject
 7. Merge using regular merge commit (not squash) with a clean message
 8. Delete branch after merge
 
-**Every PR must update `CHANGELOG.md` and `AGENTS.md` as needed.** Add a `### Fixed` / `### Added` / `### Changed` entry to the `[Unreleased]` section of `CHANGELOG.md` for each change. Update `AGENTS.md` if any workflow, convention, or project structure has changed.
+**Every PR must update `CHANGELOG.md` as needed.** Add a `### Fixed` / `### Added` / `### Changed` entry to the `[Unreleased]` section of `CHANGELOG.md` for each change. Update `CLAUDE.md` if any workflow, convention, or project structure has changed.
