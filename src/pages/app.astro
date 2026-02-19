@@ -178,8 +178,13 @@ const base = import.meta.env.BASE_URL;
   import { pdfService } from '../services/pdf-service';
   import { pdfOperationsService } from '../services/pdf-operations-service';
 
+  let abortController = new AbortController();
+
   function initialize() {
     if (!document.getElementById('pages-grid')) return;
+
+    abortController.abort();
+    abortController = new AbortController();
 
     try {
       new PDFUploaderController('drop-zone', 'file-input', 'error-message', pdfService);
@@ -190,17 +195,12 @@ const base = import.meta.env.BASE_URL;
         'editor-section',
         'add-pdf-input',
         pdfService,
-        pdfOperationsService
+        pdfOperationsService,
+        abortController.signal
       );
     } catch (error) {
       console.error('Failed to initialize:', error);
     }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
-  } else {
-    initialize();
   }
 
   document.addEventListener('astro:page-load', initialize);
