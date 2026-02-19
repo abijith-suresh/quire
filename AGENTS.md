@@ -270,3 +270,5 @@ type(scope): subject
 6. Wait for CI checks (lint, format, build) to pass
 7. Merge using regular merge commit (not squash) with a clean message
 8. Delete branch after merge
+
+**Every PR must update `CHANGELOG.md` and `AGENTS.md` as needed.** Add a `### Fixed` / `### Added` / `### Changed` entry to the `[Unreleased]` section of `CHANGELOG.md` for each change. Update `AGENTS.md` if any workflow, convention, or project structure has changed.
