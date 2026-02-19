@@ -61,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix WCAG 2.1 accessibility violations in password modal: add `role="dialog"`, `aria-modal`, `aria-labelledby`, focus trap (Tab/Shift+Tab), focus restoration on close, and `aria-live` on error message (closes #26)
+- Add ARIA roles and keyboard navigation to editor thumbnails and toolbar: `role="listbox"` + `aria-multiselectable` on page grid, `role="option"` + `aria-selected` + `aria-label` on each thumbnail (synced on select/deselect/delete/reorder), descriptive `aria-label` on all four toolbar action buttons, `role="status"` + `aria-live` on status bar (closes #27)
+- Make upload drop zone keyboard accessible: `role="button"`, `tabindex="0"`, Enter/Space keyboard activation, `role="alert"` on error message, visibility-based hiding so live region stays in the accessibility tree (closes #28)
 - Removed compress, watermark, convert, and undo from features page, FAQ, and changelog — these operations are not yet implemented (closes #17)
 - Rewrote README to replace Astro starter kit template with Pasta-specific content (closes #18)
 - Race condition in drag-drop reorder: `handleDrop` now awaits `renderAllPages()` so thumbnails always settle in the correct order when pages are dragged rapidly
