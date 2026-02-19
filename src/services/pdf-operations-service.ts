@@ -4,7 +4,10 @@ import type { PageState, PDFOperationResult, IPDFOperationsService } from '../ty
 export class PDFOperationsService implements IPDFOperationsService {
   private async loadSourceDoc(file: File): Promise<PDFDocument> {
     const buffer = await file.arrayBuffer();
-    return PDFDocument.load(buffer);
+    // ignoreEncryption: true is a no-op for unencrypted PDFs and allows loading
+    // owner-password PDFs. For user-password PDFs, content streams remain encrypted
+    // (pdf-lib has no decryption support), so output quality is not guaranteed.
+    return PDFDocument.load(buffer, { ignoreEncryption: true });
   }
 
   async buildPDF(pages: PageState[]): Promise<PDFOperationResult> {
