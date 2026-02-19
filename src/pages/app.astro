@@ -314,6 +314,11 @@ const base = import.meta.env.BASE_URL;
     transition: border-color 0.2s;
   }
 
+  /* Placeholder shown while the canvas has not yet been painted */
+  .canvas-container.thumbnail-placeholder {
+    background: #f0f0f0;
+  }
+
   .editor-page:hover .canvas-container {
     border-color: #111;
   }
