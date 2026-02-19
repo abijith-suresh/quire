@@ -21,7 +21,7 @@ export class EditorController {
   private addPdfInput: HTMLInputElement;
 
   private dragSourceIndex: number | null = null;
-  private renderGeneration = 0;
+  private thumbnailObserver: IntersectionObserver | null = null;
   private signal: AbortSignal;
 
   constructor(
@@ -89,7 +89,7 @@ export class EditorController {
     });
   }
 
-  private async handlePDFLoaded(detail: PDFLoadedEvent): Promise<void> {
+  private handlePDFLoaded(detail: PDFLoadedEvent): void {
     const { pageCount, file } = detail;
 
     for (let i = 1; i <= pageCount; i++) {
@@ -106,7 +106,7 @@ export class EditorController {
     this.editorSection.style.display = 'block';
     this.selectedIndices.clear();
 
-    await this.renderAllPages();
+    this.renderAllPages();
   }
 
   private async handleAddPDF(event: Event): Promise<void> {
@@ -138,7 +138,7 @@ export class EditorController {
           markedForDeletion: false,
         });
       }
-      await this.renderPagesFrom(startIndex);
+      this.renderPagesFrom(startIndex);
       this.updatePageCount();
     }
 
@@ -161,27 +161,60 @@ export class EditorController {
     }
   }
 
-  private async renderAllPages(): Promise<void> {
-    const gen = ++this.renderGeneration;
+  // Disconnect any previous observer, clear the grid, create all placeholders
+  // synchronously (fast — no PDF work), then hand them to the new observer.
+  // Canvas renders fire one-by-one as pages scroll into view.
+  private renderAllPages(): void {
+    this.thumbnailObserver?.disconnect();
     this.pagesContainer.innerHTML = '';
+    this.setupThumbnailObserver();
 
     for (let i = 0; i < this.pages.length; i++) {
-      if (gen !== this.renderGeneration) return;
-      await this.renderPageThumbnail(i);
+      const wrapper = this.createPagePlaceholder(i);
+      this.pagesContainer.appendChild(wrapper);
+      this.thumbnailObserver!.observe(wrapper);
     }
 
-    if (gen === this.renderGeneration) {
-      this.updatePageCount();
-    }
+    this.updatePageCount();
   }
 
-  private async renderPagesFrom(startIndex: number): Promise<void> {
+  // Appends placeholders for pages added via "Add PDF" and starts observing them.
+  private renderPagesFrom(startIndex: number): void {
     for (let i = startIndex; i < this.pages.length; i++) {
-      await this.renderPageThumbnail(i);
+      const wrapper = this.createPagePlaceholder(i);
+      this.pagesContainer.appendChild(wrapper);
+      this.thumbnailObserver?.observe(wrapper);
     }
   }
 
-  private async renderPageThumbnail(index: number): Promise<void> {
+  // Creates an IntersectionObserver that triggers canvas rendering when a
+  // placeholder enters the scrollable viewport (with a 200 px look-ahead margin).
+  private setupThumbnailObserver(): void {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const wrapper = entry.target as HTMLDivElement;
+          observer.unobserve(wrapper);
+          const index = parseInt(wrapper.dataset.index ?? '0', 10);
+          const page = this.pages[index];
+          if (page) {
+            this.renderPageCanvas(wrapper, page);
+          }
+        }
+      },
+      {
+        root: this.pagesContainer.parentElement,
+        rootMargin: '200px',
+        threshold: 0,
+      }
+    );
+    this.thumbnailObserver = observer;
+  }
+
+  // Builds the full wrapper DOM for one page — everything except the canvas paint.
+  // Returns the wrapper ready to be appended and observed.
+  private createPagePlaceholder(index: number): HTMLDivElement {
     const page = this.pages[index];
 
     const wrapper = document.createElement('div');
@@ -199,13 +232,8 @@ export class EditorController {
     if (this.selectedIndices.has(index)) wrapper.classList.add('selected');
 
     const canvasContainer = document.createElement('div');
-    canvasContainer.className = 'canvas-container';
+    canvasContainer.className = 'canvas-container thumbnail-placeholder';
     canvasContainer.style.transform = `rotate(${page.rotation}deg)`;
-
-    const canvas = document.createElement('canvas');
-    canvas.className = 'page-canvas';
-
-    canvasContainer.appendChild(canvas);
     wrapper.appendChild(canvasContainer);
 
     const controls = document.createElement('div');
@@ -229,10 +257,8 @@ export class EditorController {
     controls.appendChild(rotateBtn);
     wrapper.appendChild(controls);
 
-    // Click to select
     wrapper.addEventListener('click', () => this.toggleSelection(this.getCurrentIndex(wrapper)));
 
-    // Drag events
     wrapper.addEventListener('dragstart', (e) =>
       this.handleDragStart(e, this.getCurrentIndex(wrapper))
     );
@@ -244,21 +270,39 @@ export class EditorController {
     wrapper.addEventListener('drop', (e) => this.handleDrop(e, this.getCurrentIndex(wrapper)));
     wrapper.addEventListener('dragend', () => this.handleDragEnd());
 
-    this.pagesContainer.appendChild(wrapper);
+    return wrapper;
+  }
 
-    // Render the thumbnail using a temporary PDFService load
+  // Loads and paints the canvas for a single page. The two `isConnected` guards
+  // ensure stale renders (from a session that was replaced) are silently dropped.
+  private async renderPageCanvas(wrapper: HTMLDivElement, page: PageState): Promise<void> {
+    if (!wrapper.isConnected) return;
+
+    const canvasContainer = wrapper.querySelector('.canvas-container') as HTMLDivElement | null;
+    if (!canvasContainer) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'page-canvas';
+
+    const label = wrapper.querySelector('.page-label') as HTMLSpanElement | null;
+
     try {
       const storedPassword = this.pdfService.getPassword(page.sourceFile);
       if (storedPassword !== undefined) {
-        // File was previously unlocked ('' for owner-password, or real password for user-password)
         await this.pdfService.loadPDFWithPassword(page.sourceFile, storedPassword);
       } else {
         await this.pdfService.loadPDF(page.sourceFile);
       }
       await this.pdfService.renderPage(page.sourcePageNumber, canvas, 0.5);
+
+      if (!wrapper.isConnected) return;
+
+      canvasContainer.appendChild(canvas);
+      canvasContainer.classList.remove('thumbnail-placeholder');
     } catch (error) {
-      console.error(`Failed to render page ${index + 1}:`, error);
-      label.textContent = `Page ${index + 1} (Error)`;
+      console.error(`Failed to render page ${page.sourcePageNumber}:`, error);
+      if (label) label.textContent = `${label.textContent} (Error)`;
+      canvasContainer.classList.remove('thumbnail-placeholder');
     }
   }
 
