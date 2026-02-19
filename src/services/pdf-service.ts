@@ -92,6 +92,10 @@ export class PDFService implements IPDFService {
     return this.passwordRegistry.get(file);
   }
 
+  clearPasswordRegistry(): void {
+    this.passwordRegistry.clear();
+  }
+
   getPageCount(): number {
     return this.pdfDocument?.getPageCount() ?? 0;
   }
