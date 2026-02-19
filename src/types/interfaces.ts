@@ -39,6 +39,7 @@ export interface PDFOperationResult {
 export interface IPDFOperationsService {
   buildPDF(pages: PageState[]): Promise<PDFOperationResult>;
   buildPDFFromSubset(pages: PageState[], indices: number[]): Promise<PDFOperationResult>;
+  clearCache(): void;
 }
 
 export interface IPDFRenderer {
@@ -58,4 +59,5 @@ export interface IPDFService extends IPDFLoader, IPDFRenderer {
   dispatchLoadedEvent(): void;
   loadPDFWithPassword(file: File, password: string): Promise<void>;
   getPassword(file: File): string | undefined;
+  clearPasswordRegistry(): void;
 }

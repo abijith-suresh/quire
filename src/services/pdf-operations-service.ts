@@ -2,6 +2,14 @@ import { PDFDocument, degrees } from 'pdf-lib';
 import type { PageState, PDFOperationResult, IPDFOperationsService } from '../types/interfaces';
 
 export class PDFOperationsService implements IPDFOperationsService {
+  // Class-level cache: avoids re-reading the same File on multiple build/extract
+  // calls within one session. Cleared on session reset via clearCache().
+  private sourceDocCache = new Map<File, PDFDocument>();
+
+  clearCache(): void {
+    this.sourceDocCache.clear();
+  }
+
   private async loadSourceDoc(file: File): Promise<PDFDocument> {
     const buffer = await file.arrayBuffer();
     // ignoreEncryption: true is a no-op for unencrypted PDFs and allows loading
@@ -17,13 +25,12 @@ export class PDFOperationsService implements IPDFOperationsService {
     }
 
     const outputDoc = await PDFDocument.create();
-    const sourceDocCache = new Map<File, PDFDocument>();
 
     for (const page of activePages) {
-      if (!sourceDocCache.has(page.sourceFile)) {
-        sourceDocCache.set(page.sourceFile, await this.loadSourceDoc(page.sourceFile));
+      if (!this.sourceDocCache.has(page.sourceFile)) {
+        this.sourceDocCache.set(page.sourceFile, await this.loadSourceDoc(page.sourceFile));
       }
-      const sourceDoc = sourceDocCache.get(page.sourceFile)!;
+      const sourceDoc = this.sourceDocCache.get(page.sourceFile)!;
 
       const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
       if (page.rotation !== 0) {
@@ -46,13 +53,12 @@ export class PDFOperationsService implements IPDFOperationsService {
     }
 
     const outputDoc = await PDFDocument.create();
-    const sourceDocCache = new Map<File, PDFDocument>();
 
     for (const page of subset) {
-      if (!sourceDocCache.has(page.sourceFile)) {
-        sourceDocCache.set(page.sourceFile, await this.loadSourceDoc(page.sourceFile));
+      if (!this.sourceDocCache.has(page.sourceFile)) {
+        this.sourceDocCache.set(page.sourceFile, await this.loadSourceDoc(page.sourceFile));
       }
-      const sourceDoc = sourceDocCache.get(page.sourceFile)!;
+      const sourceDoc = this.sourceDocCache.get(page.sourceFile)!;
 
       const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
       if (page.rotation !== 0) {

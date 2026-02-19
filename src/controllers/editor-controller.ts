@@ -92,6 +92,14 @@ export class EditorController {
   private handlePDFLoaded(detail: PDFLoadedEvent): void {
     const { pageCount, file } = detail;
 
+    // Reset singleton service state accumulated from any previous session
+    // (SPA navigation creates a new controller but reuses the same singletons).
+    this.pdfService.clearPasswordRegistry();
+    this.operationsService.clearCache();
+
+    this.pages = [];
+    this.selectedIndices.clear();
+
     for (let i = 1; i <= pageCount; i++) {
       this.pages.push({
         id: `${file.name}-${i}-${Date.now()}`,
@@ -104,7 +112,6 @@ export class EditorController {
 
     this.uploaderSection.style.display = 'none';
     this.editorSection.style.display = 'block';
-    this.selectedIndices.clear();
 
     this.renderAllPages();
   }
@@ -166,6 +173,12 @@ export class EditorController {
   // Canvas renders fire one-by-one as pages scroll into view.
   private renderAllPages(): void {
     this.thumbnailObserver?.disconnect();
+
+    // Release GPU backing store for any existing canvases before removing them
+    // from the DOM — prevents texture memory from lingering after a session reset.
+    for (const canvas of this.pagesContainer.querySelectorAll('canvas')) {
+      (canvas as HTMLCanvasElement).width = 0;
+    }
     this.pagesContainer.innerHTML = '';
     this.setupThumbnailObserver();
 
