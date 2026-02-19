@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Pasta brand favicon (dark background, white "P", red accent bar) replacing the default Astro icon
+- `apple-touch-icon.png` (180×180) for iOS home screen bookmarks
+- `scripts/gen-favicon.ts` one-off script to regenerate favicon assets via `@resvg/resvg-js`
+- Dependency security audit step (`bun audit`) in CI pipeline, closes #38
 - Initial project setup with Astro 5.x and TypeScript
 - Basic project structure and documentation
 - PDF upload component with drag-and-drop support
@@ -62,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Meta description on the home page no longer mentions removed "compress" operation
+- OG image feature list for the Features page no longer mentions compress, watermark, or convert
 - Fix memory leaks when repeatedly loading and replacing PDFs: `clearPasswordRegistry()` and `clearCache()` called on session reset clear the singleton service state accumulated from previous sessions; canvas GPU memory released via `canvas.width = 0` before clearing the page grid (closes #30)
 - Fix WCAG 2.1 accessibility violations in password modal: add `role="dialog"`, `aria-modal`, `aria-labelledby`, focus trap (Tab/Shift+Tab), focus restoration on close, and `aria-live` on error message (closes #26)
 - Add ARIA roles and keyboard navigation to editor thumbnails and toolbar: `role="listbox"` + `aria-multiselectable` on page grid, `role="option"` + `aria-selected` + `aria-label` on each thumbnail (synced on select/deselect/delete/reorder), descriptive `aria-label` on all four toolbar action buttons, `role="status"` + `aria-live` on status bar (closes #27)

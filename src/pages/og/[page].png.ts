@@ -15,7 +15,7 @@ const pages: Record<string, { title: string; description: string }> = {
   },
   features: {
     title: 'Features',
-    description: 'Merge, split, reorder, rotate, delete, compress, watermark, convert.',
+    description: 'Merge, split, reorder, rotate, and delete.',
   },
   about: {
     title: 'About',
