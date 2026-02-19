@@ -277,11 +277,16 @@ const base = import.meta.env.BASE_URL;
 
   .editor-page.dragging {
     opacity: 0.3;
+    cursor: grabbing;
   }
 
-  .editor-page.drag-over {
-    outline: 2px solid #111;
-    outline-offset: 2px;
+  /* Directional insertion indicator — shows where the dropped page will land */
+  .editor-page.drag-insert-before {
+    box-shadow: -3px 0 0 0 #ff0000;
+  }
+
+  .editor-page.drag-insert-after {
+    box-shadow: 3px 0 0 0 #ff0000;
   }
 
   .canvas-container {
