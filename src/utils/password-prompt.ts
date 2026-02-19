@@ -6,6 +6,9 @@
  */
 export function promptForPassword(fileName: string, isRetry: boolean): Promise<string | null> {
   return new Promise((resolve) => {
+    // Store the element that triggered the modal so focus can be restored on close
+    const triggerElement = document.activeElement as HTMLElement | null;
+
     // Backdrop
     const backdrop = document.createElement('div');
     backdrop.style.cssText =
@@ -15,9 +18,13 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
     const modal = document.createElement('div');
     modal.style.cssText =
       'background:#fff;padding:32px;min-width:320px;max-width:420px;width:90%;font-family:"Bebas Neue",sans-serif;';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'password-modal-title');
 
     // Title
     const title = document.createElement('div');
+    title.id = 'password-modal-title';
     title.textContent = 'PASSWORD REQUIRED';
     title.style.cssText = 'font-size:24px;letter-spacing:0.05em;color:#111;margin-bottom:6px;';
 
@@ -30,6 +37,7 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
     // Error message (only when retrying)
     const errorMsg = document.createElement('div');
     errorMsg.textContent = 'Incorrect password. Try again.';
+    errorMsg.setAttribute('aria-live', 'polite');
     errorMsg.style.cssText =
       'color:#ff0000;font-size:12px;letter-spacing:0.05em;margin-bottom:12px;font-family:monospace;' +
       (isRetry ? '' : 'display:none;');
@@ -77,6 +85,7 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
 
     const cleanup = () => {
       document.body.removeChild(backdrop);
+      triggerElement?.focus();
     };
 
     const submit = () => {
@@ -94,7 +103,27 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
 
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') submit();
-      if (e.key === 'Escape') cancel();
+    });
+
+    // Focus trap: Tab/Shift+Tab cycles within [input, cancelBtn, unlockBtn]
+    // Escape closes the modal from anywhere in the backdrop
+    const focusable = [input, cancelBtn, unlockBtn];
+    backdrop.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        cancel();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+        e.preventDefault();
+        if (e.shiftKey) {
+          const prevIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;
+          focusable[prevIndex].focus();
+        } else {
+          const nextIndex = currentIndex >= focusable.length - 1 ? 0 : currentIndex + 1;
+          focusable[nextIndex].focus();
+        }
+      }
     });
 
     backdrop.addEventListener('click', (e) => {

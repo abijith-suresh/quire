@@ -35,6 +35,14 @@ export class PDFUploaderController {
     this.dropZone.addEventListener('click', () => this.handleClick());
     this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
 
+    // Keyboard activation for drop zone (role="button")
+    this.dropZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.handleClick();
+      }
+    });
+
     // Drag and drop
     this.dropZone.addEventListener('dragover', (e) => this.handleDragOver(e));
     this.dropZone.addEventListener('dragleave', () => this.handleDragLeave());
@@ -117,9 +125,13 @@ export class PDFUploaderController {
 
   private showError(message: string): void {
     this.errorMessage.textContent = message;
-    this.errorMessage.style.display = 'block';
+    this.errorMessage.style.visibility = 'visible';
+    this.errorMessage.style.height = 'auto';
+    this.errorMessage.style.overflow = 'visible';
     setTimeout(() => {
-      this.errorMessage.style.display = 'none';
+      this.errorMessage.style.visibility = 'hidden';
+      this.errorMessage.style.height = '0';
+      this.errorMessage.style.overflow = 'hidden';
     }, 5000);
   }
 }

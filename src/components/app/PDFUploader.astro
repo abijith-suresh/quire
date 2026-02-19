@@ -3,11 +3,18 @@
 ---
 
 <div id="pdf-uploader" class="pdf-uploader" data-astro-cid-pdfuploader>
-  <div id="drop-zone" class="drop-zone" data-dropzone>
+  <div
+    id="drop-zone"
+    class="drop-zone"
+    role="button"
+    tabindex="0"
+    aria-label="Click or drag a PDF file here to upload"
+    data-dropzone
+  >
     <p>Drag and drop a PDF file here, or click to select</p>
     <input type="file" id="file-input" accept="application/pdf" data-fileinput />
   </div>
-  <p id="error-message" class="error-message" data-errormessage></p>
+  <p id="error-message" role="alert" class="error-message" data-errormessage></p>
 </div>
 
 <script>
@@ -65,6 +72,8 @@
   .error-message {
     color: #f44336;
     margin-top: 10px;
-    display: none;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
   }
 </style>

@@ -188,6 +188,13 @@ export class EditorController {
     wrapper.className = 'editor-page';
     wrapper.dataset.index = String(index);
     wrapper.draggable = true;
+    wrapper.setAttribute('tabindex', '0');
+    wrapper.setAttribute('role', 'option');
+    wrapper.setAttribute('aria-selected', String(this.selectedIndices.has(index)));
+    wrapper.setAttribute(
+      'aria-label',
+      page.markedForDeletion ? `Page ${index + 1}, marked for deletion` : `Page ${index + 1}`
+    );
     if (page.markedForDeletion) wrapper.classList.add('marked-deleted');
     if (this.selectedIndices.has(index)) wrapper.classList.add('selected');
 
@@ -212,6 +219,7 @@ export class EditorController {
     rotateBtn.className = 'btn-page-rotate';
     rotateBtn.textContent = '\u21BB';
     rotateBtn.title = 'Rotate 90\u00B0';
+    rotateBtn.setAttribute('aria-label', 'Rotate page 90 degrees');
     rotateBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this.rotatePage(this.getCurrentIndex(wrapper));
@@ -277,6 +285,12 @@ export class EditorController {
       const label = wrapper.querySelector('.page-label') as HTMLSpanElement | null;
       if (label) label.textContent = `Page ${i + 1}`;
       wrapper.classList.toggle('selected', this.selectedIndices.has(i));
+      wrapper.setAttribute('aria-selected', String(this.selectedIndices.has(i)));
+      const isDeleted = wrapper.classList.contains('marked-deleted');
+      wrapper.setAttribute(
+        'aria-label',
+        isDeleted ? `Page ${i + 1}, marked for deletion` : `Page ${i + 1}`
+      );
     }
   }
 
@@ -289,6 +303,7 @@ export class EditorController {
       this.selectedIndices.add(index);
       wrapper.classList.add('selected');
     }
+    wrapper.setAttribute('aria-selected', String(this.selectedIndices.has(index)));
     this.updateToolbarState();
   }
 
@@ -297,6 +312,7 @@ export class EditorController {
       this.selectedIndices.clear();
       this.pagesContainer.querySelectorAll('.editor-page').forEach((el) => {
         el.classList.remove('selected');
+        (el as HTMLElement).setAttribute('aria-selected', 'false');
       });
     } else {
       for (let i = 0; i < this.pages.length; i++) {
@@ -304,6 +320,7 @@ export class EditorController {
       }
       this.pagesContainer.querySelectorAll('.editor-page').forEach((el) => {
         el.classList.add('selected');
+        (el as HTMLElement).setAttribute('aria-selected', 'true');
       });
     }
     this.updateToolbarState();
@@ -324,6 +341,10 @@ export class EditorController {
 
       const wrapper = this.pagesContainer.children[index] as HTMLDivElement;
       wrapper.classList.toggle('marked-deleted', page.markedForDeletion);
+      wrapper.setAttribute(
+        'aria-label',
+        page.markedForDeletion ? `Page ${index + 1}, marked for deletion` : `Page ${index + 1}`
+      );
     }
   }
 
