@@ -34,21 +34,33 @@ pasta/
 │   │   └── shared/
 │   │       ├── Nav.astro               # Shared navigation bar
 │   │       └── Footer.astro            # Shared footer with link groups
+│   ├── content/
+│   │   ├── config.ts                   # Astro 5 Content Collections config (glob loader)
+│   │   ├── blog/
+│   │   │   ├── introducing-watermark-and-convert.md
+│   │   │   ├── the-new-swiss-editor.md
+│   │   │   └── why-we-built-pasta.md
+│   │   └── changelog/
+│   │       └── v1-0.md
 │   ├── controllers/
 │   │   ├── editor-controller.ts        # Editor page UI logic
 │   │   ├── pdf-uploader-controller.ts  # Uploader UI logic
 │   │   └── pdf-viewer-controller.ts    # Viewer UI logic
 │   ├── layouts/
-│   │   └── Layout.astro                # Base layout with ViewTransitions
+│   │   └── Layout.astro                # Base layout with ViewTransitions + SEO meta
 │   ├── pages/
 │   │   ├── index.astro                 # Landing page (Swiss modernist)
 │   │   ├── app.astro                   # PDF editor page
 │   │   ├── features.astro              # Features overview page
 │   │   ├── about.astro                 # About / mission page
-│   │   ├── blog.astro                  # Blog listing page
+│   │   ├── blog/
+│   │   │   ├── index.astro             # Blog listing page (content collection)
+│   │   │   └── [slug].astro            # Individual blog post page
+│   │   ├── og/
+│   │   │   └── [page].png.ts           # Build-time OG image endpoint (satori + resvg)
 │   │   ├── privacy.astro               # Privacy policy page
 │   │   ├── terms.astro                 # Terms of service page
-│   │   ├── changelog.astro             # Changelog page
+│   │   ├── changelog.astro             # Changelog page (content collection)
 │   │   └── faq.astro                   # FAQ page
 │   ├── scripts/
 │   │   └── scroll-animations.ts        # IntersectionObserver for scroll animations
@@ -56,7 +68,7 @@ pasta/
 │   │   ├── pdf-operations-service.ts   # PDF build/extract operations
 │   │   └── pdf-service.ts              # PDF load/render service
 │   ├── styles/
-│   │   └── global.css                  # Tailwind CSS v4 + animation utilities
+│   │   └── global.css                  # Tailwind CSS v4 + typography plugin + animations
 │   ├── types/
 │   │   └── interfaces.ts               # TypeScript interfaces/contracts
 │   └── utils/
