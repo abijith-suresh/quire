@@ -1,33 +1,15 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/shared/Nav.astro';
+import Footer from '../../components/shared/Footer.astro';
+import { contentSlide } from '../../utils/transitions';
+
 const base = import.meta.env.BASE_URL;
 
-const posts = [
-  {
-    date: 'Feb 2026',
-    label: 'Update',
-    title: 'Introducing watermark and convert features',
-    excerpt:
-      'Two new operations join the Pasta toolkit: add custom text watermarks to your documents and convert between PDF and image formats — all client-side.',
-  },
-  {
-    date: 'Jan 2026',
-    label: 'Design',
-    title: 'The new Swiss-inspired editor',
-    excerpt:
-      'We redesigned the entire editor interface around Swiss modernist principles — clean grids, strong typography, and maximum clarity.',
-  },
-  {
-    date: 'Dec 2025',
-    label: 'Launch',
-    title: 'Why we built Pasta',
-    excerpt:
-      "PDF tools shouldn't require uploading your files to a server. Here's the story behind Pasta and why client-side processing matters.",
-  },
-];
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
 ---
 
 <Layout
@@ -54,24 +36,29 @@ const posts = [
       <div class="max-w-7xl mx-auto border-t-2 border-primary">
         {
           posts.map((post, i) => (
-            <div
+            <a
+              href={`${base}blog/${post.id}/`}
               class:list={[
-                'grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-8 border-b animate-on-scroll',
+                'grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-8 border-b animate-on-scroll group',
                 i === posts.length - 1 ? 'border-primary border-b-2' : 'border-border',
                 `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >
               <div>
-                <p class="text-xs text-muted font-light">{post.date}</p>
+                <p class="text-xs text-muted font-light">
+                  {post.data.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </p>
                 <p class="text-[0.65rem] uppercase tracking-[0.15em] text-accent font-medium mt-1">
-                  {post.label}
+                  {post.data.label}
                 </p>
               </div>
               <div>
-                <h2 class="font-display text-2xl text-primary mb-2">{post.title}</h2>
-                <p class="text-body font-light leading-relaxed">{post.excerpt}</p>
+                <h2 class="font-display text-2xl text-primary mb-2 group-hover:text-accent transition-colors duration-150">
+                  {post.data.title}
+                </h2>
+                <p class="text-body font-light leading-relaxed">{post.data.description}</p>
               </div>
-            </div>
+            </a>
           ))
         }
       </div>

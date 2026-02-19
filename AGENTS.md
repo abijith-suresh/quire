@@ -34,21 +34,33 @@ pasta/
 │   │   └── shared/
 │   │       ├── Nav.astro               # Shared navigation bar
 │   │       └── Footer.astro            # Shared footer with link groups
+│   ├── content/
+│   │   ├── config.ts                   # Astro 5 Content Collections config (glob loader)
+│   │   ├── blog/
+│   │   │   ├── introducing-watermark-and-convert.md
+│   │   │   ├── the-new-swiss-editor.md
+│   │   │   └── why-we-built-pasta.md
+│   │   └── changelog/
+│   │       └── v1-0.md
 │   ├── controllers/
 │   │   ├── editor-controller.ts        # Editor page UI logic
 │   │   ├── pdf-uploader-controller.ts  # Uploader UI logic
 │   │   └── pdf-viewer-controller.ts    # Viewer UI logic
 │   ├── layouts/
-│   │   └── Layout.astro                # Base layout with ViewTransitions
+│   │   └── Layout.astro                # Base layout with ViewTransitions + SEO meta
 │   ├── pages/
 │   │   ├── index.astro                 # Landing page (Swiss modernist)
 │   │   ├── app.astro                   # PDF editor page
 │   │   ├── features.astro              # Features overview page
 │   │   ├── about.astro                 # About / mission page
-│   │   ├── blog.astro                  # Blog listing page
+│   │   ├── blog/
+│   │   │   ├── index.astro             # Blog listing page (content collection)
+│   │   │   └── [slug].astro            # Individual blog post page
+│   │   ├── og/
+│   │   │   └── [page].png.ts           # Build-time OG image endpoint (satori + resvg)
 │   │   ├── privacy.astro               # Privacy policy page
 │   │   ├── terms.astro                 # Terms of service page
-│   │   ├── changelog.astro             # Changelog page
+│   │   ├── changelog.astro             # Changelog page (content collection)
 │   │   └── faq.astro                   # FAQ page
 │   ├── scripts/
 │   │   └── scroll-animations.ts        # IntersectionObserver for scroll animations
@@ -56,7 +68,7 @@ pasta/
 │   │   ├── pdf-operations-service.ts   # PDF build/extract operations
 │   │   └── pdf-service.ts              # PDF load/render service
 │   ├── styles/
-│   │   └── global.css                  # Tailwind CSS v4 + animation utilities
+│   │   └── global.css                  # Tailwind CSS v4 + typography plugin + animations
 │   ├── types/
 │   │   └── interfaces.ts               # TypeScript interfaces/contracts
 │   └── utils/
@@ -202,12 +214,15 @@ None required - all operations are client-side.
 
 ## Atomic Commit Guidelines
 
-When adding features or files:
+**Every change — no matter how small — must follow this sequence. Never commit directly to `main`.**
 
-1. Create/modify files
-2. Test the changes work
-3. Commit with descriptive message
-4. Push to GitHub
+1. Pull the latest `main`: `git checkout main && git pull origin main`
+2. Cut a new branch: `git checkout -b type/short-description`
+3. Make one logical change per commit (atomic)
+4. Test the change works before committing
+5. Commit with a descriptive Conventional Commits message
+6. Push the branch: `git push -u origin type/short-description`
+7. Open a PR via `gh pr create`
 
 ## Deployment
 
@@ -245,10 +260,13 @@ type(scope): subject
 
 ### Pull Request Workflow
 
-1. Create branch from main: `git checkout -b feat/your-feature-name`
-2. Make atomic commits with clear messages
-3. Push branch: `git push -u origin feat/your-feature-name`
-4. Create PR: `gh pr create --title "feat: add feature" --body "Description"`
-5. Wait for CI checks (lint, format, build) to pass
-6. Merge using regular merge commit (not squash) with a clean message
-7. Delete branch after merge
+**Always start from a fresh pull of `main`. Never branch off a feature branch or commit directly to `main`.**
+
+1. Pull latest main: `git checkout main && git pull origin main`
+2. Cut a branch: `git checkout -b feat/your-feature-name`
+3. Make atomic commits with clear Conventional Commits messages
+4. Push branch: `git push -u origin feat/your-feature-name`
+5. Open PR: `gh pr create --title "feat: add feature" --body "Description"`
+6. Wait for CI checks (lint, format, build) to pass
+7. Merge using regular merge commit (not squash) with a clean message
+8. Delete branch after merge
