@@ -61,6 +61,7 @@ pasta/
 │   │   └── interfaces.ts               # TypeScript interfaces/contracts
 │   └── utils/
 │       ├── download.ts                 # File download utility
+│       ├── password-prompt.ts          # Modal for unlocking encrypted PDFs
 │       └── transitions.ts              # View Transition animation config
 ├── astro.config.ts
 ├── commitlint.config.ts
@@ -195,6 +196,7 @@ None required - all operations are client-side.
 - [ ] Form filling
 - [ ] Electronic signatures
 - [ ] Batch operations
+- [ ] Full decryption of user-password PDFs on download (currently pdf-lib cannot decrypt content streams; re-render via pdf.js canvas as images would be required)
 - [ ] PDF encryption/decryption
 - [ ] Progress indicators for large files
 

@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Encrypted PDF support: owner-password PDFs (permission-restricted) load silently without a prompt
+- Password modal for user-password PDFs with retry on wrong password and cancel support
+- `PDFPasswordRequiredError` custom error class with `file` reference and `reason` (`needs-password` / `wrong-password`)
+- `loadPDFWithPassword(file, password)` method on `PDFService` for post-prompt retry
+- `getPassword(file)` registry on `PDFService` so thumbnail re-renders reuse the stored password
+- `src/utils/password-prompt.ts` — Swiss modernist modal utility (Enter/Escape/backdrop-click support)
+- AbortSignal passed into `EditorController` to scope `pdf-loaded` listener to the current page lifecycle
+
+### Fixed
+
+- Encrypted PDFs silently failing with a raw `EncryptedPDFError` stack trace instead of user-facing feedback
+- `EncryptedPDFError` detection now checks `error.message` (pdf-lib's compiled class never sets `error.name`)
+- `pdf-operations-service` now passes `ignoreEncryption: true` so owner-password PDFs can be copied into output documents
+- Duplicate `pdf-loaded` event listeners accumulating across SPA page transitions
+
 - Astro View Transitions for SPA-like page navigation (no full page reloads)
 - Scroll-triggered entrance animations with IntersectionObserver
 - Staggered list reveal animations on features, FAQ, changelog, blog, and legal pages
