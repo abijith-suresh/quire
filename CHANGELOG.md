@@ -60,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Race condition in drag-drop reorder: `handleDrop` now awaits `renderAllPages()` so thumbnails always settle in the correct order when pages are dragged rapidly
+- Concurrent render interleaving on large PDFs: `renderAllPages()` now uses a generation counter to abort superseded render cycles, preventing old and new renders from writing to the same container simultaneously
 - Encrypted PDFs failing silently instead of showing user-facing feedback
 - `EncryptedPDFError` detection checking `error.message` (pdf-lib compiled class)
 - `pdf-operations-service` passes `ignoreEncryption: true` for owner-password PDFs

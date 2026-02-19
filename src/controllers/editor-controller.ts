@@ -21,6 +21,7 @@ export class EditorController {
   private addPdfInput: HTMLInputElement;
 
   private dragSourceIndex: number | null = null;
+  private renderGeneration = 0;
   private signal: AbortSignal;
 
   constructor(
@@ -161,13 +162,17 @@ export class EditorController {
   }
 
   private async renderAllPages(): Promise<void> {
+    const gen = ++this.renderGeneration;
     this.pagesContainer.innerHTML = '';
 
     for (let i = 0; i < this.pages.length; i++) {
+      if (gen !== this.renderGeneration) return;
       await this.renderPageThumbnail(i);
     }
 
-    this.updatePageCount();
+    if (gen === this.renderGeneration) {
+      this.updatePageCount();
+    }
   }
 
   private async renderPagesFrom(startIndex: number): Promise<void> {
