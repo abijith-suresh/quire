@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PDFUploaderController, PDFViewerController, EditorController
 - TypeScript interfaces for service layer (IPDFService, IPDFLoader, IPDFRenderer)
 - Custom event system for component communication (`pdf-loaded` event)
-- Single PDF editor page at `/app` with all 8 core operations: merge, split, reorder, rotate, delete, compress, watermark, convert
+- Single PDF editor page at `/app` with 5 core operations: merge, split, reorder, rotate, delete
 - PDFOperationsService for building PDFs using pdf-lib
 - Download utility for triggering file downloads
 - Astro View Transitions for SPA-like page navigation
@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Removed compress, watermark, convert, and undo from features page, FAQ, and changelog — these operations are not yet implemented (closes #17)
 - Race condition in drag-drop reorder: `handleDrop` now awaits `renderAllPages()` so thumbnails always settle in the correct order when pages are dragged rapidly
 - Concurrent render interleaving on large PDFs: `renderAllPages()` now uses a generation counter to abort superseded render cycles, preventing old and new renders from writing to the same container simultaneously
 - Encrypted PDFs failing silently instead of showing user-facing feedback
