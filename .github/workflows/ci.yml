@@ -34,6 +34,4 @@ jobs:
         run: bun run build
 
       - name: Audit dependencies
-        # GHSA-3ppc-4f35-3m26: minimatch ReDoS in eslint/typescript-eslint dev transitive dep (no upstream fix yet)
-        # GHSA-2g4f-4pwh-qvx6: ajv ReDoS in eslint/commitlint dev transitive dep (no upstream fix yet)
-        run: bun audit --ignore=GHSA-3ppc-4f35-3m26 --ignore=GHSA-2g4f-4pwh-qvx6
+        run: bun audit --prod
