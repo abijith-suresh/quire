@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Lazy-load page thumbnails with `IntersectionObserver`: placeholders are created synchronously on PDF load and canvases are painted only as each thumbnail scrolls into view, eliminating the browser freeze on large documents (closes #29)
 - Drag-drop reorder now moves existing DOM nodes instead of re-rendering all page thumbnails, eliminating O(n) canvas redraws on every page move (closes #31)
 - Drag-drop now shows a directional red insertion bar (left or right of target) so users can see exactly where the dropped page will land before releasing
 - Centralized Google Fonts loading in Layout.astro
@@ -61,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix memory leaks when repeatedly loading and replacing PDFs: `clearPasswordRegistry()` and `clearCache()` called on session reset clear the singleton service state accumulated from previous sessions; canvas GPU memory released via `canvas.width = 0` before clearing the page grid (closes #30)
 - Fix WCAG 2.1 accessibility violations in password modal: add `role="dialog"`, `aria-modal`, `aria-labelledby`, focus trap (Tab/Shift+Tab), focus restoration on close, and `aria-live` on error message (closes #26)
 - Add ARIA roles and keyboard navigation to editor thumbnails and toolbar: `role="listbox"` + `aria-multiselectable` on page grid, `role="option"` + `aria-selected` + `aria-label` on each thumbnail (synced on select/deselect/delete/reorder), descriptive `aria-label` on all four toolbar action buttons, `role="status"` + `aria-live` on status bar (closes #27)
 - Make upload drop zone keyboard accessible: `role="button"`, `tabindex="0"`, Enter/Space keyboard activation, `role="alert"` on error message, visibility-based hiding so live region stays in the accessibility tree (closes #28)
