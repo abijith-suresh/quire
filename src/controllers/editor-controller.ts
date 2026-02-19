@@ -54,6 +54,12 @@ export class EditorController {
       throw new Error('Required DOM elements not found for editor');
     }
 
+    // Clear singleton service state from any previous session up-front, before
+    // any PDF loading begins. Doing this here (not in handlePDFLoaded) ensures
+    // the password stored by loadPDFWithPassword is never wiped mid-session.
+    this.pdfService.clearPasswordRegistry();
+    this.operationsService.clearCache();
+
     this.attachEventListeners();
   }
 
@@ -91,11 +97,6 @@ export class EditorController {
 
   private handlePDFLoaded(detail: PDFLoadedEvent): void {
     const { pageCount, file } = detail;
-
-    // Reset singleton service state accumulated from any previous session
-    // (SPA navigation creates a new controller but reuses the same singletons).
-    this.pdfService.clearPasswordRegistry();
-    this.operationsService.clearCache();
 
     this.pages = [];
     this.selectedIndices.clear();
