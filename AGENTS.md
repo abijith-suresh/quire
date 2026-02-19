@@ -214,12 +214,15 @@ None required - all operations are client-side.
 
 ## Atomic Commit Guidelines
 
-When adding features or files:
+**Every change — no matter how small — must follow this sequence. Never commit directly to `main`.**
 
-1. Create/modify files
-2. Test the changes work
-3. Commit with descriptive message
-4. Push to GitHub
+1. Pull the latest `main`: `git checkout main && git pull origin main`
+2. Cut a new branch: `git checkout -b type/short-description`
+3. Make one logical change per commit (atomic)
+4. Test the change works before committing
+5. Commit with a descriptive Conventional Commits message
+6. Push the branch: `git push -u origin type/short-description`
+7. Open a PR via `gh pr create`
 
 ## Deployment
 
@@ -257,10 +260,13 @@ type(scope): subject
 
 ### Pull Request Workflow
 
-1. Create branch from main: `git checkout -b feat/your-feature-name`
-2. Make atomic commits with clear messages
-3. Push branch: `git push -u origin feat/your-feature-name`
-4. Create PR: `gh pr create --title "feat: add feature" --body "Description"`
-5. Wait for CI checks (lint, format, build) to pass
-6. Merge using regular merge commit (not squash) with a clean message
-7. Delete branch after merge
+**Always start from a fresh pull of `main`. Never branch off a feature branch or commit directly to `main`.**
+
+1. Pull latest main: `git checkout main && git pull origin main`
+2. Cut a branch: `git checkout -b feat/your-feature-name`
+3. Make atomic commits with clear Conventional Commits messages
+4. Push branch: `git push -u origin feat/your-feature-name`
+5. Open PR: `gh pr create --title "feat: add feature" --body "Description"`
+6. Wait for CI checks (lint, format, build) to pass
+7. Merge using regular merge commit (not squash) with a clean message
+8. Delete branch after merge
