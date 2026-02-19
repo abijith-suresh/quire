@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Drag-drop reorder now moves existing DOM nodes instead of re-rendering all page thumbnails, eliminating O(n) canvas redraws on every page move (closes #31)
+- Drag-drop now shows a directional red insertion bar (left or right of target) so users can see exactly where the dropped page will land before releasing
 - Centralized Google Fonts loading in Layout.astro
 - Editor page overflow scoped to `body:has([data-page="editor"])`
 - Editor script supports `astro:page-load` for View Transition re-initialization
