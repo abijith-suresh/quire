@@ -214,7 +214,7 @@ export class EditorController {
     rotateBtn.title = 'Rotate 90\u00B0';
     rotateBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.rotatePage(index);
+      this.rotatePage(this.getCurrentIndex(wrapper));
     });
 
     controls.appendChild(label);
@@ -222,14 +222,18 @@ export class EditorController {
     wrapper.appendChild(controls);
 
     // Click to select
-    wrapper.addEventListener('click', () => this.toggleSelection(index));
+    wrapper.addEventListener('click', () => this.toggleSelection(this.getCurrentIndex(wrapper)));
 
     // Drag events
-    wrapper.addEventListener('dragstart', (e) => this.handleDragStart(e, index));
+    wrapper.addEventListener('dragstart', (e) =>
+      this.handleDragStart(e, this.getCurrentIndex(wrapper))
+    );
     wrapper.addEventListener('dragover', (e) => this.handleDragOver(e));
     wrapper.addEventListener('dragenter', (e) => this.handleDragEnter(e, wrapper));
-    wrapper.addEventListener('dragleave', () => wrapper.classList.remove('drag-over'));
-    wrapper.addEventListener('drop', (e) => this.handleDrop(e, index));
+    wrapper.addEventListener('dragleave', () =>
+      wrapper.classList.remove('drag-insert-before', 'drag-insert-after')
+    );
+    wrapper.addEventListener('drop', (e) => this.handleDrop(e, this.getCurrentIndex(wrapper)));
     wrapper.addEventListener('dragend', () => this.handleDragEnd());
 
     this.pagesContainer.appendChild(wrapper);
@@ -258,6 +262,21 @@ export class EditorController {
     const canvasContainer = wrapper.querySelector('.canvas-container') as HTMLDivElement;
     if (canvasContainer) {
       canvasContainer.style.transform = `rotate(${page.rotation}deg)`;
+    }
+  }
+
+  private getCurrentIndex(wrapper: HTMLDivElement): number {
+    return Array.from(this.pagesContainer.children).indexOf(wrapper);
+  }
+
+  private reindexDOM(): void {
+    const children = this.pagesContainer.children;
+    for (let i = 0; i < children.length; i++) {
+      const wrapper = children[i] as HTMLDivElement;
+      wrapper.dataset.index = String(i);
+      const label = wrapper.querySelector('.page-label') as HTMLSpanElement | null;
+      if (label) label.textContent = `Page ${i + 1}`;
+      wrapper.classList.toggle('selected', this.selectedIndices.has(i));
     }
   }
 
@@ -343,46 +362,60 @@ export class EditorController {
 
   private handleDragEnter(event: DragEvent, wrapper: HTMLDivElement): void {
     event.preventDefault();
-    wrapper.classList.add('drag-over');
+    if (this.dragSourceIndex === null) return;
+    const targetIndex = this.getCurrentIndex(wrapper);
+    wrapper.classList.remove('drag-insert-before', 'drag-insert-after');
+    if (this.dragSourceIndex < targetIndex) {
+      wrapper.classList.add('drag-insert-after');
+    } else if (this.dragSourceIndex > targetIndex) {
+      wrapper.classList.add('drag-insert-before');
+    }
   }
 
-  private async handleDrop(event: DragEvent, targetIndex: number): Promise<void> {
+  private handleDrop(event: DragEvent, targetIndex: number): void {
     event.preventDefault();
     if (this.dragSourceIndex === null || this.dragSourceIndex === targetIndex) return;
 
-    const [movedPage] = this.pages.splice(this.dragSourceIndex, 1);
-    this.pages.splice(targetIndex, 0, movedPage);
+    const from = this.dragSourceIndex;
+    const to = targetIndex;
+
+    const [movedPage] = this.pages.splice(from, 1);
+    this.pages.splice(to, 0, movedPage);
 
     // Update selection indices after reorder
     const newSelected = new Set<number>();
     for (const oldIndex of this.selectedIndices) {
       let newIndex = oldIndex;
-      if (oldIndex === this.dragSourceIndex) {
-        newIndex = targetIndex;
-      } else if (
-        this.dragSourceIndex < targetIndex &&
-        oldIndex > this.dragSourceIndex &&
-        oldIndex <= targetIndex
-      ) {
+      if (oldIndex === from) {
+        newIndex = to;
+      } else if (from < to && oldIndex > from && oldIndex <= to) {
         newIndex = oldIndex - 1;
-      } else if (
-        this.dragSourceIndex > targetIndex &&
-        oldIndex >= targetIndex &&
-        oldIndex < this.dragSourceIndex
-      ) {
+      } else if (from > to && oldIndex >= to && oldIndex < from) {
         newIndex = oldIndex + 1;
       }
       newSelected.add(newIndex);
     }
     this.selectedIndices = newSelected;
 
-    await this.renderAllPages();
+    // Move DOM node — no canvas re-render
+    const children = this.pagesContainer.children;
+    const draggedNode = children[from] as HTMLDivElement;
+    const referenceNode = children[to] as HTMLDivElement;
+
+    if (from < to) {
+      referenceNode.after(draggedNode);
+    } else {
+      this.pagesContainer.insertBefore(draggedNode, referenceNode);
+    }
+
+    this.reindexDOM();
+    this.updatePageCount();
     this.dragSourceIndex = null;
   }
 
   private handleDragEnd(): void {
     this.pagesContainer.querySelectorAll('.editor-page').forEach((el) => {
-      el.classList.remove('dragging', 'drag-over');
+      el.classList.remove('dragging', 'drag-insert-before', 'drag-insert-after');
     });
     this.dragSourceIndex = null;
   }
