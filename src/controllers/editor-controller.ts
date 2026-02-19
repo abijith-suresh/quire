@@ -4,7 +4,9 @@ import type {
   IPDFOperationsService,
   PDFLoadedEvent,
 } from '../types/interfaces';
+import { PDFPasswordRequiredError } from '../types/interfaces';
 import { downloadPDF } from '../utils/download';
+import { promptForPassword } from '../utils/password-prompt';
 
 export class EditorController {
   private pages: PageState[] = [];
@@ -19,6 +21,7 @@ export class EditorController {
   private addPdfInput: HTMLInputElement;
 
   private dragSourceIndex: number | null = null;
+  private signal: AbortSignal;
 
   constructor(
     pagesContainerId: string,
@@ -27,10 +30,12 @@ export class EditorController {
     editorSectionId: string,
     addPdfInputId: string,
     pdfService: IPDFService,
-    operationsService: IPDFOperationsService
+    operationsService: IPDFOperationsService,
+    signal: AbortSignal
   ) {
     this.pdfService = pdfService;
     this.operationsService = operationsService;
+    this.signal = signal;
 
     this.pagesContainer = document.getElementById(pagesContainerId) as HTMLDivElement;
     this.toolbar = document.getElementById(toolbarId) as HTMLDivElement;
@@ -52,10 +57,14 @@ export class EditorController {
   }
 
   private attachEventListeners(): void {
-    document.addEventListener('pdf-loaded', (event) => {
-      const customEvent = event as CustomEvent<PDFLoadedEvent>;
-      this.handlePDFLoaded(customEvent.detail);
-    });
+    document.addEventListener(
+      'pdf-loaded',
+      (event) => {
+        const customEvent = event as CustomEvent<PDFLoadedEvent>;
+        this.handlePDFLoaded(customEvent.detail);
+      },
+      { signal: this.signal }
+    );
 
     this.addPdfInput.addEventListener('change', (e) => this.handleAddPDF(e));
 
@@ -104,10 +113,20 @@ export class EditorController {
     const file = target.files?.[0];
     if (!file || file.type !== 'application/pdf') return;
 
+    let loaded = false;
     try {
       await this.pdfService.loadPDF(file);
-      const pageCount = this.pdfService.getPageCount();
+      loaded = true;
+    } catch (error) {
+      if (error instanceof PDFPasswordRequiredError) {
+        loaded = await this.handleEncryptedAdd(file, error.reason === 'wrong-password');
+      } else {
+        console.error('Failed to add PDF:', error);
+      }
+    }
 
+    if (loaded) {
+      const pageCount = this.pdfService.getPageCount();
       const startIndex = this.pages.length;
       for (let i = 1; i <= pageCount; i++) {
         this.pages.push({
@@ -118,14 +137,27 @@ export class EditorController {
           markedForDeletion: false,
         });
       }
-
       await this.renderPagesFrom(startIndex);
       this.updatePageCount();
-    } catch (error) {
-      console.error('Failed to add PDF:', error);
     }
 
     target.value = '';
+  }
+
+  private async handleEncryptedAdd(file: File, isRetry: boolean): Promise<boolean> {
+    const password = await promptForPassword(file.name, isRetry);
+    if (password === null) return false;
+
+    try {
+      await this.pdfService.loadPDFWithPassword(file, password);
+      return true;
+    } catch (error) {
+      if (error instanceof PDFPasswordRequiredError) {
+        return this.handleEncryptedAdd(file, true);
+      }
+      console.error('Failed to load encrypted PDF:', error);
+      return false;
+    }
   }
 
   private async renderAllPages(): Promise<void> {
@@ -199,7 +231,13 @@ export class EditorController {
 
     // Render the thumbnail using a temporary PDFService load
     try {
-      await this.pdfService.loadPDF(page.sourceFile);
+      const storedPassword = this.pdfService.getPassword(page.sourceFile);
+      if (storedPassword !== undefined) {
+        // File was previously unlocked ('' for owner-password, or real password for user-password)
+        await this.pdfService.loadPDFWithPassword(page.sourceFile, storedPassword);
+      } else {
+        await this.pdfService.loadPDF(page.sourceFile);
+      }
       await this.pdfService.renderPage(page.sourcePageNumber, canvas, 0.5);
     } catch (error) {
       console.error(`Failed to render page ${index + 1}:`, error);
