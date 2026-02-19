@@ -2,6 +2,7 @@ import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from '../types/interfaces';
+import { PDFPasswordRequiredError } from '../types/interfaces';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -12,33 +13,83 @@ export class PDFService implements IPDFService {
   private fileName: string = '';
   private arrayBuffer: ArrayBuffer | null = null;
   private currentFile: File | null = null;
+  private passwordRegistry = new Map<File, string>();
 
   async loadPDF(file: File): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+    const buffer = await file.arrayBuffer();
+    this.arrayBuffer = buffer;
+    this.fileName = file.name;
+    this.currentFile = file;
 
-      reader.onload = async () => {
+    const typedArray = new Uint8Array(buffer);
+
+    try {
+      // Attempt normal load — throws EncryptedPDFError for any encrypted PDF
+      this.pdfDocument = await PDFDocument.load(buffer);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('is encrypted')) {
+        // Bypass pdf-lib's encryption guard (no decryption; content streams stay encrypted
+        // for user-password PDFs, but owner-password PDFs often work fine in practice)
+        this.pdfDocument = await PDFDocument.load(buffer, { ignoreEncryption: true });
+
         try {
-          this.arrayBuffer = reader.result as ArrayBuffer;
-          this.fileName = file.name;
-          this.currentFile = file;
-
-          // Load with pdf-lib for manipulation
-          this.pdfDocument = await PDFDocument.load(this.arrayBuffer);
-
-          // Load with pdf.js for rendering
-          const typedArray = new Uint8Array(this.arrayBuffer);
-          this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray }).promise;
-
-          resolve();
-        } catch (error) {
-          reject(error);
+          // pdf.js performs actual decryption — try with an empty user password first
+          this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password: '' })
+            .promise;
+          // Success: this is an owner-password PDF (empty user password)
+          this.passwordRegistry.set(file, '');
+          return;
+        } catch (pdfjsError) {
+          if (pdfjsError instanceof Error && pdfjsError.name === 'PasswordException') {
+            // Truly locked: requires a real user password
+            this.pdfDocument = null;
+            this.pdfjsDocument = null;
+            this.arrayBuffer = null;
+            this.currentFile = null;
+            this.fileName = '';
+            throw new PDFPasswordRequiredError(file, 'needs-password');
+          }
+          throw pdfjsError;
         }
-      };
+      }
+      throw error;
+    }
 
-      reader.onerror = () => reject(reader.error);
-      reader.readAsArrayBuffer(file);
-    });
+    // Unencrypted PDF: load with pdf.js normally
+    this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray }).promise;
+  }
+
+  async loadPDFWithPassword(file: File, password: string): Promise<void> {
+    const buffer = await file.arrayBuffer();
+    this.arrayBuffer = buffer;
+    this.fileName = file.name;
+    this.currentFile = file;
+
+    const typedArray = new Uint8Array(buffer);
+
+    // pdf-lib: bypass encryption guard (no decryption capability in pdf-lib)
+    this.pdfDocument = await PDFDocument.load(buffer, { ignoreEncryption: true });
+
+    try {
+      // pdf.js: actual decryption happens here with the provided password
+      this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password }).promise;
+    } catch (e) {
+      if (e instanceof Error && e.name === 'PasswordException') {
+        this.pdfDocument = null;
+        this.pdfjsDocument = null;
+        this.arrayBuffer = null;
+        this.currentFile = null;
+        this.fileName = '';
+        throw new PDFPasswordRequiredError(file, 'wrong-password');
+      }
+      throw e;
+    }
+
+    this.passwordRegistry.set(file, password);
+  }
+
+  getPassword(file: File): string | undefined {
+    return this.passwordRegistry.get(file);
   }
 
   getPageCount(): number {
@@ -100,6 +151,9 @@ export class PDFService implements IPDFService {
   }
 
   unload(): void {
+    if (this.currentFile) {
+      this.passwordRegistry.delete(this.currentFile);
+    }
     this.pdfDocument = null;
     this.pdfjsDocument = null;
     this.fileName = '';
