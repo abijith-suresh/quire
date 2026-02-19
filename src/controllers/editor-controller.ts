@@ -341,7 +341,7 @@ export class EditorController {
     wrapper.classList.add('drag-over');
   }
 
-  private handleDrop(event: DragEvent, targetIndex: number): void {
+  private async handleDrop(event: DragEvent, targetIndex: number): Promise<void> {
     event.preventDefault();
     if (this.dragSourceIndex === null || this.dragSourceIndex === targetIndex) return;
 
@@ -371,7 +371,7 @@ export class EditorController {
     }
     this.selectedIndices = newSelected;
 
-    this.renderAllPages();
+    await this.renderAllPages();
     this.dragSourceIndex = null;
   }
 
