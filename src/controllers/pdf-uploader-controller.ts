@@ -1,4 +1,6 @@
 import type { IPDFService } from '../types/interfaces';
+import { PDFPasswordRequiredError } from '../types/interfaces';
+import { promptForPassword } from '../utils/password-prompt';
 
 export class PDFUploaderController {
   private dropZone: HTMLDivElement;
@@ -78,11 +80,39 @@ export class PDFUploaderController {
 
     try {
       await this.pdfService.loadPDF(file);
-      this.pdfService.dispatchLoadedEvent();
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      this.showError('Failed to load PDF: ' + errorMsg);
+      if (error instanceof PDFPasswordRequiredError) {
+        await this.handleEncryptedFile(file, error.reason === 'wrong-password');
+        return;
+      }
+      this.showError(
+        'Failed to load PDF: ' + (error instanceof Error ? error.message : String(error))
+      );
+      return;
     }
+
+    this.pdfService.dispatchLoadedEvent();
+  }
+
+  private async handleEncryptedFile(file: File, isRetry: boolean): Promise<void> {
+    const password = await promptForPassword(file.name, isRetry);
+    if (password === null) return; // user cancelled
+
+    try {
+      await this.pdfService.loadPDFWithPassword(file, password);
+    } catch (error) {
+      if (error instanceof PDFPasswordRequiredError) {
+        // Wrong password — show modal again with retry flag
+        await this.handleEncryptedFile(file, true);
+        return;
+      }
+      this.showError(
+        'Failed to load PDF: ' + (error instanceof Error ? error.message : String(error))
+      );
+      return;
+    }
+
+    this.pdfService.dispatchLoadedEvent();
   }
 
   private showError(message: string): void {
