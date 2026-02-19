@@ -35,6 +35,9 @@ const base = import.meta.env.BASE_URL;
       <div class="w-full max-w-lg px-6">
         <div
           id="drop-zone"
+          role="button"
+          tabindex="0"
+          aria-label="Click or drag a PDF file here to upload"
           class="border-2 border-dashed border-[#ddd] hover:border-[#111] transition-colors py-20 text-center cursor-pointer"
         >
           <p class="font-['Bebas_Neue',sans-serif] text-4xl text-[#111] mb-2">Drop PDF here</p>
@@ -43,8 +46,9 @@ const base = import.meta.env.BASE_URL;
         <input type="file" id="file-input" accept="application/pdf" class="hidden" />
         <p
           id="error-message"
+          role="alert"
           class="text-[#ff0000] text-xs mt-3 text-center"
-          style="display: none;"
+          style="visibility: hidden; height: 0; overflow: hidden;"
         >
         </p>
       </div>
@@ -72,6 +76,7 @@ const base = import.meta.env.BASE_URL;
               <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Selection</p>
               <button
                 id="btn-select-all"
+                aria-label="Select all pages"
                 class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
                 >Select All</button
               >
@@ -82,16 +87,19 @@ const base = import.meta.env.BASE_URL;
               <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Actions</p>
               <button
                 id="btn-rotate"
+                aria-label="Rotate selected pages 90 degrees"
                 class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
                 >Rotate</button
               >
               <button
                 id="btn-delete"
+                aria-label="Mark selected pages for deletion"
                 class="w-full text-left text-xs text-[#ff0000] hover:bg-[#fff5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
                 >Delete</button
               >
               <button
                 id="btn-extract"
+                aria-label="Extract selected pages to a new PDF"
                 class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
                 >Extract</button
               >
@@ -115,6 +123,9 @@ const base = import.meta.env.BASE_URL;
           <div class="flex-1 overflow-y-auto p-4">
             <div
               id="pages-grid"
+              role="listbox"
+              aria-multiselectable="true"
+              aria-label="PDF pages"
               class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3"
             >
             </div>
@@ -158,6 +169,9 @@ const base = import.meta.env.BASE_URL;
 
           <!-- Status Bar -->
           <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
             class="h-8 bg-[#f5f5f5] border-t border-[#ddd] flex items-center px-5 text-[11px] text-[#888] flex-shrink-0"
           >
             <span id="status-page-count"></span>
