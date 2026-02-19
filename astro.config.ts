@@ -7,5 +7,7 @@ export default defineConfig({
   base: '/pasta/',
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: { exclude: ['@resvg/resvg-js'] },
+    ssr: { external: ['@resvg/resvg-js'] },
   },
 });
