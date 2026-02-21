@@ -11,28 +11,28 @@
 </div>
 
 <script>
-  import { PDFViewerController } from '../../controllers/pdf-viewer-controller';
-  import { pdfService } from '../../services/pdf-service';
+  import { PDFViewerController } from "../../controllers/pdf-viewer-controller";
+  import { pdfService } from "../../services/pdf-service";
 
   const INITIAL_PAGE_LIMIT = 5;
 
   function initializePDFViewer() {
     try {
       new PDFViewerController(
-        'pdf-viewer',
-        'pdf-name',
-        'page-info',
-        'pages-container',
+        "pdf-viewer",
+        "pdf-name",
+        "page-info",
+        "pages-container",
         pdfService,
         INITIAL_PAGE_LIMIT
       );
     } catch (error) {
-      console.error('Failed to initialize PDF viewer:', error);
+      console.error("Failed to initialize PDF viewer:", error);
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializePDFViewer);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializePDFViewer);
   } else {
     initializePDFViewer();
   }

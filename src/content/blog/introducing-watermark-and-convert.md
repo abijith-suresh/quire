@@ -1,8 +1,8 @@
 ---
-title: 'Introducing watermark and convert features'
+title: "Introducing watermark and convert features"
 date: 2026-02-01
-label: 'Update'
-description: 'Two new operations join the Pasta toolkit: add custom text watermarks to your documents and convert between PDF and image formats — all client-side.'
+label: "Update"
+description: "Two new operations join the Pasta toolkit: add custom text watermarks to your documents and convert between PDF and image formats — all client-side."
 ---
 
 Two new operations are now live in the Pasta editor: **Watermark** and **Convert**.

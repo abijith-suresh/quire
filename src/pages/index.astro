@@ -1,8 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 
 const base = import.meta.env.BASE_URL;
 ---
@@ -46,45 +46,45 @@ const base = import.meta.env.BASE_URL;
           {
             [
               {
-                num: '01',
-                title: 'Merge',
-                text: 'Combine multiple PDF files into one cohesive document.',
+                num: "01",
+                title: "Merge",
+                text: "Combine multiple PDF files into one cohesive document.",
                 accent: false,
               },
               {
-                num: '02',
-                title: 'Split',
-                text: 'Extract specific pages into separate PDF files.',
+                num: "02",
+                title: "Split",
+                text: "Extract specific pages into separate PDF files.",
                 accent: false,
               },
               {
-                num: '03',
-                title: 'Reorder',
-                text: 'Drag and drop pages to arrange them in any order you need.',
+                num: "03",
+                title: "Reorder",
+                text: "Drag and drop pages to arrange them in any order you need.",
                 accent: false,
               },
               {
-                num: '04',
-                title: 'Rotate',
-                text: 'Rotate any page to 90, 180, or 270 degrees.',
+                num: "04",
+                title: "Rotate",
+                text: "Rotate any page to 90, 180, or 270 degrees.",
                 accent: false,
               },
               {
-                num: '05',
-                title: 'Delete',
-                text: 'Remove unwanted pages cleanly from any PDF.',
+                num: "05",
+                title: "Delete",
+                text: "Remove unwanted pages cleanly from any PDF.",
                 accent: true,
               },
             ].map((f, i) => (
               <div
                 class:list={[
-                  'feature-row animate-on-scroll',
-                  { 'feature-row-last': f.accent },
+                  "feature-row animate-on-scroll",
+                  { "feature-row-last": f.accent },
                   `stagger-${Math.min(i + 1, 8)}`,
                 ]}
               >
                 <span class="feature-num">{f.num}</span>
-                <h3 class:list={['feature-name', { 'feature-name-red': f.accent }]}>{f.title}</h3>
+                <h3 class:list={["feature-name", { "feature-name-red": f.accent }]}>{f.title}</h3>
                 <p class="feature-desc">{f.text}</p>
               </div>
             ))
@@ -108,7 +108,7 @@ const base = import.meta.env.BASE_URL;
 
 <style>
   .page {
-    font-family: 'Work Sans', sans-serif;
+    font-family: "Work Sans", sans-serif;
     background-color: #ffffff;
     color: #111;
     min-height: 100vh;
@@ -186,7 +186,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: "Bebas Neue", sans-serif;
     font-size: clamp(5rem, 12vw, 10rem);
     line-height: 0.85;
     color: #111;
@@ -289,7 +289,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   .features-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: "Bebas Neue", sans-serif;
     font-size: clamp(2.5rem, 5vw, 3.75rem);
     color: #111;
   }
@@ -331,7 +331,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   .feature-name {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: "Bebas Neue", sans-serif;
     font-size: 1.75rem;
     color: #111;
   }
@@ -379,7 +379,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   .bottom-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: "Bebas Neue", sans-serif;
     font-size: clamp(3.5rem, 8vw, 6rem);
     color: #111;
     line-height: 0.9;
@@ -395,7 +395,7 @@ const base = import.meta.env.BASE_URL;
     padding: 1.25rem 3rem;
     background-color: #ff0000;
     color: white;
-    font-family: 'Work Sans', sans-serif;
+    font-family: "Work Sans", sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;

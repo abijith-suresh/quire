@@ -1,11 +1,11 @@
-export type EncryptionReason = 'needs-password' | 'wrong-password';
+export type EncryptionReason = "needs-password" | "wrong-password";
 
 export class PDFPasswordRequiredError extends Error {
   readonly file: File;
   readonly reason: EncryptionReason;
-  constructor(file: File, reason: EncryptionReason = 'needs-password') {
+  constructor(file: File, reason: EncryptionReason = "needs-password") {
     super(`PDF requires a password: ${file.name}`);
-    this.name = 'PDFPasswordRequiredError';
+    this.name = "PDFPasswordRequiredError";
     this.file = file;
     this.reason = reason;
   }

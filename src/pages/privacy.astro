@@ -1,46 +1,46 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 const base = import.meta.env.BASE_URL;
 
 const sections = [
   {
-    num: '01',
-    title: 'No Data Collection',
+    num: "01",
+    title: "No Data Collection",
     content:
-      'Pasta does not collect, store, or transmit any personal data. We do not use analytics, tracking pixels, or any form of user monitoring.',
+      "Pasta does not collect, store, or transmit any personal data. We do not use analytics, tracking pixels, or any form of user monitoring.",
   },
   {
-    num: '02',
-    title: 'Client-Side Processing',
+    num: "02",
+    title: "Client-Side Processing",
     content:
-      'All PDF operations run entirely in your browser using JavaScript. Your files are never uploaded to any server. Documents are processed in memory and discarded when you close the tab.',
+      "All PDF operations run entirely in your browser using JavaScript. Your files are never uploaded to any server. Documents are processed in memory and discarded when you close the tab.",
   },
   {
-    num: '03',
-    title: 'No Cookies',
+    num: "03",
+    title: "No Cookies",
     content:
-      'Pasta does not use cookies, local storage, or any other client-side storage mechanism to track users or store personal information.',
+      "Pasta does not use cookies, local storage, or any other client-side storage mechanism to track users or store personal information.",
   },
   {
-    num: '04',
-    title: 'No Third-Party Services',
+    num: "04",
+    title: "No Third-Party Services",
     content:
-      'We do not integrate with any third-party analytics, advertising, or tracking services. The only external resources loaded are Google Fonts for typography.',
+      "We do not integrate with any third-party analytics, advertising, or tracking services. The only external resources loaded are Google Fonts for typography.",
   },
   {
-    num: '05',
-    title: 'Open Source',
+    num: "05",
+    title: "Open Source",
     content:
-      'Pasta is fully open source. You can inspect the complete source code on GitHub to verify these privacy claims for yourself.',
+      "Pasta is fully open source. You can inspect the complete source code on GitHub to verify these privacy claims for yourself.",
   },
   {
-    num: '06',
-    title: 'Contact',
+    num: "06",
+    title: "Contact",
     content:
-      'If you have questions about this privacy policy, you can open an issue on our GitHub repository.',
+      "If you have questions about this privacy policy, you can open an issue on our GitHub repository.",
   },
 ];
 ---
@@ -71,8 +71,8 @@ const sections = [
           sections.map((s, i) => (
             <div
               class:list={[
-                'grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_10rem_1fr] gap-4 py-8 border-b animate-on-scroll',
-                i === sections.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                "grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_10rem_1fr] gap-4 py-8 border-b animate-on-scroll",
+                i === sections.length - 1 ? "border-primary border-b-2" : "border-border",
                 `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >

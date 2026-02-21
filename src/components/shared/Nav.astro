@@ -7,10 +7,10 @@ interface Props {
 const { base, currentPage } = Astro.props;
 
 const links = [
-  { label: 'Features', href: `${base}features`, key: 'features' },
-  { label: 'About', href: `${base}about`, key: 'about' },
-  { label: 'Blog', href: `${base}blog`, key: 'blog' },
-  { label: 'FAQ', href: `${base}faq`, key: 'faq' },
+  { label: "Features", href: `${base}features`, key: "features" },
+  { label: "About", href: `${base}about`, key: "about" },
+  { label: "Blog", href: `${base}blog`, key: "blog" },
+  { label: "FAQ", href: `${base}faq`, key: "faq" },
 ];
 ---
 
@@ -23,8 +23,8 @@ const links = [
           <a
             href={link.href}
             class:list={[
-              'hidden sm:inline text-[0.65rem] font-medium text-body uppercase tracking-[0.15em] no-underline transition-colors hover:text-primary link-slide',
-              currentPage === link.key && 'text-primary border-b-2 border-primary pb-0.5',
+              "hidden sm:inline text-[0.65rem] font-medium text-body uppercase tracking-[0.15em] no-underline transition-colors hover:text-primary link-slide",
+              currentPage === link.key && "text-primary border-b-2 border-primary pb-0.5",
             ]}
           >
             {link.label}

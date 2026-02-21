@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
 const base = import.meta.env.BASE_URL;
 ---
@@ -190,41 +190,41 @@ const base = import.meta.env.BASE_URL;
 </Layout>
 
 <script>
-  import { EditorController } from '../controllers/editor-controller';
-  import { PDFUploaderController } from '../controllers/pdf-uploader-controller';
-  import { pdfService } from '../services/pdf-service';
-  import { pdfOperationsService } from '../services/pdf-operations-service';
+  import { EditorController } from "../controllers/editor-controller";
+  import { PDFUploaderController } from "../controllers/pdf-uploader-controller";
+  import { pdfService } from "../services/pdf-service";
+  import { pdfOperationsService } from "../services/pdf-operations-service";
 
   let abortController = new AbortController();
 
   function initialize() {
-    if (!document.getElementById('pages-grid')) return;
+    if (!document.getElementById("pages-grid")) return;
 
     abortController.abort();
     abortController = new AbortController();
 
     try {
-      new PDFUploaderController('drop-zone', 'file-input', 'error-message', pdfService);
+      new PDFUploaderController("drop-zone", "file-input", "error-message", pdfService);
       new EditorController(
-        'pages-grid',
-        'toolbar',
-        'uploader-section',
-        'editor-section',
-        'add-pdf-input',
+        "pages-grid",
+        "toolbar",
+        "uploader-section",
+        "editor-section",
+        "add-pdf-input",
         pdfService,
         pdfOperationsService,
         abortController.signal
       );
     } catch (error) {
-      console.error('Failed to initialize:', error);
+      console.error("Failed to initialize:", error);
     }
   }
 
-  document.addEventListener('astro:page-load', initialize);
+  document.addEventListener("astro:page-load", initialize);
 </script>
 
 <style is:global>
-  body:has([data-page='editor']) {
+  body:has([data-page="editor"]) {
     margin: 0;
     padding: 0;
     height: 100%;
@@ -232,7 +232,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   /* When controller sets display:block, this ensures it fills the flex column */
-  #editor-section[style*='block'] {
+  #editor-section[style*="block"] {
     flex: 1;
     min-height: 0;
   }
@@ -258,7 +258,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   .editor-page.selected::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -273,7 +273,7 @@ const base = import.meta.env.BASE_URL;
   }
 
   .editor-page.marked-deleted::after {
-    content: 'DELETED';
+    content: "DELETED";
     position: absolute;
     top: 50%;
     left: 50%;

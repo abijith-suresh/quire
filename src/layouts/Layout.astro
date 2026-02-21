@@ -1,6 +1,6 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
-import '../styles/global.css';
+import { ViewTransitions } from "astro:transitions";
+import "../styles/global.css";
 
 interface Props {
   title: string;
@@ -10,9 +10,9 @@ interface Props {
 
 const { title, description, ogImage } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const siteOrigin = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const siteOrigin = Astro.site?.toString().replace(/\/$/, "") ?? "";
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
-const slug = Astro.url.pathname.replace(base, '').replace(/\/$/, '') || 'index';
+const slug = Astro.url.pathname.replace(base, "").replace(/\/$/, "") || "index";
 const resolvedOgImage = ogImage ?? `${siteOrigin}${base}og/${slug}.png`;
 ---
 
@@ -52,7 +52,7 @@ const resolvedOgImage = ogImage ?? `${siteOrigin}${base}og/${slug}.png`;
   <body>
     <slot />
     <script>
-      import '../scripts/scroll-animations';
+      import "../scripts/scroll-animations";
     </script>
   </body>
 </html>

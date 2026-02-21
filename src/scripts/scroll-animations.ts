@@ -1,5 +1,5 @@
 function initScrollAnimations() {
-  const elements = document.querySelectorAll('.animate-on-scroll:not(.is-visible)');
+  const elements = document.querySelectorAll(".animate-on-scroll:not(.is-visible)");
 
   if (elements.length === 0) return;
 
@@ -7,14 +7,14 @@ function initScrollAnimations() {
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
+          entry.target.classList.add("is-visible");
           observer.unobserve(entry.target);
         }
       });
     },
     {
       threshold: 0.1,
-      rootMargin: '0px 0px -40px 0px',
+      rootMargin: "0px 0px -40px 0px",
     }
   );
 
@@ -25,4 +25,4 @@ function initScrollAnimations() {
 initScrollAnimations();
 
 // Run on View Transition page loads
-document.addEventListener('astro:page-load', initScrollAnimations);
+document.addEventListener("astro:page-load", initScrollAnimations);

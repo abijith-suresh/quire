@@ -1,13 +1,13 @@
 ---
-import { getCollection } from 'astro:content';
-import Layout from '../../layouts/Layout.astro';
-import Nav from '../../components/shared/Nav.astro';
-import Footer from '../../components/shared/Footer.astro';
-import { contentSlide } from '../../utils/transitions';
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import Nav from "../../components/shared/Nav.astro";
+import Footer from "../../components/shared/Footer.astro";
+import { contentSlide } from "../../utils/transitions";
 
 const base = import.meta.env.BASE_URL;
 
-const posts = (await getCollection('blog')).sort(
+const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 ---
@@ -39,14 +39,14 @@ const posts = (await getCollection('blog')).sort(
             <a
               href={`${base}blog/${post.id}/`}
               class:list={[
-                'grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-8 border-b animate-on-scroll group',
-                i === posts.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                "grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-8 border-b animate-on-scroll group",
+                i === posts.length - 1 ? "border-primary border-b-2" : "border-border",
                 `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >
               <div>
                 <p class="text-xs text-muted font-light">
-                  {post.data.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  {post.data.date.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                 </p>
                 <p class="text-[0.65rem] uppercase tracking-[0.15em] text-accent font-medium mt-1">
                   {post.data.label}
