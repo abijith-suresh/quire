@@ -1,6 +1,6 @@
-import type { IPDFService } from '../types/interfaces';
-import { PDFPasswordRequiredError } from '../types/interfaces';
-import { promptForPassword } from '../utils/password-prompt';
+import type { IPDFService } from "../types/interfaces";
+import { PDFPasswordRequiredError } from "../types/interfaces";
+import { promptForPassword } from "../utils/password-prompt";
 
 export class PDFUploaderController {
   private dropZone: HTMLDivElement;
@@ -19,7 +19,7 @@ export class PDFUploaderController {
     const errorMessage = document.getElementById(errorMessageId);
 
     if (!dropZone || !fileInput || !errorMessage) {
-      throw new Error('Required DOM elements not found');
+      throw new Error("Required DOM elements not found");
     }
 
     this.dropZone = dropZone as HTMLDivElement;
@@ -32,21 +32,21 @@ export class PDFUploaderController {
 
   private attachEventListeners(): void {
     // Click to upload
-    this.dropZone.addEventListener('click', () => this.handleClick());
-    this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+    this.dropZone.addEventListener("click", () => this.handleClick());
+    this.fileInput.addEventListener("change", (e) => this.handleFileSelect(e));
 
     // Keyboard activation for drop zone (role="button")
-    this.dropZone.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+    this.dropZone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         this.handleClick();
       }
     });
 
     // Drag and drop
-    this.dropZone.addEventListener('dragover', (e) => this.handleDragOver(e));
-    this.dropZone.addEventListener('dragleave', () => this.handleDragLeave());
-    this.dropZone.addEventListener('drop', (e) => this.handleDrop(e));
+    this.dropZone.addEventListener("dragover", (e) => this.handleDragOver(e));
+    this.dropZone.addEventListener("dragleave", () => this.handleDragLeave());
+    this.dropZone.addEventListener("drop", (e) => this.handleDrop(e));
   }
 
   private handleClick(): void {
@@ -63,16 +63,16 @@ export class PDFUploaderController {
 
   private handleDragOver(event: DragEvent): void {
     event.preventDefault();
-    this.dropZone.classList.add('drag-over');
+    this.dropZone.classList.add("drag-over");
   }
 
   private handleDragLeave(): void {
-    this.dropZone.classList.remove('drag-over');
+    this.dropZone.classList.remove("drag-over");
   }
 
   private handleDrop(event: DragEvent): void {
     event.preventDefault();
-    this.dropZone.classList.remove('drag-over');
+    this.dropZone.classList.remove("drag-over");
 
     const file = event.dataTransfer?.files[0];
     if (file) {
@@ -81,8 +81,8 @@ export class PDFUploaderController {
   }
 
   private async processFile(file: File): Promise<void> {
-    if (file.type !== 'application/pdf') {
-      this.showError('Please upload a valid PDF file');
+    if (file.type !== "application/pdf") {
+      this.showError("Please upload a valid PDF file");
       return;
     }
 
@@ -90,11 +90,11 @@ export class PDFUploaderController {
       await this.pdfService.loadPDF(file);
     } catch (error) {
       if (error instanceof PDFPasswordRequiredError) {
-        await this.handleEncryptedFile(file, error.reason === 'wrong-password');
+        await this.handleEncryptedFile(file, error.reason === "wrong-password");
         return;
       }
       this.showError(
-        'Failed to load PDF: ' + (error instanceof Error ? error.message : String(error))
+        "Failed to load PDF: " + (error instanceof Error ? error.message : String(error))
       );
       return;
     }
@@ -115,7 +115,7 @@ export class PDFUploaderController {
         return;
       }
       this.showError(
-        'Failed to load PDF: ' + (error instanceof Error ? error.message : String(error))
+        "Failed to load PDF: " + (error instanceof Error ? error.message : String(error))
       );
       return;
     }
@@ -125,13 +125,13 @@ export class PDFUploaderController {
 
   private showError(message: string): void {
     this.errorMessage.textContent = message;
-    this.errorMessage.style.visibility = 'visible';
-    this.errorMessage.style.height = 'auto';
-    this.errorMessage.style.overflow = 'visible';
+    this.errorMessage.style.visibility = "visible";
+    this.errorMessage.style.height = "auto";
+    this.errorMessage.style.overflow = "visible";
     setTimeout(() => {
-      this.errorMessage.style.visibility = 'hidden';
-      this.errorMessage.style.height = '0';
-      this.errorMessage.style.overflow = 'hidden';
+      this.errorMessage.style.visibility = "hidden";
+      this.errorMessage.style.height = "0";
+      this.errorMessage.style.overflow = "hidden";
     }, 5000);
   }
 }

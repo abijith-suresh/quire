@@ -18,19 +18,19 @@
 </div>
 
 <script>
-  import { PDFUploaderController } from '../../controllers/pdf-uploader-controller';
-  import { pdfService } from '../../services/pdf-service';
+  import { PDFUploaderController } from "../../controllers/pdf-uploader-controller";
+  import { pdfService } from "../../services/pdf-service";
 
   function initializePDFUploader() {
     try {
-      new PDFUploaderController('drop-zone', 'file-input', 'error-message', pdfService);
+      new PDFUploaderController("drop-zone", "file-input", "error-message", pdfService);
     } catch (error) {
-      console.error('Failed to initialize PDF uploader:', error);
+      console.error("Failed to initialize PDF uploader:", error);
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializePDFUploader);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializePDFUploader);
   } else {
     initializePDFUploader();
   }
@@ -65,7 +65,7 @@
     color: #666;
   }
 
-  input[type='file'] {
+  input[type="file"] {
     display: none;
   }
 

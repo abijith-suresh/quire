@@ -1,4 +1,4 @@
-import type { IPDFService, PDFLoadedEvent } from '../types/interfaces';
+import type { IPDFService, PDFLoadedEvent } from "../types/interfaces";
 
 export class PDFViewerController {
   private viewer: HTMLDivElement;
@@ -22,7 +22,7 @@ export class PDFViewerController {
     const pagesContainer = document.getElementById(pagesContainerId);
 
     if (!viewer || !pdfName || !pageInfo || !pagesContainer) {
-      throw new Error('Required DOM elements not found');
+      throw new Error("Required DOM elements not found");
     }
 
     this.viewer = viewer as HTMLDivElement;
@@ -36,7 +36,7 @@ export class PDFViewerController {
   }
 
   private attachEventListeners(): void {
-    document.addEventListener('pdf-loaded', (event) => {
+    document.addEventListener("pdf-loaded", (event) => {
       const customEvent = event as CustomEvent<PDFLoadedEvent>;
       this.handlePDFLoaded(customEvent.detail);
     });
@@ -54,7 +54,7 @@ export class PDFViewerController {
   }
 
   private showViewer(fileName: string): void {
-    this.viewer.style.display = 'block';
+    this.viewer.style.display = "block";
     this.pdfName.textContent = fileName;
   }
 
@@ -64,7 +64,7 @@ export class PDFViewerController {
   }
 
   private clearPages(): void {
-    this.pagesContainer.innerHTML = '';
+    this.pagesContainer.innerHTML = "";
   }
 
   private async renderPages(pagesToRender: number): Promise<void> {
@@ -91,20 +91,20 @@ export class PDFViewerController {
   }
 
   private createPageWrapper(): HTMLDivElement {
-    const pageWrapper = document.createElement('div');
-    pageWrapper.className = 'page-wrapper';
+    const pageWrapper = document.createElement("div");
+    pageWrapper.className = "page-wrapper";
     return pageWrapper;
   }
 
   private createCanvas(): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
-    canvas.className = 'page-canvas';
+    const canvas = document.createElement("canvas");
+    canvas.className = "page-canvas";
     return canvas;
   }
 
   private createPageLabel(pageNumber: number): HTMLSpanElement {
-    const pageLabel = document.createElement('span');
-    pageLabel.className = 'page-label';
+    const pageLabel = document.createElement("span");
+    pageLabel.className = "page-label";
     pageLabel.textContent = `Page ${pageNumber}`;
     return pageLabel;
   }

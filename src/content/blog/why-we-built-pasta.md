@@ -1,7 +1,7 @@
 ---
-title: 'Why we built Pasta'
+title: "Why we built Pasta"
 date: 2025-12-01
-label: 'Launch'
+label: "Launch"
 description: "PDF tools shouldn't require uploading your files to a server. Here's the story behind Pasta and why client-side processing matters."
 ---
 

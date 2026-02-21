@@ -1,48 +1,48 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 const base = import.meta.env.BASE_URL;
 
 const features = [
   {
-    num: '01',
-    title: 'Merge',
-    desc: 'Combine multiple PDF files into a single document.',
+    num: "01",
+    title: "Merge",
+    desc: "Combine multiple PDF files into a single document.",
     details: [
-      'Drag-and-drop file ordering',
-      'Unlimited file count',
-      'Preserves formatting and links',
+      "Drag-and-drop file ordering",
+      "Unlimited file count",
+      "Preserves formatting and links",
     ],
   },
   {
-    num: '02',
-    title: 'Split',
-    desc: 'Extract specific pages or split into separate files.',
-    details: ['Page range selection', 'Single page extraction', 'Batch splitting'],
+    num: "02",
+    title: "Split",
+    desc: "Extract specific pages or split into separate files.",
+    details: ["Page range selection", "Single page extraction", "Batch splitting"],
   },
   {
-    num: '03',
-    title: 'Reorder',
-    desc: 'Drag and drop pages to arrange them in any order.',
-    details: ['Visual page thumbnails', 'Drag-and-drop interface', 'Instant preview'],
+    num: "03",
+    title: "Reorder",
+    desc: "Drag and drop pages to arrange them in any order.",
+    details: ["Visual page thumbnails", "Drag-and-drop interface", "Instant preview"],
   },
   {
-    num: '04',
-    title: 'Rotate',
-    desc: 'Rotate any page to the correct orientation.',
+    num: "04",
+    title: "Rotate",
+    desc: "Rotate any page to the correct orientation.",
     details: [
-      '90, 180, or 270 degree rotation',
-      'Per-page or bulk rotation',
-      'Visual confirmation',
+      "90, 180, or 270 degree rotation",
+      "Per-page or bulk rotation",
+      "Visual confirmation",
     ],
   },
   {
-    num: '05',
-    title: 'Delete',
-    desc: 'Remove unwanted pages cleanly from any PDF.',
-    details: ['Click to select pages', 'Bulk deletion'],
+    num: "05",
+    title: "Delete",
+    desc: "Remove unwanted pages cleanly from any PDF.",
+    details: ["Click to select pages", "Bulk deletion"],
   },
 ];
 ---
@@ -74,16 +74,16 @@ const features = [
             features.map((f, i) => (
               <div
                 class:list={[
-                  'grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_8rem_1fr] gap-4 py-8 border-b animate-on-scroll',
-                  i === features.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                  "grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_8rem_1fr] gap-4 py-8 border-b animate-on-scroll",
+                  i === features.length - 1 ? "border-primary border-b-2" : "border-border",
                   `stagger-${Math.min(i + 1, 8)}`,
                 ]}
               >
                 <span class="text-xs text-muted">{f.num}</span>
                 <h3
                   class:list={[
-                    'font-display text-2xl text-primary',
-                    i === features.length - 1 && 'text-accent',
+                    "font-display text-2xl text-primary",
+                    i === features.length - 1 && "text-accent",
                   ]}
                 >
                   {f.title}

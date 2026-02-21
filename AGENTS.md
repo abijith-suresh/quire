@@ -88,13 +88,37 @@ pasta/
 bun install
 
 # Start development server
-bun dev
+bun run dev
 
 # Build for production
 bun run build
 
 # Preview production build
 bun run preview
+
+# TypeScript type checking
+bun run type-check
+
+# Lint code
+bun run lint
+
+# Lint and auto-fix
+bun run lint:fix
+
+# Format all files
+bun run format
+
+# Check formatting
+bun run format:check
+
+# Run tests
+bun run test
+
+# Run tests in watch mode
+bun run test:watch
+
+# Run tests with UI
+bun run test:ui
 ```
 
 ## Available Operations
@@ -246,47 +270,64 @@ None required - all operations are client-side.
 
 Automatically deploys to GitHub Pages on every push to `main` branch via GitHub Actions workflow.
 
+## DevContainer
+
+The repository includes a DevContainer configuration for a consistent, fully containerized development environment.
+
+**Includes:** Node.js 24, Bun, GitHub CLI, and VSCode extensions (Astro, ESLint, Prettier, Tailwind CSS, EditorConfig, Vitest, Path IntelliSense).
+
+**Setup (requires Docker Desktop or Podman):**
+
+1. Install the VSCode **Dev Containers** extension (`ms-vscode-remote.remote-containers`)
+2. Open the repository in VSCode
+3. Press `F1` → **"Dev Containers: Reopen in Container"**
+
+The container automatically runs `bun install` on creation and forwards port 4321 for the Astro dev server.
+
 ## Git Workflow
 
-### Branch Naming Conventions
+### Branch Naming
 
-All branches should follow the `type/description` format:
-
-| Prefix      | Purpose               | Example                   |
-| ----------- | --------------------- | ------------------------- |
-| `feat/`     | New features          | `feat/add-search-modal`   |
-| `fix/`      | Bug fixes             | `fix/header-alignment`    |
-| `docs/`     | Documentation changes | `docs/update-readme`      |
-| `refactor/` | Code refactoring      | `refactor/simplify-utils` |
-| `chore/`    | Maintenance tasks     | `chore/update-deps`       |
+- Format: `type/description` (kebab-case)
+- Examples: `feat/add-og-images`, `fix/broken-nav`, `chore/update-deps`
+- Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`
 
 ### Commit Message Format
 
-Use Conventional Commits format:
+Follows [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 type(scope): subject
 ```
 
-**Types:** `feat`, `fix`, `docs`, `refactor`, `chore`, `test`
+- **type**: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`
+- **scope**: optional, e.g., `feat(nav): add mobile menu`
+- **subject**: present tense, ≤50 chars, no period at end
 
-**Guidelines:**
+| Type       | When to use                     |
+| ---------- | ------------------------------- |
+| `feat`     | New feature                     |
+| `fix`      | Bug fix                         |
+| `docs`     | Documentation only              |
+| `refactor` | Code change without feature/fix |
+| `chore`    | Build, deps, config             |
+| `test`     | Tests only                      |
 
-- Use present tense ("add" not "added")
-- Keep subject under 50 characters
-- Reference issue numbers: `fix: resolve header bug (#42)`
-
-### Pull Request Workflow
-
-**Always start from a fresh pull of `main`. Never branch off a feature branch or commit directly to `main`.**
+### PR Workflow
 
 1. Pull latest main: `git checkout main && git pull origin main`
-2. Cut a branch: `git checkout -b feat/your-feature-name`
-3. Make atomic commits with clear Conventional Commits messages
-4. Push branch: `git push -u origin feat/your-feature-name`
-5. Open PR: `gh pr create --title "feat: add feature" --body "Description"`
-6. Wait for CI checks (lint, format, build) to pass
-7. Merge using regular merge commit (not squash) with a clean message
+2. Cut branch: `git checkout -b type/description`
+3. Make atomic commits (one logical change per commit)
+4. Push branch: `git push -u origin type/description`
+5. Open PR: `gh pr create --title "type: description" --body "..."`
+6. Wait for CI to pass
+7. **Merge using squash merge** (keeps main history linear)
 8. Delete branch after merge
+9. Update `CHANGELOG.md` with a summary of changes
 
-**Every PR must update `CHANGELOG.md` as needed.** Add a `### Fixed` / `### Added` / `### Changed` entry to the `[Unreleased]` section of `CHANGELOG.md` for each change. Update `CLAUDE.md` if any workflow, convention, or project structure has changed.
+### Key Rules
+
+- Never commit directly to `main`
+- Pre-commit hook runs lint-staged automatically
+- `commit-msg` hook validates commit format via commitlint
+- Keep commits atomic — one logical change, one commit

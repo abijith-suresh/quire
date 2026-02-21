@@ -1,12 +1,12 @@
 ---
-import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 const base = import.meta.env.BASE_URL;
 
-const versions = (await getCollection('changelog')).reverse();
+const versions = (await getCollection("changelog")).reverse();
 ---
 
 <Layout
@@ -35,8 +35,8 @@ const versions = (await getCollection('changelog')).reverse();
           versions.map((v, i) => (
             <div
               class:list={[
-                'grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-4 md:gap-8 py-8 border-b animate-on-scroll',
-                i === versions.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                "grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-4 md:gap-8 py-8 border-b animate-on-scroll",
+                i === versions.length - 1 ? "border-primary border-b-2" : "border-border",
                 `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >

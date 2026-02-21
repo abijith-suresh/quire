@@ -1,5 +1,5 @@
-import { PDFDocument, degrees } from 'pdf-lib';
-import type { PageState, PDFOperationResult, IPDFOperationsService } from '../types/interfaces';
+import { PDFDocument, degrees } from "pdf-lib";
+import type { PageState, PDFOperationResult, IPDFOperationsService } from "../types/interfaces";
 
 export class PDFOperationsService implements IPDFOperationsService {
   // Class-level cache: avoids re-reading the same File on multiple build/extract
@@ -21,7 +21,7 @@ export class PDFOperationsService implements IPDFOperationsService {
   async buildPDF(pages: PageState[]): Promise<PDFOperationResult> {
     const activePages = pages.filter((p) => !p.markedForDeletion);
     if (activePages.length === 0) {
-      throw new Error('No pages to include in the PDF');
+      throw new Error("No pages to include in the PDF");
     }
 
     const outputDoc = await PDFDocument.create();
@@ -42,14 +42,14 @@ export class PDFOperationsService implements IPDFOperationsService {
     const data = await outputDoc.save();
     return {
       data: new Uint8Array(data),
-      suggestedFileName: 'pasta-output.pdf',
+      suggestedFileName: "pasta-output.pdf",
     };
   }
 
   async buildPDFFromSubset(pages: PageState[], indices: number[]): Promise<PDFOperationResult> {
     const subset = indices.map((i) => pages[i]).filter(Boolean);
     if (subset.length === 0) {
-      throw new Error('No pages selected for extraction');
+      throw new Error("No pages selected for extraction");
     }
 
     const outputDoc = await PDFDocument.create();
@@ -70,7 +70,7 @@ export class PDFOperationsService implements IPDFOperationsService {
     const data = await outputDoc.save();
     return {
       data: new Uint8Array(data),
-      suggestedFileName: 'pasta-extract.pdf',
+      suggestedFileName: "pasta-extract.pdf",
     };
   }
 }

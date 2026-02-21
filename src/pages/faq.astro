@@ -1,50 +1,50 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 const base = import.meta.env.BASE_URL;
 
 const questions = [
   {
-    num: '01',
-    q: 'How does client-side processing work?',
+    num: "01",
+    q: "How does client-side processing work?",
     a: "Pasta uses pdf-lib and pdf.js — JavaScript libraries that run entirely in your browser. When you upload a PDF, it's read into your browser's memory and processed locally. No data is sent to any server.",
   },
   {
-    num: '02',
-    q: 'Is my data private?',
+    num: "02",
+    q: "Is my data private?",
     a: "Yes. Your files never leave your device. There are no uploads, no server-side processing, and no data collection of any kind. You can verify this by inspecting the network tab in your browser's developer tools.",
   },
   {
-    num: '03',
-    q: 'Which browsers are supported?',
-    a: 'Pasta works in all modern browsers including Chrome, Firefox, Safari, and Edge. We recommend using the latest version for the best experience.',
+    num: "03",
+    q: "Which browsers are supported?",
+    a: "Pasta works in all modern browsers including Chrome, Firefox, Safari, and Edge. We recommend using the latest version for the best experience.",
   },
   {
-    num: '04',
-    q: 'Is there a file size limit?',
+    num: "04",
+    q: "Is there a file size limit?",
     a: "There is no hard file size limit. However, since processing happens in your browser, very large files (100+ MB) may be slower depending on your device's available memory and processing power.",
   },
   {
-    num: '05',
-    q: 'Is Pasta free to use?',
-    a: 'Yes. Pasta is completely free and open source. There are no premium tiers, no subscriptions, and no hidden costs.',
+    num: "05",
+    q: "Is Pasta free to use?",
+    a: "Yes. Pasta is completely free and open source. There are no premium tiers, no subscriptions, and no hidden costs.",
   },
   {
-    num: '06',
-    q: 'Can I contribute to the project?',
-    a: 'Absolutely. Pasta is open source and hosted on GitHub. You can report issues, suggest features, or submit pull requests.',
+    num: "06",
+    q: "Can I contribute to the project?",
+    a: "Absolutely. Pasta is open source and hosted on GitHub. You can report issues, suggest features, or submit pull requests.",
   },
   {
-    num: '07',
-    q: 'Does Pasta work offline?',
-    a: 'Once the page is loaded, most operations work without an internet connection. However, you need to be online to initially load the application.',
+    num: "07",
+    q: "Does Pasta work offline?",
+    a: "Once the page is loaded, most operations work without an internet connection. However, you need to be online to initially load the application.",
   },
   {
-    num: '08',
-    q: 'What PDF operations are supported?',
-    a: 'Pasta supports merge, split, reorder, rotate, and delete operations. All operations are performed client-side.',
+    num: "08",
+    q: "What PDF operations are supported?",
+    a: "Pasta supports merge, split, reorder, rotate, and delete operations. All operations are performed client-side.",
   },
 ];
 ---
@@ -75,8 +75,8 @@ const questions = [
           questions.map((item, i) => (
             <div
               class:list={[
-                'grid grid-cols-[3rem_1fr] gap-4 py-8 border-b animate-on-scroll',
-                i === questions.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                "grid grid-cols-[3rem_1fr] gap-4 py-8 border-b animate-on-scroll",
+                i === questions.length - 1 ? "border-primary border-b-2" : "border-border",
                 `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >

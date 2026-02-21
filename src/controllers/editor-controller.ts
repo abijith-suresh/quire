@@ -3,10 +3,10 @@ import type {
   IPDFService,
   IPDFOperationsService,
   PDFLoadedEvent,
-} from '../types/interfaces';
-import { PDFPasswordRequiredError } from '../types/interfaces';
-import { downloadPDF } from '../utils/download';
-import { promptForPassword } from '../utils/password-prompt';
+} from "../types/interfaces";
+import { PDFPasswordRequiredError } from "../types/interfaces";
+import { downloadPDF } from "../utils/download";
+import { promptForPassword } from "../utils/password-prompt";
 
 export class EditorController {
   private pages: PageState[] = [];
@@ -51,7 +51,7 @@ export class EditorController {
       !this.editorSection ||
       !this.addPdfInput
     ) {
-      throw new Error('Required DOM elements not found for editor');
+      throw new Error("Required DOM elements not found for editor");
     }
 
     // Clear singleton service state from any previous session up-front, before
@@ -65,7 +65,7 @@ export class EditorController {
 
   private attachEventListeners(): void {
     document.addEventListener(
-      'pdf-loaded',
+      "pdf-loaded",
       (event) => {
         const customEvent = event as CustomEvent<PDFLoadedEvent>;
         this.handlePDFLoaded(customEvent.detail);
@@ -73,24 +73,24 @@ export class EditorController {
       { signal: this.signal }
     );
 
-    this.addPdfInput.addEventListener('change', (e) => this.handleAddPDF(e));
+    this.addPdfInput.addEventListener("change", (e) => this.handleAddPDF(e));
 
-    document.getElementById('btn-add-pdf')?.addEventListener('click', () => {
+    document.getElementById("btn-add-pdf")?.addEventListener("click", () => {
       this.addPdfInput.click();
     });
-    document.getElementById('btn-rotate')?.addEventListener('click', () => {
+    document.getElementById("btn-rotate")?.addEventListener("click", () => {
       this.rotateSelected();
     });
-    document.getElementById('btn-delete')?.addEventListener('click', () => {
+    document.getElementById("btn-delete")?.addEventListener("click", () => {
       this.toggleDeleteSelected();
     });
-    document.getElementById('btn-extract')?.addEventListener('click', () => {
+    document.getElementById("btn-extract")?.addEventListener("click", () => {
       this.extractSelected();
     });
-    document.getElementById('btn-download')?.addEventListener('click', () => {
+    document.getElementById("btn-download")?.addEventListener("click", () => {
       this.downloadResult();
     });
-    document.getElementById('btn-select-all')?.addEventListener('click', () => {
+    document.getElementById("btn-select-all")?.addEventListener("click", () => {
       this.toggleSelectAll();
     });
   }
@@ -111,8 +111,8 @@ export class EditorController {
       });
     }
 
-    this.uploaderSection.style.display = 'none';
-    this.editorSection.style.display = 'block';
+    this.uploaderSection.style.display = "none";
+    this.editorSection.style.display = "block";
 
     this.renderAllPages();
   }
@@ -120,7 +120,7 @@ export class EditorController {
   private async handleAddPDF(event: Event): Promise<void> {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    if (!file || file.type !== 'application/pdf') return;
+    if (!file || file.type !== "application/pdf") return;
 
     let loaded = false;
     try {
@@ -128,9 +128,9 @@ export class EditorController {
       loaded = true;
     } catch (error) {
       if (error instanceof PDFPasswordRequiredError) {
-        loaded = await this.handleEncryptedAdd(file, error.reason === 'wrong-password');
+        loaded = await this.handleEncryptedAdd(file, error.reason === "wrong-password");
       } else {
-        console.error('Failed to add PDF:', error);
+        console.error("Failed to add PDF:", error);
       }
     }
 
@@ -150,7 +150,7 @@ export class EditorController {
       this.updatePageCount();
     }
 
-    target.value = '';
+    target.value = "";
   }
 
   private async handleEncryptedAdd(file: File, isRetry: boolean): Promise<boolean> {
@@ -164,7 +164,7 @@ export class EditorController {
       if (error instanceof PDFPasswordRequiredError) {
         return this.handleEncryptedAdd(file, true);
       }
-      console.error('Failed to load encrypted PDF:', error);
+      console.error("Failed to load encrypted PDF:", error);
       return false;
     }
   }
@@ -177,10 +177,10 @@ export class EditorController {
 
     // Release GPU backing store for any existing canvases before removing them
     // from the DOM — prevents texture memory from lingering after a session reset.
-    for (const canvas of this.pagesContainer.querySelectorAll('canvas')) {
+    for (const canvas of this.pagesContainer.querySelectorAll("canvas")) {
       (canvas as HTMLCanvasElement).width = 0;
     }
-    this.pagesContainer.innerHTML = '';
+    this.pagesContainer.innerHTML = "";
     this.setupThumbnailObserver();
 
     for (let i = 0; i < this.pages.length; i++) {
@@ -210,7 +210,7 @@ export class EditorController {
           if (!entry.isIntersecting) continue;
           const wrapper = entry.target as HTMLDivElement;
           observer.unobserve(wrapper);
-          const index = parseInt(wrapper.dataset.index ?? '0', 10);
+          const index = parseInt(wrapper.dataset.index ?? "0", 10);
           const page = this.pages[index];
           if (page) {
             this.renderPageCanvas(wrapper, page);
@@ -219,7 +219,7 @@ export class EditorController {
       },
       {
         root: this.pagesContainer.parentElement,
-        rootMargin: '200px',
+        rootMargin: "200px",
         threshold: 0,
       }
     );
@@ -231,38 +231,38 @@ export class EditorController {
   private createPagePlaceholder(index: number): HTMLDivElement {
     const page = this.pages[index];
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'editor-page';
+    const wrapper = document.createElement("div");
+    wrapper.className = "editor-page";
     wrapper.dataset.index = String(index);
     wrapper.draggable = true;
-    wrapper.setAttribute('tabindex', '0');
-    wrapper.setAttribute('role', 'option');
-    wrapper.setAttribute('aria-selected', String(this.selectedIndices.has(index)));
+    wrapper.setAttribute("tabindex", "0");
+    wrapper.setAttribute("role", "option");
+    wrapper.setAttribute("aria-selected", String(this.selectedIndices.has(index)));
     wrapper.setAttribute(
-      'aria-label',
+      "aria-label",
       page.markedForDeletion ? `Page ${index + 1}, marked for deletion` : `Page ${index + 1}`
     );
-    if (page.markedForDeletion) wrapper.classList.add('marked-deleted');
-    if (this.selectedIndices.has(index)) wrapper.classList.add('selected');
+    if (page.markedForDeletion) wrapper.classList.add("marked-deleted");
+    if (this.selectedIndices.has(index)) wrapper.classList.add("selected");
 
-    const canvasContainer = document.createElement('div');
-    canvasContainer.className = 'canvas-container thumbnail-placeholder';
+    const canvasContainer = document.createElement("div");
+    canvasContainer.className = "canvas-container thumbnail-placeholder";
     canvasContainer.style.transform = `rotate(${page.rotation}deg)`;
     wrapper.appendChild(canvasContainer);
 
-    const controls = document.createElement('div');
-    controls.className = 'page-controls';
+    const controls = document.createElement("div");
+    controls.className = "page-controls";
 
-    const label = document.createElement('span');
-    label.className = 'page-label';
+    const label = document.createElement("span");
+    label.className = "page-label";
     label.textContent = `Page ${index + 1}`;
 
-    const rotateBtn = document.createElement('button');
-    rotateBtn.className = 'btn-page-rotate';
-    rotateBtn.textContent = '\u21BB';
-    rotateBtn.title = 'Rotate 90\u00B0';
-    rotateBtn.setAttribute('aria-label', 'Rotate page 90 degrees');
-    rotateBtn.addEventListener('click', (e) => {
+    const rotateBtn = document.createElement("button");
+    rotateBtn.className = "btn-page-rotate";
+    rotateBtn.textContent = "\u21BB";
+    rotateBtn.title = "Rotate 90\u00B0";
+    rotateBtn.setAttribute("aria-label", "Rotate page 90 degrees");
+    rotateBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       this.rotatePage(this.getCurrentIndex(wrapper));
     });
@@ -271,18 +271,18 @@ export class EditorController {
     controls.appendChild(rotateBtn);
     wrapper.appendChild(controls);
 
-    wrapper.addEventListener('click', () => this.toggleSelection(this.getCurrentIndex(wrapper)));
+    wrapper.addEventListener("click", () => this.toggleSelection(this.getCurrentIndex(wrapper)));
 
-    wrapper.addEventListener('dragstart', (e) =>
+    wrapper.addEventListener("dragstart", (e) =>
       this.handleDragStart(e, this.getCurrentIndex(wrapper))
     );
-    wrapper.addEventListener('dragover', (e) => this.handleDragOver(e));
-    wrapper.addEventListener('dragenter', (e) => this.handleDragEnter(e, wrapper));
-    wrapper.addEventListener('dragleave', () =>
-      wrapper.classList.remove('drag-insert-before', 'drag-insert-after')
+    wrapper.addEventListener("dragover", (e) => this.handleDragOver(e));
+    wrapper.addEventListener("dragenter", (e) => this.handleDragEnter(e, wrapper));
+    wrapper.addEventListener("dragleave", () =>
+      wrapper.classList.remove("drag-insert-before", "drag-insert-after")
     );
-    wrapper.addEventListener('drop', (e) => this.handleDrop(e, this.getCurrentIndex(wrapper)));
-    wrapper.addEventListener('dragend', () => this.handleDragEnd());
+    wrapper.addEventListener("drop", (e) => this.handleDrop(e, this.getCurrentIndex(wrapper)));
+    wrapper.addEventListener("dragend", () => this.handleDragEnd());
 
     return wrapper;
   }
@@ -292,13 +292,13 @@ export class EditorController {
   private async renderPageCanvas(wrapper: HTMLDivElement, page: PageState): Promise<void> {
     if (!wrapper.isConnected) return;
 
-    const canvasContainer = wrapper.querySelector('.canvas-container') as HTMLDivElement | null;
+    const canvasContainer = wrapper.querySelector(".canvas-container") as HTMLDivElement | null;
     if (!canvasContainer) return;
 
-    const canvas = document.createElement('canvas');
-    canvas.className = 'page-canvas';
+    const canvas = document.createElement("canvas");
+    canvas.className = "page-canvas";
 
-    const label = wrapper.querySelector('.page-label') as HTMLSpanElement | null;
+    const label = wrapper.querySelector(".page-label") as HTMLSpanElement | null;
 
     try {
       const storedPassword = this.pdfService.getPassword(page.sourceFile);
@@ -312,11 +312,11 @@ export class EditorController {
       if (!wrapper.isConnected) return;
 
       canvasContainer.appendChild(canvas);
-      canvasContainer.classList.remove('thumbnail-placeholder');
+      canvasContainer.classList.remove("thumbnail-placeholder");
     } catch (error) {
       console.error(`Failed to render page ${page.sourcePageNumber}:`, error);
       if (label) label.textContent = `${label.textContent} (Error)`;
-      canvasContainer.classList.remove('thumbnail-placeholder');
+      canvasContainer.classList.remove("thumbnail-placeholder");
     }
   }
 
@@ -325,7 +325,7 @@ export class EditorController {
     page.rotation = (page.rotation + 90) % 360;
 
     const wrapper = this.pagesContainer.children[index] as HTMLDivElement;
-    const canvasContainer = wrapper.querySelector('.canvas-container') as HTMLDivElement;
+    const canvasContainer = wrapper.querySelector(".canvas-container") as HTMLDivElement;
     if (canvasContainer) {
       canvasContainer.style.transform = `rotate(${page.rotation}deg)`;
     }
@@ -340,13 +340,13 @@ export class EditorController {
     for (let i = 0; i < children.length; i++) {
       const wrapper = children[i] as HTMLDivElement;
       wrapper.dataset.index = String(i);
-      const label = wrapper.querySelector('.page-label') as HTMLSpanElement | null;
+      const label = wrapper.querySelector(".page-label") as HTMLSpanElement | null;
       if (label) label.textContent = `Page ${i + 1}`;
-      wrapper.classList.toggle('selected', this.selectedIndices.has(i));
-      wrapper.setAttribute('aria-selected', String(this.selectedIndices.has(i)));
-      const isDeleted = wrapper.classList.contains('marked-deleted');
+      wrapper.classList.toggle("selected", this.selectedIndices.has(i));
+      wrapper.setAttribute("aria-selected", String(this.selectedIndices.has(i)));
+      const isDeleted = wrapper.classList.contains("marked-deleted");
       wrapper.setAttribute(
-        'aria-label',
+        "aria-label",
         isDeleted ? `Page ${i + 1}, marked for deletion` : `Page ${i + 1}`
       );
     }
@@ -356,29 +356,29 @@ export class EditorController {
     const wrapper = this.pagesContainer.children[index] as HTMLDivElement;
     if (this.selectedIndices.has(index)) {
       this.selectedIndices.delete(index);
-      wrapper.classList.remove('selected');
+      wrapper.classList.remove("selected");
     } else {
       this.selectedIndices.add(index);
-      wrapper.classList.add('selected');
+      wrapper.classList.add("selected");
     }
-    wrapper.setAttribute('aria-selected', String(this.selectedIndices.has(index)));
+    wrapper.setAttribute("aria-selected", String(this.selectedIndices.has(index)));
     this.updateToolbarState();
   }
 
   private toggleSelectAll(): void {
     if (this.selectedIndices.size === this.pages.length) {
       this.selectedIndices.clear();
-      this.pagesContainer.querySelectorAll('.editor-page').forEach((el) => {
-        el.classList.remove('selected');
-        (el as HTMLElement).setAttribute('aria-selected', 'false');
+      this.pagesContainer.querySelectorAll(".editor-page").forEach((el) => {
+        el.classList.remove("selected");
+        (el as HTMLElement).setAttribute("aria-selected", "false");
       });
     } else {
       for (let i = 0; i < this.pages.length; i++) {
         this.selectedIndices.add(i);
       }
-      this.pagesContainer.querySelectorAll('.editor-page').forEach((el) => {
-        el.classList.add('selected');
-        (el as HTMLElement).setAttribute('aria-selected', 'true');
+      this.pagesContainer.querySelectorAll(".editor-page").forEach((el) => {
+        el.classList.add("selected");
+        (el as HTMLElement).setAttribute("aria-selected", "true");
       });
     }
     this.updateToolbarState();
@@ -398,9 +398,9 @@ export class EditorController {
       page.markedForDeletion = !page.markedForDeletion;
 
       const wrapper = this.pagesContainer.children[index] as HTMLDivElement;
-      wrapper.classList.toggle('marked-deleted', page.markedForDeletion);
+      wrapper.classList.toggle("marked-deleted", page.markedForDeletion);
       wrapper.setAttribute(
-        'aria-label',
+        "aria-label",
         page.markedForDeletion ? `Page ${index + 1}, marked for deletion` : `Page ${index + 1}`
       );
     }
@@ -413,7 +413,7 @@ export class EditorController {
       const result = await this.operationsService.buildPDFFromSubset(this.pages, indices);
       downloadPDF(result);
     } catch (error) {
-      console.error('Failed to extract pages:', error);
+      console.error("Failed to extract pages:", error);
     }
   }
 
@@ -422,32 +422,32 @@ export class EditorController {
       const result = await this.operationsService.buildPDF(this.pages);
       downloadPDF(result);
     } catch (error) {
-      console.error('Failed to build PDF:', error);
+      console.error("Failed to build PDF:", error);
     }
   }
 
   // Drag and drop reordering
   private handleDragStart(event: DragEvent, index: number): void {
     this.dragSourceIndex = index;
-    event.dataTransfer!.effectAllowed = 'move';
+    event.dataTransfer!.effectAllowed = "move";
     const wrapper = this.pagesContainer.children[index] as HTMLDivElement;
-    wrapper.classList.add('dragging');
+    wrapper.classList.add("dragging");
   }
 
   private handleDragOver(event: DragEvent): void {
     event.preventDefault();
-    event.dataTransfer!.dropEffect = 'move';
+    event.dataTransfer!.dropEffect = "move";
   }
 
   private handleDragEnter(event: DragEvent, wrapper: HTMLDivElement): void {
     event.preventDefault();
     if (this.dragSourceIndex === null) return;
     const targetIndex = this.getCurrentIndex(wrapper);
-    wrapper.classList.remove('drag-insert-before', 'drag-insert-after');
+    wrapper.classList.remove("drag-insert-before", "drag-insert-after");
     if (this.dragSourceIndex < targetIndex) {
-      wrapper.classList.add('drag-insert-after');
+      wrapper.classList.add("drag-insert-after");
     } else if (this.dragSourceIndex > targetIndex) {
-      wrapper.classList.add('drag-insert-before');
+      wrapper.classList.add("drag-insert-before");
     }
   }
 
@@ -493,14 +493,14 @@ export class EditorController {
   }
 
   private handleDragEnd(): void {
-    this.pagesContainer.querySelectorAll('.editor-page').forEach((el) => {
-      el.classList.remove('dragging', 'drag-insert-before', 'drag-insert-after');
+    this.pagesContainer.querySelectorAll(".editor-page").forEach((el) => {
+      el.classList.remove("dragging", "drag-insert-before", "drag-insert-after");
     });
     this.dragSourceIndex = null;
   }
 
   private updatePageCount(): void {
-    const countEl = document.getElementById('editor-page-count');
+    const countEl = document.getElementById("editor-page-count");
     if (countEl) {
       const active = this.pages.filter((p) => !p.markedForDeletion).length;
       countEl.textContent = `${this.pages.length} pages (${active} active)`;
@@ -509,9 +509,9 @@ export class EditorController {
 
   private updateToolbarState(): void {
     const count = this.selectedIndices.size;
-    const selectionInfo = document.getElementById('selection-info');
+    const selectionInfo = document.getElementById("selection-info");
     if (selectionInfo) {
-      selectionInfo.textContent = count > 0 ? `${count} selected` : '';
+      selectionInfo.textContent = count > 0 ? `${count} selected` : "";
     }
   }
 }

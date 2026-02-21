@@ -1,24 +1,24 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 const base = import.meta.env.BASE_URL;
 
 const stack = [
-  { name: 'Astro', desc: 'Static site framework' },
-  { name: 'pdf-lib', desc: 'PDF manipulation' },
-  { name: 'pdf.js', desc: 'PDF rendering' },
-  { name: 'Tailwind CSS', desc: 'Utility-first styling' },
-  { name: 'TypeScript', desc: 'Type safety' },
-  { name: 'Bun', desc: 'Package manager & runtime' },
+  { name: "Astro", desc: "Static site framework" },
+  { name: "pdf-lib", desc: "PDF manipulation" },
+  { name: "pdf.js", desc: "PDF rendering" },
+  { name: "Tailwind CSS", desc: "Utility-first styling" },
+  { name: "TypeScript", desc: "Type safety" },
+  { name: "Bun", desc: "Package manager & runtime" },
 ];
 
 const values = [
-  { title: 'Privacy', desc: 'Your files never leave your browser. Zero data collection.' },
-  { title: 'Simplicity', desc: 'Clean interface, no bloat. Just the tools you need.' },
-  { title: 'Open Source', desc: 'Fully transparent. Inspect, modify, and contribute.' },
-  { title: 'Speed', desc: 'Client-side processing means instant results, no waiting for servers.' },
+  { title: "Privacy", desc: "Your files never leave your browser. Zero data collection." },
+  { title: "Simplicity", desc: "Clean interface, no bloat. Just the tools you need." },
+  { title: "Open Source", desc: "Fully transparent. Inspect, modify, and contribute." },
+  { title: "Speed", desc: "Client-side processing means instant results, no waiting for servers." },
 ];
 ---
 
@@ -76,7 +76,7 @@ const values = [
             stack.map((s, i) => (
               <div
                 class:list={[
-                  'border border-border p-5 hover:bg-hover transition-colors hover:-translate-y-px animate-on-scroll',
+                  "border border-border p-5 hover:bg-hover transition-colors hover:-translate-y-px animate-on-scroll",
                   `stagger-${Math.min(i + 1, 8)}`,
                 ]}
               >
@@ -99,8 +99,8 @@ const values = [
             values.map((v, i) => (
               <div
                 class:list={[
-                  'grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-6 border-b animate-on-scroll',
-                  i === values.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                  "grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-2 md:gap-8 py-6 border-b animate-on-scroll",
+                  i === values.length - 1 ? "border-primary border-b-2" : "border-border",
                   `stagger-${Math.min(i + 1, 8)}`,
                 ]}
               >

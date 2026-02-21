@@ -1,8 +1,8 @@
-import { PDFDocument } from 'pdf-lib';
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from '../types/interfaces';
-import { PDFPasswordRequiredError } from '../types/interfaces';
+import { PDFDocument } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from "../types/interfaces";
+import { PDFPasswordRequiredError } from "../types/interfaces";
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -10,7 +10,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 export class PDFService implements IPDFService {
   private pdfDocument: PDFDocument | null = null;
   private pdfjsDocument: pdfjsLib.PDFDocumentProxy | null = null;
-  private fileName: string = '';
+  private fileName: string = "";
   private arrayBuffer: ArrayBuffer | null = null;
   private currentFile: File | null = null;
   private passwordRegistry = new Map<File, string>();
@@ -27,27 +27,27 @@ export class PDFService implements IPDFService {
       // Attempt normal load — throws EncryptedPDFError for any encrypted PDF
       this.pdfDocument = await PDFDocument.load(buffer);
     } catch (error) {
-      if (error instanceof Error && error.message.includes('is encrypted')) {
+      if (error instanceof Error && error.message.includes("is encrypted")) {
         // Bypass pdf-lib's encryption guard (no decryption; content streams stay encrypted
         // for user-password PDFs, but owner-password PDFs often work fine in practice)
         this.pdfDocument = await PDFDocument.load(buffer, { ignoreEncryption: true });
 
         try {
           // pdf.js performs actual decryption — try with an empty user password first
-          this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password: '' })
+          this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password: "" })
             .promise;
           // Success: this is an owner-password PDF (empty user password)
-          this.passwordRegistry.set(file, '');
+          this.passwordRegistry.set(file, "");
           return;
         } catch (pdfjsError) {
-          if (pdfjsError instanceof Error && pdfjsError.name === 'PasswordException') {
+          if (pdfjsError instanceof Error && pdfjsError.name === "PasswordException") {
             // Truly locked: requires a real user password
             this.pdfDocument = null;
             this.pdfjsDocument = null;
             this.arrayBuffer = null;
             this.currentFile = null;
-            this.fileName = '';
-            throw new PDFPasswordRequiredError(file, 'needs-password');
+            this.fileName = "";
+            throw new PDFPasswordRequiredError(file, "needs-password");
           }
           throw pdfjsError;
         }
@@ -74,13 +74,13 @@ export class PDFService implements IPDFService {
       // pdf.js: actual decryption happens here with the provided password
       this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password }).promise;
     } catch (e) {
-      if (e instanceof Error && e.name === 'PasswordException') {
+      if (e instanceof Error && e.name === "PasswordException") {
         this.pdfDocument = null;
         this.pdfjsDocument = null;
         this.arrayBuffer = null;
         this.currentFile = null;
-        this.fileName = '';
-        throw new PDFPasswordRequiredError(file, 'wrong-password');
+        this.fileName = "";
+        throw new PDFPasswordRequiredError(file, "wrong-password");
       }
       throw e;
     }
@@ -114,7 +114,7 @@ export class PDFService implements IPDFService {
     scale: number = 1.5
   ): Promise<void> {
     if (!this.pdfjsDocument) {
-      throw new Error('No PDF loaded');
+      throw new Error("No PDF loaded");
     }
 
     const page = await this.pdfjsDocument.getPage(pageNumber);
@@ -123,9 +123,9 @@ export class PDFService implements IPDFService {
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext("2d");
     if (!context) {
-      throw new Error('Could not get canvas context');
+      throw new Error("Could not get canvas context");
     }
 
     await page.render({
@@ -137,7 +137,7 @@ export class PDFService implements IPDFService {
 
   async getPageInfo(pageNumber: number): Promise<PDFPageInfo> {
     if (!this.pdfjsDocument) {
-      throw new Error('No PDF loaded');
+      throw new Error("No PDF loaded");
     }
 
     const page = await this.pdfjsDocument.getPage(pageNumber);
@@ -160,7 +160,7 @@ export class PDFService implements IPDFService {
     }
     this.pdfDocument = null;
     this.pdfjsDocument = null;
-    this.fileName = '';
+    this.fileName = "";
     this.arrayBuffer = null;
     this.currentFile = null;
   }
@@ -171,7 +171,7 @@ export class PDFService implements IPDFService {
 
   dispatchLoadedEvent(): void {
     if (!this.currentFile) return;
-    const event = new CustomEvent<PDFLoadedEvent>('pdf-loaded', {
+    const event = new CustomEvent<PDFLoadedEvent>("pdf-loaded", {
       detail: {
         fileName: this.fileName,
         pageCount: this.getPageCount(),

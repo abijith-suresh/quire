@@ -1,46 +1,46 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Nav from '../components/shared/Nav.astro';
-import Footer from '../components/shared/Footer.astro';
-import { contentSlide } from '../utils/transitions';
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/shared/Nav.astro";
+import Footer from "../components/shared/Footer.astro";
+import { contentSlide } from "../utils/transitions";
 const base = import.meta.env.BASE_URL;
 
 const sections = [
   {
-    num: '01',
-    title: 'Acceptance of Terms',
+    num: "01",
+    title: "Acceptance of Terms",
     content:
-      'By accessing and using Pasta, you agree to be bound by these terms. If you do not agree, please do not use the application.',
+      "By accessing and using Pasta, you agree to be bound by these terms. If you do not agree, please do not use the application.",
   },
   {
-    num: '02',
-    title: 'No Warranty',
+    num: "02",
+    title: "No Warranty",
     content:
       'Pasta is provided "as is" without warranty of any kind, express or implied. We make no guarantees regarding the accuracy, reliability, or completeness of PDF operations performed by the tool.',
   },
   {
-    num: '03',
-    title: 'Limitation of Liability',
+    num: "03",
+    title: "Limitation of Liability",
     content:
-      'In no event shall the authors or contributors be liable for any damages arising from the use or inability to use Pasta, including but not limited to data loss or corruption of PDF files.',
+      "In no event shall the authors or contributors be liable for any damages arising from the use or inability to use Pasta, including but not limited to data loss or corruption of PDF files.",
   },
   {
-    num: '04',
-    title: 'Open Source License',
+    num: "04",
+    title: "Open Source License",
     content:
-      'Pasta is open-source software. The source code is available on GitHub and is subject to its respective license terms. You are free to inspect, modify, and distribute the code in accordance with the license.',
+      "Pasta is open-source software. The source code is available on GitHub and is subject to its respective license terms. You are free to inspect, modify, and distribute the code in accordance with the license.",
   },
   {
-    num: '05',
-    title: 'Permitted Use',
+    num: "05",
+    title: "Permitted Use",
     content:
-      'You may use Pasta for any lawful purpose, including personal and commercial use. You are solely responsible for the content of the PDF files you process using the tool.',
+      "You may use Pasta for any lawful purpose, including personal and commercial use. You are solely responsible for the content of the PDF files you process using the tool.",
   },
   {
-    num: '06',
-    title: 'Changes to Terms',
+    num: "06",
+    title: "Changes to Terms",
     content:
-      'We reserve the right to modify these terms at any time. Changes will be reflected on this page. Continued use of Pasta after changes constitutes acceptance of the updated terms.',
+      "We reserve the right to modify these terms at any time. Changes will be reflected on this page. Continued use of Pasta after changes constitutes acceptance of the updated terms.",
   },
 ];
 ---
@@ -71,8 +71,8 @@ const sections = [
           sections.map((s, i) => (
             <div
               class:list={[
-                'grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_10rem_1fr] gap-4 py-8 border-b animate-on-scroll',
-                i === sections.length - 1 ? 'border-primary border-b-2' : 'border-border',
+                "grid grid-cols-[3rem_1fr] md:grid-cols-[3rem_10rem_1fr] gap-4 py-8 border-b animate-on-scroll",
+                i === sections.length - 1 ? "border-primary border-b-2" : "border-border",
                 `stagger-${Math.min(i + 1, 8)}`,
               ]}
             >
