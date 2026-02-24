@@ -2,7 +2,7 @@
 
 A fully client-side PDF manipulation tool. All operations run entirely in your browser using pdf-lib — no files are ever uploaded to a server.
 
-**Live**: https://abijith-suresh.github.io/pasta/
+**Live**: https://pasta-five.vercel.app
 
 ## Tech Stack
 
