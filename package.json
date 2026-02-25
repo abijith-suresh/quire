@@ -29,6 +29,7 @@
     "solid-js": "^1.9.11"
   },
   "devDependencies": {
+    "@astrojs/check": "^1.0.4",
     "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.2",
     "@eslint/js": "^10.0.1",
