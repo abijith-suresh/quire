@@ -23,6 +23,7 @@ interface Props {
 }
 
 export default function EditorPageGrid(props: Props) {
+  // eslint-disable-next-line no-unassigned-vars
   let scrollContainer!: HTMLDivElement;
 
   return (

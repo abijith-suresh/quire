@@ -114,7 +114,9 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
         return;
       }
       if (e.key === "Tab") {
-        const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+        const currentIndex = focusable.indexOf(
+          document.activeElement as HTMLInputElement | HTMLButtonElement
+        );
         e.preventDefault();
         if (e.shiftKey) {
           const prevIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;

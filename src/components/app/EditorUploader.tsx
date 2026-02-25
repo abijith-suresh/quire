@@ -10,6 +10,7 @@ interface Props {
 export default function EditorUploader(props: Props) {
   const [isDragOver, setIsDragOver] = createSignal(false);
   const [errorMsg, setErrorMsg] = createSignal("");
+  // eslint-disable-next-line no-unassigned-vars
   let fileInput!: HTMLInputElement;
   let errorTimer: ReturnType<typeof setTimeout> | null = null;
 

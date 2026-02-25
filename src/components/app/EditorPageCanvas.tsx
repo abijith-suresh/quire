@@ -9,7 +9,10 @@ interface Props {
 }
 
 export default function EditorPageCanvas(props: Props) {
+  // Solid.js refs are assigned via JSX ref attribute
+  // eslint-disable-next-line no-unassigned-vars
   let container!: HTMLDivElement;
+  // eslint-disable-next-line no-unassigned-vars
   let canvas!: HTMLCanvasElement;
 
   onMount(() => {

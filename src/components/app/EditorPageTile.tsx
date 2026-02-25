@@ -42,6 +42,12 @@ export default function EditorPageTile(props: Props) {
           : `Page ${props.index + 1}`
       }
       onClick={props.onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          props.onClick();
+        }
+      }}
       onDragStart={props.onDragStart}
       onDragOver={props.onDragOver}
       onDragEnter={props.onDragEnter}
