@@ -249,19 +249,13 @@ export default function Editor() {
           <span class="text-sm text-[#888]">{selectedIndices().size} selected</span>
           <span class="w-px h-6 bg-[#555] mx-5" />
         </Show>
-        <a
-          href={base}
-          class="text-sm text-[#888] hover:text-white no-underline transition-colors"
-        >
+        <a href={base} class="text-sm text-[#888] hover:text-white no-underline transition-colors">
           &#8592; Back
         </a>
       </header>
 
       {/* Content — upload or edit */}
-      <Show
-        when={phase() === "edit"}
-        fallback={<EditorUploader onFileLoaded={handleFileLoaded} />}
-      >
+      <Show when={phase() === "edit"} fallback={<EditorUploader onFileLoaded={handleFileLoaded} />}>
         <div class="flex h-[calc(100dvh-3.5rem)] min-h-0">
           <EditorSidebar
             selectedCount={selectedIndices().size}

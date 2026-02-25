@@ -49,7 +49,11 @@ export default function EditorPageTile(props: Props) {
       onDrop={props.onDrop}
       onDragEnd={props.onDragEnd}
     >
-      <EditorPageCanvas page={props.page} rotation={props.page.rotation} scrollRoot={props.scrollRoot} />
+      <EditorPageCanvas
+        page={props.page}
+        rotation={props.page.rotation}
+        scrollRoot={props.scrollRoot}
+      />
       <div class="page-controls">
         <span class="page-label">Page {props.index + 1}</span>
         <button

@@ -67,9 +67,7 @@ export default function EditorUploader(props: Props) {
           tabindex="0"
           aria-label="Click or drag a PDF file here to upload"
           class={`border-2 border-dashed transition-colors py-20 text-center cursor-pointer ${
-            isDragOver()
-              ? "border-[#111] bg-[#f5f5f5]"
-              : "border-[#ddd] hover:border-[#111]"
+            isDragOver() ? "border-[#111] bg-[#f5f5f5]" : "border-[#ddd] hover:border-[#111]"
           }`}
           onClick={() => fileInput.click()}
           onKeyDown={(e) => {
@@ -104,10 +102,7 @@ export default function EditorUploader(props: Props) {
             e.currentTarget.value = "";
           }}
         />
-        <p
-          role="alert"
-          class="text-[#ff0000] text-xs mt-3 text-center min-h-[1em]"
-        >
+        <p role="alert" class="text-[#ff0000] text-xs mt-3 text-center min-h-[1em]">
           {errorMsg()}
         </p>
       </div>
