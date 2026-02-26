@@ -20,7 +20,27 @@ const { base } = Astro.props;
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-8">
         <div>
-          <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted mb-3">Product</p>
+          <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted mb-3">Project</p>
+          <a
+            href={`${base}about`}
+            class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
+            >About</a
+          >
+          <a
+            href={`${base}changelog`}
+            class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
+            >Changelog</a
+          >
+          <a
+            href="https://github.com/abijith-suresh/pasta"
+            target="_blank"
+            rel="noopener"
+            class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
+            >GitHub</a
+          >
+        </div>
+        <div>
+          <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted mb-3">Docs</p>
           <a
             href={`${base}features`}
             class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
@@ -32,17 +52,9 @@ const { base } = Astro.props;
             >Open Editor</a
           >
           <a
-            href={`${base}changelog`}
+            href={`${base}faq`}
             class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
-            >Changelog</a
-          >
-        </div>
-        <div>
-          <p class="text-[0.65rem] uppercase tracking-[0.2em] text-muted mb-3">Company</p>
-          <a
-            href={`${base}about`}
-            class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
-            >About</a
+            >FAQ</a
           >
         </div>
         <div>
@@ -57,22 +69,11 @@ const { base } = Astro.props;
             class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
             >Terms</a
           >
-          <a
-            href={`${base}faq`}
-            class="block text-sm text-body no-underline hover:text-primary transition-colors mb-2 link-slide"
-            >FAQ</a
-          >
         </div>
       </div>
     </div>
-    <div class="border-t border-border mt-12 pt-6 flex justify-between text-[0.65rem] text-muted">
+    <div class="border-t border-border mt-12 pt-6 flex justify-center text-[0.65rem] text-muted">
       <span>&copy; 2026 Pasta</span>
-      <a
-        href="https://github.com/abijith-suresh/pasta"
-        target="_blank"
-        rel="noopener"
-        class="text-muted no-underline hover:text-primary transition-colors link-slide">GitHub</a
-      >
     </div>
   </div>
 </footer>
