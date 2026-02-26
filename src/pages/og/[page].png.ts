@@ -57,7 +57,7 @@ export const GET: APIRoute = async ({ params }) => {
         flexDirection: "column",
         width: "1200px",
         height: "630px",
-        backgroundColor: "#0a0a0a",
+        backgroundColor: "#ffffff",
         padding: "60px",
         fontFamily: "WorkSans",
       },
@@ -80,7 +80,7 @@ export const GET: APIRoute = async ({ params }) => {
                   style: {
                     fontSize: "28px",
                     fontWeight: 600,
-                    color: "#ffffff",
+                    color: "#111",
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
                   },
@@ -130,7 +130,7 @@ export const GET: APIRoute = async ({ params }) => {
                   style: {
                     fontSize: "104px",
                     fontWeight: 600,
-                    color: "#ffffff",
+                    color: "#111",
                     lineHeight: 1,
                     letterSpacing: "-0.02em",
                   },
@@ -177,7 +177,7 @@ export const GET: APIRoute = async ({ params }) => {
                 props: {
                   style: {
                     fontSize: "18px",
-                    color: "#444444",
+                    color: "#555",
                     letterSpacing: "0.05em",
                   },
                   children: "abijith-suresh.github.io/pasta",
