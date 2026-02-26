@@ -21,10 +21,6 @@ const pages: Record<string, { title: string; description: string }> = {
     title: "About",
     description: "Client-side PDF tools. No servers. No data collection.",
   },
-  blog: {
-    title: "Blog",
-    description: "Notes on design, privacy, and client-side PDF processing.",
-  },
   privacy: {
     title: "Privacy",
     description: "Your files never leave your browser. Zero data collection.",
