@@ -36,17 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global CSS entry point (`src/styles/global.css`) with shared design tokens
 - Shared Nav component with responsive links and active state support
 - Shared Footer component with Product/Company/Legal link groups
-- SEO pages: features, about, blog, privacy, terms, changelog, FAQ
+- SEO pages: features, about, privacy, terms, changelog, FAQ
 - Encrypted PDF support: owner-password PDFs load silently; user-password PDFs trigger a modal
 - `PDFPasswordRequiredError` custom error class with retry and cancel support
 - `src/utils/password-prompt.ts` — Swiss modernist modal utility
 - AbortSignal scoping for `pdf-loaded` listener across SPA page transitions
 - SEO meta tags: `description`, `og:*`, and `twitter:*` in Layout.astro
 - Build-time OG image generation (1200×630 PNG) using satori + @resvg/resvg-js
-- Unique `description` prop on all 9 pages
-- Blog and changelog Astro 5 Content Collections (new Content Layer API with `glob` loader)
-- Individual blog post pages at `/blog/[slug]/` with styled prose via `@tailwindcss/typography`
-- Three blog posts: "Why we built Pasta", "The new Swiss-inspired editor", "Introducing watermark and convert features"
+- Unique `description` prop on all pages
+- Changelog Astro 5 Content Collection (new Content Layer API with `glob` loader)
 - Changelog v1.0 content entry
 
 ### Changed
@@ -61,7 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full-page centered uploader replaces inline upload component
 - Swiss industrial styling for page thumbnails
 - Redesigned landing page with full-viewport hero and feature grid
-- Blog listing migrated from hardcoded array to content collection
 - Changelog migrated from hardcoded array to content collection
 
 ### Fixed

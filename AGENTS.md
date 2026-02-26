@@ -36,9 +36,6 @@ pasta/
 │   │       └── Footer.astro            # Shared footer with link groups
 │   ├── content/
 │   │   ├── config.ts                   # Astro 5 Content Collections config (glob loader)
-│   │   ├── blog/
-│   │   │   ├── the-new-swiss-editor.md
-│   │   │   └── why-we-built-pasta.md
 │   │   └── changelog/
 │   │       └── v1-0.md
 │   ├── controllers/
@@ -52,9 +49,6 @@ pasta/
 │   │   ├── app.astro                   # PDF editor page
 │   │   ├── features.astro              # Features overview page
 │   │   ├── about.astro                 # About / mission page
-│   │   ├── blog/
-│   │   │   ├── index.astro             # Blog listing page (content collection)
-│   │   │   └── [slug].astro            # Individual blog post page
 │   │   ├── og/
 │   │   │   └── [page].png.ts           # Build-time OG image endpoint (satori + resvg)
 │   │   ├── privacy.astro               # Privacy policy page
