@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-02-27
+
 ### Added
 
 - Pasta brand favicon (dark background, white "P", red accent bar) replacing the default Astro icon
