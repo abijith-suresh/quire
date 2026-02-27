@@ -1,4 +1,5 @@
 import { PDFDocument, degrees } from "pdf-lib";
+import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
 import type { PageState, PDFOperationResult, IPDFOperationsService } from "../types/interfaces";
 
 export class PDFOperationsService implements IPDFOperationsService {
@@ -42,7 +43,7 @@ export class PDFOperationsService implements IPDFOperationsService {
     const data = await outputDoc.save();
     return {
       data: new Uint8Array(data),
-      suggestedFileName: "pasta-output.pdf",
+      suggestedFileName: OUTPUT_FILENAME,
     };
   }
 
@@ -70,7 +71,7 @@ export class PDFOperationsService implements IPDFOperationsService {
     const data = await outputDoc.save();
     return {
       data: new Uint8Array(data),
-      suggestedFileName: "pasta-extract.pdf",
+      suggestedFileName: EXTRACT_FILENAME,
     };
   }
 }
