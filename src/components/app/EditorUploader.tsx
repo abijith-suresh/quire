@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js";
+import { ERROR_DISMISS_TIMEOUT_MS } from "../../constants";
 import { pdfService } from "../../services/pdf-service";
 import { PDFPasswordRequiredError } from "../../types/interfaces";
 import { promptForPassword } from "../../utils/password-prompt";
@@ -17,7 +18,7 @@ export default function EditorUploader(props: Props) {
   function showError(message: string) {
     if (errorTimer) clearTimeout(errorTimer);
     setErrorMsg(message);
-    errorTimer = setTimeout(() => setErrorMsg(""), 5000);
+    errorTimer = setTimeout(() => setErrorMsg(""), ERROR_DISMISS_TIMEOUT_MS);
   }
 
   async function handleEncryptedFile(file: File, isRetry: boolean): Promise<void> {

@@ -1,4 +1,5 @@
 import { onMount, onCleanup } from "solid-js";
+import { THUMBNAIL_INTERSECTION_MARGIN, THUMBNAIL_SCALE } from "../../constants";
 import type { PageState } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
 
@@ -30,7 +31,7 @@ export default function EditorPageCanvas(props: Props) {
               await pdfService.loadPDF(props.page.sourceFile);
             }
             if (!container.isConnected) return;
-            await pdfService.renderPage(props.page.sourcePageNumber, canvas, 0.5);
+            await pdfService.renderPage(props.page.sourcePageNumber, canvas, THUMBNAIL_SCALE);
             if (!container.isConnected) return;
             container.classList.remove("thumbnail-placeholder");
           } catch (err) {
@@ -41,7 +42,7 @@ export default function EditorPageCanvas(props: Props) {
       },
       {
         root: props.scrollRoot,
-        rootMargin: "200px",
+        rootMargin: THUMBNAIL_INTERSECTION_MARGIN,
         threshold: 0,
       }
     );

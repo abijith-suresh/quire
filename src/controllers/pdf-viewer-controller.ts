@@ -1,3 +1,4 @@
+import { INITIAL_PAGE_LIMIT } from "../constants";
 import type { IPDFService, PDFLoadedEvent } from "../types/interfaces";
 
 export class PDFViewerController {
@@ -14,7 +15,7 @@ export class PDFViewerController {
     pageInfoId: string,
     pagesContainerId: string,
     pdfService: IPDFService,
-    initialPageLimit: number = 5
+    initialPageLimit: number = INITIAL_PAGE_LIMIT
   ) {
     const viewer = document.getElementById(viewerId);
     const pdfName = document.getElementById(pdfNameId);

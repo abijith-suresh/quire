@@ -1,5 +1,6 @@
 import { createSignal, Show } from "solid-js";
 import { createStore, produce } from "solid-js/store";
+import { ROTATION_STEP } from "../../constants";
 import type { PageState } from "../../types/interfaces";
 import { PDFPasswordRequiredError } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
@@ -119,12 +120,12 @@ export default function Editor() {
 
   function handlePageRotate(index: number, e: MouseEvent): void {
     e.stopPropagation();
-    setPages(index, "rotation", (r) => (r + 90) % 360);
+    setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
   }
 
   function handleRotateSelected(): void {
     for (const index of selectedIndices()) {
-      setPages(index, "rotation", (r) => (r + 90) % 360);
+      setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
     }
   }
 

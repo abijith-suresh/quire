@@ -1,3 +1,5 @@
+import { PASSWORD_MODAL_TITLE } from "../constants";
+
 /**
  * Shows a modal prompting the user for a PDF password.
  * @param fileName - The name of the PDF file requiring a password.
@@ -25,7 +27,7 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
     // Title
     const title = document.createElement("div");
     title.id = "password-modal-title";
-    title.textContent = "PASSWORD REQUIRED";
+    title.textContent = PASSWORD_MODAL_TITLE;
     title.style.cssText = "font-size:24px;letter-spacing:0.05em;color:#111;margin-bottom:6px;";
 
     // File name
