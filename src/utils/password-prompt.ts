@@ -13,13 +13,12 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
 
     // Backdrop
     const backdrop = document.createElement("div");
-    backdrop.style.cssText =
-      "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:50;display:flex;align-items:center;justify-content:center;";
+    backdrop.className = "fixed inset-0 bg-black/50 z-50 flex items-center justify-center";
 
     // Modal panel
     const modal = document.createElement("div");
-    modal.style.cssText =
-      'background:#fff;padding:32px;min-width:320px;max-width:420px;width:90%;font-family:"Bebas Neue",sans-serif;';
+    modal.className =
+      "bg-white p-8 min-w-[320px] max-w-[420px] w-[90%] font-['Bebas_Neue',sans-serif]";
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-modal", "true");
     modal.setAttribute("aria-labelledby", "password-modal-title");
@@ -28,48 +27,40 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
     const title = document.createElement("div");
     title.id = "password-modal-title";
     title.textContent = PASSWORD_MODAL_TITLE;
-    title.style.cssText = "font-size:24px;letter-spacing:0.05em;color:#111;margin-bottom:6px;";
+    title.className = "text-2xl tracking-[0.05em] text-[#111] mb-1.5";
 
     // File name
     const fileLabel = document.createElement("div");
     fileLabel.textContent = fileName;
-    fileLabel.style.cssText =
-      "font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#888;margin-bottom:16px;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+    fileLabel.className =
+      "text-[11px] tracking-[0.1em] uppercase text-[#888] mb-4 font-mono whitespace-nowrap overflow-hidden text-ellipsis";
 
     // Error message (only when retrying)
     const errorMsg = document.createElement("div");
     errorMsg.textContent = "Incorrect password. Try again.";
     errorMsg.setAttribute("aria-live", "polite");
-    errorMsg.style.cssText =
-      "color:#ff0000;font-size:12px;letter-spacing:0.05em;margin-bottom:12px;font-family:monospace;" +
-      (isRetry ? "" : "display:none;");
+    errorMsg.className = `text-[#ff0000] text-xs tracking-[0.05em] mb-3 font-mono${isRetry ? "" : " hidden"}`;
 
     // Password input
     const input = document.createElement("input");
     input.type = "password";
     input.placeholder = "Enter password";
-    input.style.cssText =
-      "width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ddd;outline:none;font-size:14px;font-family:monospace;margin-bottom:20px;";
-    input.addEventListener("focus", () => {
-      input.style.borderColor = "#111";
-    });
-    input.addEventListener("blur", () => {
-      input.style.borderColor = "#ddd";
-    });
+    input.className =
+      "w-full box-border px-3 py-2.5 border border-[#ddd] outline-none text-sm font-mono mb-5 focus:border-[#111]";
 
     // Button row
     const buttonRow = document.createElement("div");
-    buttonRow.style.cssText = "display:flex;gap:12px;justify-content:flex-end;";
+    buttonRow.className = "flex gap-3 justify-end";
 
     const cancelBtn = document.createElement("button");
     cancelBtn.textContent = "Cancel";
-    cancelBtn.style.cssText =
-      'padding:8px 20px;border:1px solid #111;background:#fff;color:#111;cursor:pointer;font-family:"Bebas Neue",sans-serif;font-size:14px;letter-spacing:0.05em;';
+    cancelBtn.className =
+      "py-2 px-5 border border-[#111] bg-white text-[#111] cursor-pointer font-['Bebas_Neue',sans-serif] text-sm tracking-[0.05em]";
 
     const unlockBtn = document.createElement("button");
     unlockBtn.textContent = "Unlock";
-    unlockBtn.style.cssText =
-      'padding:8px 20px;border:1px solid #111;background:#111;color:#fff;cursor:pointer;font-family:"Bebas Neue",sans-serif;font-size:14px;letter-spacing:0.05em;';
+    unlockBtn.className =
+      "py-2 px-5 border border-[#111] bg-[#111] text-white cursor-pointer font-['Bebas_Neue',sans-serif] text-sm tracking-[0.05em]";
 
     buttonRow.appendChild(cancelBtn);
     buttonRow.appendChild(unlockBtn);
