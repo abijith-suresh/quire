@@ -8,6 +8,7 @@ interface DragOverTarget {
 }
 
 interface Props {
+  busy: boolean;
   pages: PageState[];
   selectedIndices: Set<number>;
   dragSourceIndex: number | null;
@@ -32,6 +33,8 @@ export default function EditorPageGrid(props: Props) {
         role="listbox"
         aria-multiselectable="true"
         aria-label="PDF pages"
+        aria-busy={props.busy}
+        data-testid="editor-page-grid"
         class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3"
       >
         <For each={props.pages}>
@@ -44,6 +47,7 @@ export default function EditorPageGrid(props: Props) {
               dragOverDirection={
                 props.dragOverTarget?.index === index() ? props.dragOverTarget.direction : null
               }
+              busy={props.busy}
               scrollRoot={scrollContainer}
               onClick={() => props.onPageClick(index())}
               onRotate={(e) => props.onPageRotate(index(), e)}

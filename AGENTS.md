@@ -1,13 +1,13 @@
-# Pasta - Client-Side PDF Manipulation Tool
+# Quire - Client-Side PDF Manipulation Tool
 
 ## Overview
 
-Pasta is a fully client-side PDF manipulation tool built with Astro. All operations happen entirely in the browser using pdf-lib. No files are sent to any server.
+Quire is a fully client-side PDF manipulation tool built with Astro. All operations happen entirely in the browser using pdf-lib. No files are sent to any server.
 
 ## Repository
 
-- **GitHub**: https://github.com/abijith-suresh/pasta
-- **Deployment**: GitHub Pages (via GitHub Actions)
+- **GitHub**: https://github.com/abijith-suresh/quire
+- **Deployment**: Custom domain / Vercel target (`https://quire.page`)
 
 ## Tech Stack
 
@@ -16,15 +16,15 @@ Pasta is a fully client-side PDF manipulation tool built with Astro. All operati
 - **Styling**: Tailwind CSS 4.x
 - **PDF Library**: pdf-lib
 - **Package Manager**: Bun
-- **Deployment**: GitHub Pages
+- **Deployment**: Static site with canonical domain `https://quire.page`
 
 ## Project Structure
 
 ```
-pasta/
+quire/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                  # GitHub Pages deployment
+│       └── deploy.yml                  # Static deployment workflow
 ├── public/                              # Static assets
 ├── src/
 │   ├── components/
@@ -189,11 +189,11 @@ The project follows clean architecture principles with clear separation of conce
 - Pages: lowercase with dashes (`merge.astro`)
 - Assets: lowercase with dashes
 
-## GitHub Pages Configuration
+## Deployment Configuration
 
 - Build command: `bun run build`
 - Output directory: `dist`
-- Base path: `/pasta/`
+- Canonical domain: `https://quire.page`
 
 ## Environment Variables
 
@@ -239,7 +239,7 @@ None required - all operations are client-side.
 
 - **Form filling**: Fill AcroForm fields client-side using pdf-lib
 - **Simple e-signatures**: Draw or type a signature and embed it on a page
-- **PWA / offline support**: Service worker + manifest so Pasta works fully offline
+- **PWA / offline support**: Service worker + manifest so Quire works fully offline
 
 ### Not planned
 
@@ -262,7 +262,7 @@ None required - all operations are client-side.
 
 ## Deployment
 
-Automatically deploys to GitHub Pages on every push to `main` branch via GitHub Actions workflow.
+Production deploys are expected to target the canonical Quire domain after changes land on `main`.
 
 ## DevContainer
 

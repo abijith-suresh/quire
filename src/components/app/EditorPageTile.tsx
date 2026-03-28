@@ -4,6 +4,7 @@ import EditorPageCanvas from "./EditorPageCanvas";
 interface Props {
   page: PageState;
   index: number;
+  busy: boolean;
   selected: boolean;
   isDragSource: boolean;
   dragOverDirection: "before" | "after" | null;
@@ -31,8 +32,13 @@ export default function EditorPageTile(props: Props) {
 
   return (
     <div
+      data-testid="editor-page-tile"
+      data-page-index={props.index}
+      data-source-page={props.page.sourcePageNumber}
+      data-selected={props.selected}
+      data-marked-for-deletion={props.page.markedForDeletion}
       class={tileClass()}
-      draggable={true}
+      draggable={!props.busy}
       tabindex="0"
       role="option"
       aria-selected={props.selected}
@@ -41,8 +47,12 @@ export default function EditorPageTile(props: Props) {
           ? `Page ${props.index + 1}, marked for deletion`
           : `Page ${props.index + 1}`
       }
-      onClick={props.onClick}
+      onClick={() => {
+        if (props.busy) return;
+        props.onClick();
+      }}
       onKeyDown={(e) => {
+        if (props.busy) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           props.onClick();
@@ -63,9 +73,11 @@ export default function EditorPageTile(props: Props) {
       <div class="page-controls">
         <span class="page-label">Page {props.index + 1}</span>
         <button
+          data-testid="editor-page-rotate-button"
           class="btn-page-rotate"
           title="Rotate 90°"
           aria-label="Rotate page 90 degrees"
+          disabled={props.busy}
           onClick={props.onRotate}
         >
           &#x21BB;

@@ -1,111 +1,85 @@
 import { createSignal } from "solid-js";
-import { ERROR_DISMISS_TIMEOUT_MS } from "../../constants";
-import { pdfService } from "../../services/pdf-service";
-import { PDFPasswordRequiredError } from "../../types/interfaces";
-import { promptForPassword } from "../../utils/password-prompt";
 
 interface Props {
-  onFileLoaded: (file: File, pageCount: number) => void;
+  busy: boolean;
+  statusMessage: string;
+  onFileSelected: (file: File) => void;
 }
 
 export default function EditorUploader(props: Props) {
   const [isDragOver, setIsDragOver] = createSignal(false);
-  const [errorMsg, setErrorMsg] = createSignal("");
   // eslint-disable-next-line no-unassigned-vars
   let fileInput!: HTMLInputElement;
-  let errorTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function showError(message: string) {
-    if (errorTimer) clearTimeout(errorTimer);
-    setErrorMsg(message);
-    errorTimer = setTimeout(() => setErrorMsg(""), ERROR_DISMISS_TIMEOUT_MS);
+  function pickFile() {
+    if (props.busy) return;
+    fileInput.click();
   }
 
-  async function handleEncryptedFile(file: File, isRetry: boolean): Promise<void> {
-    const password = await promptForPassword(file.name, isRetry);
-    if (password === null) return;
-
-    try {
-      await pdfService.loadPDFWithPassword(file, password);
-    } catch (err) {
-      if (err instanceof PDFPasswordRequiredError) {
-        await handleEncryptedFile(file, true);
-        return;
-      }
-      showError("Failed to load PDF: " + (err instanceof Error ? err.message : String(err)));
-      return;
-    }
-
-    pdfService.dispatchLoadedEvent();
-    props.onFileLoaded(file, pdfService.getPageCount());
-  }
-
-  async function processFile(file: File): Promise<void> {
-    if (file.type !== "application/pdf") {
-      showError("Please upload a valid PDF file");
-      return;
-    }
-
-    try {
-      await pdfService.loadPDF(file);
-    } catch (err) {
-      if (err instanceof PDFPasswordRequiredError) {
-        await handleEncryptedFile(file, err.reason === "wrong-password");
-        return;
-      }
-      showError("Failed to load PDF: " + (err instanceof Error ? err.message : String(err)));
-      return;
-    }
-
-    pdfService.dispatchLoadedEvent();
-    props.onFileLoaded(file, pdfService.getPageCount());
+  function handleFile(file: File | undefined) {
+    if (!file || props.busy) return;
+    props.onFileSelected(file);
   }
 
   return (
     <div class="flex-1 flex items-center justify-center min-h-0">
       <div class="w-full max-w-lg px-6">
         <div
+          data-testid="editor-upload-dropzone"
           role="button"
           tabindex="0"
+          aria-busy={props.busy}
           aria-label="Click or drag a PDF file here to upload"
-          class={`border-2 border-dashed transition-colors py-20 text-center cursor-pointer ${
-            isDragOver() ? "border-[#111] bg-[#f5f5f5]" : "border-[#ddd] hover:border-[#111]"
+          class={`border-2 border-dashed transition-colors py-20 text-center ${
+            props.busy
+              ? "border-[#111] bg-[#f5f5f5] cursor-wait"
+              : `cursor-pointer ${isDragOver() ? "border-[#111] bg-[#f5f5f5]" : "border-[#ddd] hover:border-[#111]"}`
           }`}
-          onClick={() => fileInput.click()}
+          onClick={pickFile}
           onKeyDown={(e) => {
+            if (props.busy) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              fileInput.click();
+              pickFile();
             }
           }}
           onDragOver={(e) => {
+            if (props.busy) return;
             e.preventDefault();
             setIsDragOver(true);
           }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={(e) => {
+            if (props.busy) return;
             e.preventDefault();
             setIsDragOver(false);
-            const file = e.dataTransfer?.files[0];
-            if (file) processFile(file);
+            handleFile(e.dataTransfer?.files[0]);
           }}
         >
-          <p class="font-['Bebas_Neue',sans-serif] text-4xl text-[#111] mb-2">Drop PDF here</p>
-          <p class="text-[11px] uppercase tracking-[0.15em] text-[#888]">or click to browse</p>
+          <p class="font-['Bebas_Neue',sans-serif] text-4xl text-[#111] mb-2">
+            {props.busy ? "Working..." : "Drop PDF here"}
+          </p>
+          <p class="text-[11px] uppercase tracking-[0.15em] text-[#888]">
+            {props.busy ? props.statusMessage : "or click to browse"}
+          </p>
         </div>
         <input
           ref={fileInput}
+          data-testid="editor-upload-input"
           type="file"
           accept="application/pdf"
           class="hidden"
+          disabled={props.busy}
           onChange={(e) => {
-            const file = e.currentTarget.files?.[0];
-            if (file) processFile(file);
+            handleFile(e.currentTarget.files?.[0]);
             e.currentTarget.value = "";
           }}
         />
-        <p role="alert" class="text-[#ff0000] text-xs mt-3 text-center min-h-[1em]">
-          {errorMsg()}
+        <p
+          class="text-[#888] text-xs mt-3 text-center min-h-[1em]"
+          data-testid="editor-upload-status"
+        >
+          {props.busy ? props.statusMessage : "Private by default. Files stay in your browser."}
         </p>
       </div>
     </div>

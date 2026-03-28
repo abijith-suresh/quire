@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js";
+import { createSignal, For, onCleanup, Show } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { ROTATION_STEP } from "../../constants";
 import type { PageState } from "../../types/interfaces";
@@ -7,6 +7,12 @@ import { pdfService } from "../../services/pdf-service";
 import { pdfOperationsService } from "../../services/pdf-operations-service";
 import { downloadPDF } from "../../utils/download";
 import { promptForPassword } from "../../utils/password-prompt";
+import {
+  getToastDismissTimeout,
+  showToast as dispatchToast,
+  TOAST_EVENT_NAME,
+  type ToastDetail,
+} from "../../utils/toast";
 import EditorUploader from "./EditorUploader";
 import EditorSidebar from "./EditorSidebar";
 import EditorPageGrid from "./EditorPageGrid";
@@ -16,19 +22,133 @@ interface DragOverTarget {
   direction: "before" | "after";
 }
 
+type EditorOperation = "idle" | "uploading" | "adding" | "extracting" | "building";
+type ToastTone = "success" | "error" | "info";
+
+interface Toast {
+  id: number;
+  message: string;
+  tone: ToastTone;
+}
+
 export default function Editor() {
   const base = import.meta.env.BASE_URL;
+  let nextToastId = 0;
+  const toastTimers = new Map<number, number>();
 
   const [phase, setPhase] = createSignal<"upload" | "edit">("upload");
   const [pages, setPages] = createStore<PageState[]>([]);
   const [selectedIndices, setSelectedIndices] = createSignal<Set<number>>(new Set<number>());
   const [dragSourceIndex, setDragSourceIndex] = createSignal<number | null>(null);
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
+  const [operation, setOperation] = createSignal<EditorOperation>("idle");
+  const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
+  const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   pdfService.clearPasswordRegistry();
   pdfOperationsService.clearCache();
 
   const activePageCount = () => pages.filter((p) => !p.markedForDeletion).length;
+  const isBusy = () => operation() !== "idle";
+
+  function setReadyStatus() {
+    setOperation("idle");
+    setStatusMessage(phase() === "edit" ? "Ready" : "Drop a PDF to begin");
+  }
+
+  function dismissToast(id: number) {
+    const timer = toastTimers.get(id);
+    if (timer) {
+      window.clearTimeout(timer);
+      toastTimers.delete(id);
+    }
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+  }
+
+  function addToast(message: string, tone: ToastTone) {
+    const id = ++nextToastId;
+    const timer = window.setTimeout(() => dismissToast(id), getToastDismissTimeout());
+    toastTimers.set(id, timer);
+    setToasts((current) => [...current, { id, message, tone }]);
+  }
+
+  const handleToast = (event: Event) => {
+    const customEvent = event as CustomEvent<ToastDetail>;
+    addToast(customEvent.detail.message, customEvent.detail.type);
+  };
+
+  if (typeof document !== "undefined") {
+    document.addEventListener(TOAST_EVENT_NAME, handleToast);
+  }
+
+  onCleanup(() => {
+    if (typeof document !== "undefined") {
+      document.removeEventListener(TOAST_EVENT_NAME, handleToast);
+    }
+    for (const timer of toastTimers.values()) {
+      window.clearTimeout(timer);
+    }
+    toastTimers.clear();
+  });
+
+  function formatPageCount(pageCount: number) {
+    return `${pageCount} page${pageCount === 1 ? "" : "s"}`;
+  }
+
+  function getLoadErrorMessage(file: File, error: unknown) {
+    if (error instanceof Error && error.message) {
+      return `Failed to load ${file.name}: ${error.message}`;
+    }
+    return `Failed to load ${file.name}.`;
+  }
+
+  async function unlockPdf(file: File, isRetry: boolean): Promise<number | null> {
+    const password = await promptForPassword(file.name, isRetry);
+    if (password === null) {
+      setReadyStatus();
+      return null;
+    }
+
+    setStatusMessage("Unlocking PDF...");
+
+    try {
+      await pdfService.loadPDFWithPassword(file, password);
+      return pdfService.getPageCount();
+    } catch (err) {
+      if (err instanceof PDFPasswordRequiredError) {
+        return unlockPdf(file, true);
+      }
+
+      console.error("Failed to unlock PDF:", err);
+      dispatchToast(getLoadErrorMessage(file, err), "error");
+      setReadyStatus();
+      return null;
+    }
+  }
+
+  async function loadPdfFile(file: File, mode: "upload" | "add"): Promise<number | null> {
+    if (file.type !== "application/pdf") {
+      dispatchToast("Please upload a valid PDF file.", "error");
+      return null;
+    }
+
+    setOperation(mode === "upload" ? "uploading" : "adding");
+    setStatusMessage(mode === "upload" ? "Loading PDF..." : "Adding PDF...");
+
+    try {
+      await pdfService.loadPDF(file);
+      return pdfService.getPageCount();
+    } catch (err) {
+      if (err instanceof PDFPasswordRequiredError) {
+        return unlockPdf(file, err.reason === "wrong-password");
+      }
+
+      console.error("Failed to load PDF:", err);
+      dispatchToast(getLoadErrorMessage(file, err), "error");
+      setReadyStatus();
+      return null;
+    }
+  }
 
   // --- File loading ---
 
@@ -44,41 +164,16 @@ export default function Editor() {
     );
     setSelectedIndices(new Set<number>());
     setPhase("edit");
-  }
-
-  async function handleEncryptedAdd(file: File, isRetry: boolean): Promise<boolean> {
-    const password = await promptForPassword(file.name, isRetry);
-    if (password === null) return false;
-
-    try {
-      await pdfService.loadPDFWithPassword(file, password);
-      return true;
-    } catch (err) {
-      if (err instanceof PDFPasswordRequiredError) {
-        return handleEncryptedAdd(file, true);
-      }
-      console.error("Failed to load encrypted PDF:", err);
-      return false;
-    }
+    setReadyStatus();
+    dispatchToast(`${file.name} loaded with ${formatPageCount(pageCount)}.`, "success");
   }
 
   async function handleAddPdf(file: File): Promise<void> {
-    let loaded = false;
+    if (isBusy()) return;
 
-    try {
-      await pdfService.loadPDF(file);
-      loaded = true;
-    } catch (err) {
-      if (err instanceof PDFPasswordRequiredError) {
-        loaded = await handleEncryptedAdd(file, err.reason === "wrong-password");
-      } else {
-        console.error("Failed to add PDF:", err);
-      }
-    }
+    const pageCount = await loadPdfFile(file, "add");
+    if (pageCount === null) return;
 
-    if (!loaded) return;
-
-    const pageCount = pdfService.getPageCount();
     setPages(
       produce((p) => {
         for (let i = 1; i <= pageCount; i++) {
@@ -92,11 +187,25 @@ export default function Editor() {
         }
       })
     );
+
+    setReadyStatus();
+    dispatchToast(`Added ${formatPageCount(pageCount)} from ${file.name}.`, "success");
+  }
+
+  async function handleInitialUpload(file: File): Promise<void> {
+    if (isBusy()) return;
+
+    const pageCount = await loadPdfFile(file, "upload");
+    if (pageCount === null) return;
+
+    pdfService.dispatchLoadedEvent();
+    handleFileLoaded(file, pageCount);
   }
 
   // --- Selection ---
 
   function handlePageClick(index: number): void {
+    if (isBusy()) return;
     setSelectedIndices((prev) => {
       const next = new Set(prev);
       if (next.has(index)) {
@@ -109,6 +218,7 @@ export default function Editor() {
   }
 
   function handleSelectAll(): void {
+    if (isBusy()) return;
     if (selectedIndices().size === pages.length) {
       setSelectedIndices(new Set<number>());
     } else {
@@ -120,58 +230,98 @@ export default function Editor() {
 
   function handlePageRotate(index: number, e: MouseEvent): void {
     e.stopPropagation();
+    if (isBusy()) return;
     setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
+    setStatusMessage(`Rotated page ${index + 1}.`);
   }
 
   function handleRotateSelected(): void {
+    if (isBusy() || selectedIndices().size === 0) return;
     for (const index of selectedIndices()) {
       setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
     }
+    setStatusMessage(
+      `Rotated ${selectedIndices().size} selected page${selectedIndices().size === 1 ? "" : "s"}.`
+    );
   }
 
   // --- Delete ---
 
   function handleDeleteSelected(): void {
+    if (isBusy() || selectedIndices().size === 0) return;
     for (const index of selectedIndices()) {
       setPages(index, "markedForDeletion", (v) => !v);
     }
+    setStatusMessage(
+      `Updated deletion state for ${selectedIndices().size} selected page${selectedIndices().size === 1 ? "" : "s"}.`
+    );
   }
 
   // --- Extract / Download ---
 
   async function handleExtract(): Promise<void> {
+    if (isBusy()) return;
     const indices = Array.from(selectedIndices()).sort((a, b) => a - b);
     if (indices.length === 0) return;
+
+    setOperation("extracting");
+    setStatusMessage(`Extracting pages... 0/${indices.length}`);
+
     try {
-      const result = await pdfOperationsService.buildPDFFromSubset(pages, indices);
+      const result = await pdfOperationsService.buildPDFFromSubset(
+        pages,
+        indices,
+        ({ completed, total }) => {
+          setStatusMessage(`Extracting pages... ${completed}/${total}`);
+        }
+      );
       downloadPDF(result);
+      dispatchToast("Extracted PDF download started.", "success");
     } catch (err) {
       console.error("Failed to extract pages:", err);
+      dispatchToast("Failed to extract selected pages.", "error");
+    } finally {
+      setReadyStatus();
     }
   }
 
   async function handleDownload(): Promise<void> {
+    if (isBusy()) return;
+    const totalPages = activePageCount();
+
+    setOperation("building");
+    setStatusMessage(`Building PDF... 0/${totalPages}`);
+
     try {
-      const result = await pdfOperationsService.buildPDF(pages);
+      const result = await pdfOperationsService.buildPDF(pages, ({ completed, total }) => {
+        setStatusMessage(`Building PDF... ${completed}/${total}`);
+      });
       downloadPDF(result);
+      dispatchToast("Download started.", "success");
     } catch (err) {
       console.error("Failed to build PDF:", err);
+      dispatchToast("Failed to build the PDF.", "error");
+    } finally {
+      setReadyStatus();
     }
   }
 
   // --- Drag and drop ---
 
   function handleDragStart(index: number, e: DragEvent): void {
+    if (isBusy()) return;
     setDragSourceIndex(index);
     e.dataTransfer!.effectAllowed = "move";
   }
 
   function handleDragOver(e: DragEvent): void {
+    if (isBusy()) return;
     e.preventDefault();
     e.dataTransfer!.dropEffect = "move";
   }
 
   function handleDragEnter(targetIndex: number, e: DragEvent): void {
+    if (isBusy()) return;
     e.preventDefault();
     const from = dragSourceIndex();
     if (from === null) return;
@@ -183,10 +333,12 @@ export default function Editor() {
   }
 
   function handleDragLeave(): void {
+    if (isBusy()) return;
     setDragOverTarget(null);
   }
 
   function handleDrop(targetIndex: number, e: DragEvent): void {
+    if (isBusy()) return;
     e.preventDefault();
     setDragOverTarget(null);
 
@@ -231,130 +383,188 @@ export default function Editor() {
 
   return (
     <div class="font-['Work_Sans',sans-serif] bg-white text-[#111] h-dvh flex flex-col overflow-hidden">
-      {/* Dark header */}
-      <header class="bg-[#111] text-white h-14 flex items-center px-6 flex-shrink-0">
-        <a
-          href={base}
-          class="font-['Bebas_Neue',sans-serif] text-2xl tracking-wide text-white no-underline"
-        >
-          Pasta
-        </a>
-        <span class="w-px h-6 bg-[#555] mx-5" />
-        <Show when={phase() === "edit"}>
-          <span class="text-sm text-[#888]">
-            {pages.length} pages ({activePageCount()} active)
-          </span>
-        </Show>
-        <span class="flex-1" />
-        <Show when={phase() === "edit" && selectedIndices().size > 0}>
-          <span class="text-sm text-[#888]">{selectedIndices().size} selected</span>
+      <div
+        data-testid="editor-toast-region"
+        aria-live="polite"
+        class="pointer-events-none fixed right-4 top-4 z-50 flex max-w-sm flex-col gap-2"
+      >
+        <For each={toasts()}>
+          {(toast) => (
+            <div
+              data-testid="editor-toast"
+              class={`rounded-sm border px-4 py-3 text-sm shadow-sm ${
+                toast.tone === "error"
+                  ? "border-[#ffb3b3] bg-[#fff5f5] text-[#8a1111]"
+                  : toast.tone === "success"
+                    ? "border-[#d7e7d7] bg-[#f5fbf5] text-[#1f5f1f]"
+                    : "border-[#ddd] bg-white text-[#555]"
+              }`}
+            >
+              {toast.message}
+            </div>
+          )}
+        </For>
+      </div>
+
+      <div
+        data-testid="editor-root"
+        data-operation={operation()}
+        aria-busy={isBusy()}
+        class="contents"
+      >
+        {/* Dark header */}
+        <header class="bg-[#111] text-white h-14 flex items-center px-6 flex-shrink-0">
+          <a
+            href={base}
+            class="font-['Bebas_Neue',sans-serif] text-2xl tracking-wide text-white no-underline"
+          >
+            Pasta
+          </a>
           <span class="w-px h-6 bg-[#555] mx-5" />
-        </Show>
-        <a href={base} class="text-sm text-[#888] hover:text-white no-underline transition-colors">
-          &#8592; Back
-        </a>
-      </header>
+          <Show when={phase() === "edit"}>
+            <span class="text-sm text-[#888]">
+              {pages.length} pages ({activePageCount()} active)
+            </span>
+          </Show>
+          <span class="flex-1" />
+          <Show when={phase() === "edit" && selectedIndices().size > 0}>
+            <span class="text-sm text-[#888]">{selectedIndices().size} selected</span>
+            <span class="w-px h-6 bg-[#555] mx-5" />
+          </Show>
+          <a
+            href={base}
+            class="text-sm text-[#888] hover:text-white no-underline transition-colors"
+          >
+            &#8592; Back
+          </a>
+        </header>
 
-      {/* Content — upload or edit */}
-      <Show when={phase() === "edit"} fallback={<EditorUploader onFileLoaded={handleFileLoaded} />}>
-        <div class="flex h-[calc(100dvh-3.5rem)] min-h-0">
-          <EditorSidebar
-            selectedCount={selectedIndices().size}
-            onSelectAll={handleSelectAll}
-            onRotate={handleRotateSelected}
-            onDelete={handleDeleteSelected}
-            onExtract={handleExtract}
-            onDownload={handleDownload}
-            onAddPdf={handleAddPdf}
-          />
-
-          <main class="flex-1 flex flex-col min-h-0">
-            {/* Dense page grid — only this scrolls */}
-            <EditorPageGrid
-              pages={pages}
-              selectedIndices={selectedIndices()}
-              dragSourceIndex={dragSourceIndex()}
-              dragOverTarget={dragOverTarget()}
-              onPageClick={handlePageClick}
-              onPageRotate={handlePageRotate}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onDragEnd={handleDragEnd}
+        {/* Content — upload or edit */}
+        <Show
+          when={phase() === "edit"}
+          fallback={
+            <EditorUploader
+              busy={isBusy()}
+              statusMessage={statusMessage()}
+              onFileSelected={handleInitialUpload}
+            />
+          }
+        >
+          <div class="flex h-[calc(100dvh-3.5rem)] min-h-0">
+            <EditorSidebar
+              busy={isBusy()}
+              selectedCount={selectedIndices().size}
+              onSelectAll={handleSelectAll}
+              onRotate={handleRotateSelected}
+              onDelete={handleDeleteSelected}
+              onExtract={handleExtract}
+              onDownload={handleDownload}
+              onAddPdf={handleAddPdf}
             />
 
-            {/* Mobile toolbar */}
-            <div class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center">
-              <button
-                onClick={handleSelectAll}
-                class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
-              >
-                Select All
-              </button>
-              <button
-                onClick={handleRotateSelected}
-                class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
-              >
-                Rotate
-              </button>
-              <button
-                onClick={handleDeleteSelected}
-                class="text-[11px] uppercase tracking-wider text-[#ff0000] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.accept = "application/pdf";
-                  input.onchange = () => {
-                    const file = input.files?.[0];
-                    if (file) handleAddPdf(file);
-                  };
-                  input.click();
-                }}
-                class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
-              >
-                Add PDF
-              </button>
-              <button
-                onClick={handleExtract}
-                class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer"
-              >
-                Extract
-              </button>
-              <button
-                onClick={handleDownload}
-                class="text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer"
-              >
-                Download
-              </button>
-            </div>
+            <main class="flex-1 flex flex-col min-h-0">
+              {/* Dense page grid — only this scrolls */}
+              <EditorPageGrid
+                busy={isBusy()}
+                pages={pages}
+                selectedIndices={selectedIndices()}
+                dragSourceIndex={dragSourceIndex()}
+                dragOverTarget={dragOverTarget()}
+                onPageClick={handlePageClick}
+                onPageRotate={handlePageRotate}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+              />
 
-            {/* Status bar */}
-            <div
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-              class="h-8 bg-[#f5f5f5] border-t border-[#ddd] flex items-center px-5 text-[11px] text-[#888] flex-shrink-0"
-            >
-              <span>
-                {pages.length} pages ({activePageCount()} active)
-              </span>
-              <span class="flex-1 text-center">
-                {selectedIndices().size > 0 ? `${selectedIndices().size} selected` : ""}
-              </span>
-              <span class="flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 bg-[#ff0000] inline-block" />
-                Ready
-              </span>
-            </div>
-          </main>
-        </div>
-      </Show>
+              {/* Mobile toolbar */}
+              <div class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center">
+                <button
+                  data-testid="editor-select-all-button-mobile"
+                  disabled={isBusy()}
+                  onClick={handleSelectAll}
+                  class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Select All
+                </button>
+                <button
+                  data-testid="editor-rotate-button-mobile"
+                  disabled={isBusy()}
+                  onClick={handleRotateSelected}
+                  class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Rotate
+                </button>
+                <button
+                  data-testid="editor-delete-button-mobile"
+                  disabled={isBusy()}
+                  onClick={handleDeleteSelected}
+                  class="text-[11px] uppercase tracking-wider text-[#ff0000] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Delete
+                </button>
+                <button
+                  data-testid="editor-add-pdf-button-mobile"
+                  disabled={isBusy()}
+                  onClick={() => {
+                    if (isBusy()) return;
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "application/pdf";
+                    input.onchange = () => {
+                      const file = input.files?.[0];
+                      if (file) handleAddPdf(file);
+                    };
+                    input.click();
+                  }}
+                  class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add PDF
+                </button>
+                <button
+                  data-testid="editor-extract-button-mobile"
+                  disabled={isBusy()}
+                  onClick={handleExtract}
+                  class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Extract
+                </button>
+                <button
+                  data-testid="editor-download-button-mobile"
+                  disabled={isBusy()}
+                  onClick={handleDownload}
+                  class="text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isBusy() ? "Working..." : "Download"}
+                </button>
+              </div>
+
+              {/* Status bar */}
+              <div
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                data-testid="editor-status-bar"
+                class="h-8 bg-[#f5f5f5] border-t border-[#ddd] flex items-center px-5 text-[11px] text-[#888] flex-shrink-0"
+              >
+                <span>
+                  {pages.length} pages ({activePageCount()} active)
+                </span>
+                <span class="flex-1 text-center">
+                  {selectedIndices().size > 0 ? `${selectedIndices().size} selected` : ""}
+                </span>
+                <span class="flex items-center gap-1.5" data-testid="editor-status-message">
+                  <span class="w-1.5 h-1.5 bg-[#ff0000] inline-block" />
+                  {statusMessage()}
+                </span>
+              </div>
+            </main>
+          </div>
+        </Show>
+      </div>
     </div>
   );
 }
