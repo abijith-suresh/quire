@@ -13,6 +13,9 @@ export const INITIAL_PAGE_LIMIT = 5;
 /** Degrees to rotate a page per rotation action */
 export const ROTATION_STEP = 90;
 
+/** Milliseconds before a toast notification auto-dismisses */
+export const TOAST_DISMISS_TIMEOUT_MS = 3000;
+
 /** Default file name for the merged/reordered PDF output */
 export const OUTPUT_FILENAME = "pasta-output.pdf";
 

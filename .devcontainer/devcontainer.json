@@ -1,5 +1,5 @@
 {
-  "name": "Pasta Dev Environment",
+  "name": "Quire Dev Environment",
   "build": {
     "dockerfile": "Dockerfile"
   },

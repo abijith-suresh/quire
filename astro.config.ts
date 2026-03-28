@@ -5,7 +5,7 @@ import solid from "@astrojs/solid-js";
 // https://astro.build/config
 export default defineConfig({
   integrations: [solid()],
-  site: "https://pasta-five.vercel.app",
+  site: "https://quire.page",
   vite: {
     plugins: [tailwindcss()],
     resolve: {

@@ -6,7 +6,7 @@ import { Resvg } from "@resvg/resvg-js";
 
 const pages: Record<string, { title: string; description: string }> = {
   index: {
-    title: "Pasta",
+    title: "Quire",
     description: "Edit, merge, split — all in your browser.",
   },
   app: {
@@ -31,11 +31,11 @@ const pages: Record<string, { title: string; description: string }> = {
   },
   changelog: {
     title: "Changelog",
-    description: "A complete history of every Pasta release.",
+    description: "A complete history of every Quire release.",
   },
   faq: {
     title: "FAQ",
-    description: "Everything you need to know about Pasta.",
+    description: "Everything you need to know about Quire.",
   },
 };
 
@@ -84,7 +84,7 @@ export const GET: APIRoute = async ({ params }) => {
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
                   },
-                  children: "PASTA",
+                  children: "QUIRE",
                 },
               },
               {
@@ -180,7 +180,7 @@ export const GET: APIRoute = async ({ params }) => {
                     color: "#555",
                     letterSpacing: "0.05em",
                   },
-                  children: "abijith-suresh.github.io/pasta",
+                  children: "quire.page",
                 },
               },
             ],
