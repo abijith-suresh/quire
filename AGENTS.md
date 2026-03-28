@@ -6,7 +6,7 @@ Quire is a fully client-side PDF manipulation tool built with Astro. All operati
 
 ## Repository
 
-- **GitHub**: https://github.com/abijith-suresh/pasta
+- **GitHub**: https://github.com/abijith-suresh/quire
 - **Deployment**: Custom domain / Vercel target (`https://quire.page`)
 
 ## Tech Stack

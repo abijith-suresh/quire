@@ -61,7 +61,7 @@ tests/
 ## Release Notes
 
 - Current canonical domain target: `https://quire.page`
-- Current GitHub repository: `https://github.com/abijith-suresh/pasta`
+- Current GitHub repository: `https://github.com/abijith-suresh/quire`
 - License: [MIT](./LICENSE)
 
 ## Contributing
