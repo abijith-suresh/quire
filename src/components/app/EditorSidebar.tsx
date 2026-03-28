@@ -1,4 +1,5 @@
 interface Props {
+  busy: boolean;
   selectedCount: number;
   onSelectAll: () => void;
   onRotate: () => void;
@@ -19,16 +20,22 @@ export default function EditorSidebar(props: Props) {
         <div class="p-4 border-b border-[#ddd]">
           <p class="text-[11px] uppercase tracking-wider text-[#888] mb-2">Upload</p>
           <button
+            data-testid="editor-add-pdf-button"
             onClick={() => addPdfInput.click()}
-            class="w-full border border-dashed border-[#ddd] hover:border-[#111] transition-colors py-6 text-center cursor-pointer bg-transparent"
+            disabled={props.busy}
+            class="w-full border border-dashed border-[#ddd] hover:border-[#111] transition-colors py-6 text-center cursor-pointer bg-transparent disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span class="text-[11px] text-[#888] uppercase tracking-wider">+ Add PDF</span>
+            <span class="text-[11px] text-[#888] uppercase tracking-wider">
+              {props.busy ? "Working..." : "+ Add PDF"}
+            </span>
           </button>
           <input
             ref={addPdfInput}
+            data-testid="editor-add-pdf-input"
             type="file"
             accept="application/pdf"
             class="hidden"
+            disabled={props.busy}
             onChange={(e) => {
               const file = e.currentTarget.files?.[0];
               if (file) props.onAddPdf(file);
@@ -41,9 +48,11 @@ export default function EditorSidebar(props: Props) {
         <div class="p-4 border-b border-[#ddd]">
           <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Selection</p>
           <button
+            data-testid="editor-select-all-button"
             onClick={props.onSelectAll}
             aria-label="Select all pages"
-            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+            disabled={props.busy}
+            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             Select All
           </button>
@@ -53,23 +62,29 @@ export default function EditorSidebar(props: Props) {
         <div class="p-4 border-b border-[#ddd]">
           <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Actions</p>
           <button
+            data-testid="editor-rotate-button"
             onClick={props.onRotate}
             aria-label="Rotate selected pages 90 degrees"
-            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+            disabled={props.busy}
+            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             Rotate
           </button>
           <button
+            data-testid="editor-delete-button"
             onClick={props.onDelete}
             aria-label="Mark selected pages for deletion"
-            class="w-full text-left text-xs text-[#ff0000] hover:bg-[#fff5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+            disabled={props.busy}
+            class="w-full text-left text-xs text-[#ff0000] hover:bg-[#fff5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             Delete
           </button>
           <button
+            data-testid="editor-extract-button"
             onClick={props.onExtract}
             aria-label="Extract selected pages to a new PDF"
-            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors"
+            disabled={props.busy}
+            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             Extract
           </button>
@@ -80,10 +95,12 @@ export default function EditorSidebar(props: Props) {
       <div class="p-4 border-t border-[#ddd] flex-shrink-0">
         <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
         <button
+          data-testid="editor-download-button"
           onClick={props.onDownload}
-          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors"
+          disabled={props.busy}
+          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Download
+          {props.busy ? "Working..." : "Download"}
         </button>
       </div>
     </aside>

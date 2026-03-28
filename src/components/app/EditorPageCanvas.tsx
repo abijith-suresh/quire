@@ -1,4 +1,4 @@
-import { onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import { THUMBNAIL_INTERSECTION_MARGIN, THUMBNAIL_SCALE } from "../../constants";
 import type { PageState } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
@@ -10,6 +10,8 @@ interface Props {
 }
 
 export default function EditorPageCanvas(props: Props) {
+  const [renderState, setRenderState] = createSignal<"loading" | "ready" | "error">("loading");
+
   // Solid.js refs are assigned via JSX ref attribute
   // eslint-disable-next-line no-unassigned-vars
   let container!: HTMLDivElement;
@@ -34,9 +36,11 @@ export default function EditorPageCanvas(props: Props) {
             await pdfService.renderPage(props.page.sourcePageNumber, canvas, THUMBNAIL_SCALE);
             if (!container.isConnected) return;
             container.classList.remove("thumbnail-placeholder");
+            setRenderState("ready");
           } catch (err) {
             console.error(`Failed to render page ${props.page.sourcePageNumber}:`, err);
             if (container.isConnected) container.classList.remove("thumbnail-placeholder");
+            setRenderState("error");
           }
         }
       },
@@ -58,6 +62,8 @@ export default function EditorPageCanvas(props: Props) {
   return (
     <div
       ref={container}
+      data-testid="editor-page-canvas"
+      data-render-state={renderState()}
       class="canvas-container thumbnail-placeholder"
       style={{ transform: `rotate(${props.rotation}deg)` }}
     >

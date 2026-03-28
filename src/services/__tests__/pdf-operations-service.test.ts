@@ -97,6 +97,19 @@ describe("PDFOperationsService", () => {
 
       expect(result.data).toBeInstanceOf(Uint8Array);
     });
+
+    it("should report progress while building", async () => {
+      const service = new PDFOperationsService();
+      const onProgress = vi.fn();
+
+      await service.buildPDF(
+        [createMockPage(), createMockPage({ id: "page-2", sourcePageNumber: 2 })],
+        onProgress
+      );
+
+      expect(onProgress).toHaveBeenNthCalledWith(1, { completed: 1, total: 2 });
+      expect(onProgress).toHaveBeenNthCalledWith(2, { completed: 2, total: 2 });
+    });
   });
 
   describe("buildPDFFromSubset", () => {
@@ -108,6 +121,15 @@ describe("PDFOperationsService", () => {
 
       expect(result.data).toBeInstanceOf(Uint8Array);
       expect(result.suggestedFileName).toBe("pasta-extract.pdf");
+    });
+
+    it("should report progress while extracting", async () => {
+      const service = new PDFOperationsService();
+      const onProgress = vi.fn();
+
+      await service.buildPDFFromSubset([createMockPage()], [0], onProgress);
+
+      expect(onProgress).toHaveBeenCalledWith({ completed: 1, total: 1 });
     });
 
     it("should handle multiple indices", async () => {

@@ -1,6 +1,11 @@
 import { PDFDocument, degrees } from "pdf-lib";
 import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
-import type { PageState, PDFOperationResult, IPDFOperationsService } from "../types/interfaces";
+import type {
+  PageState,
+  PDFOperationResult,
+  IPDFOperationsService,
+  PDFBuildProgress,
+} from "../types/interfaces";
 
 export class PDFOperationsService implements IPDFOperationsService {
   // Class-level cache: avoids re-reading the same File on multiple build/extract
@@ -19,7 +24,10 @@ export class PDFOperationsService implements IPDFOperationsService {
     return PDFDocument.load(buffer, { ignoreEncryption: true });
   }
 
-  async buildPDF(pages: PageState[]): Promise<PDFOperationResult> {
+  async buildPDF(
+    pages: PageState[],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult> {
     const activePages = pages.filter((p) => !p.markedForDeletion);
     if (activePages.length === 0) {
       throw new Error("No pages to include in the PDF");
@@ -27,7 +35,7 @@ export class PDFOperationsService implements IPDFOperationsService {
 
     const outputDoc = await PDFDocument.create();
 
-    for (const page of activePages) {
+    for (const [index, page] of activePages.entries()) {
       if (!this.sourceDocCache.has(page.sourceFile)) {
         this.sourceDocCache.set(page.sourceFile, await this.loadSourceDoc(page.sourceFile));
       }
@@ -38,6 +46,7 @@ export class PDFOperationsService implements IPDFOperationsService {
         copiedPage.setRotation(degrees(page.rotation));
       }
       outputDoc.addPage(copiedPage);
+      onProgress?.({ completed: index + 1, total: activePages.length });
     }
 
     const data = await outputDoc.save();
@@ -47,7 +56,11 @@ export class PDFOperationsService implements IPDFOperationsService {
     };
   }
 
-  async buildPDFFromSubset(pages: PageState[], indices: number[]): Promise<PDFOperationResult> {
+  async buildPDFFromSubset(
+    pages: PageState[],
+    indices: number[],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult> {
     const subset = indices.map((i) => pages[i]).filter(Boolean);
     if (subset.length === 0) {
       throw new Error("No pages selected for extraction");
@@ -55,7 +68,7 @@ export class PDFOperationsService implements IPDFOperationsService {
 
     const outputDoc = await PDFDocument.create();
 
-    for (const page of subset) {
+    for (const [index, page] of subset.entries()) {
       if (!this.sourceDocCache.has(page.sourceFile)) {
         this.sourceDocCache.set(page.sourceFile, await this.loadSourceDoc(page.sourceFile));
       }
@@ -66,6 +79,7 @@ export class PDFOperationsService implements IPDFOperationsService {
         copiedPage.setRotation(degrees(page.rotation));
       }
       outputDoc.addPage(copiedPage);
+      onProgress?.({ completed: index + 1, total: subset.length });
     }
 
     const data = await outputDoc.save();

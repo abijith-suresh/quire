@@ -36,9 +36,21 @@ export interface PDFOperationResult {
   suggestedFileName: string;
 }
 
+export interface PDFBuildProgress {
+  completed: number;
+  total: number;
+}
+
 export interface IPDFOperationsService {
-  buildPDF(pages: PageState[]): Promise<PDFOperationResult>;
-  buildPDFFromSubset(pages: PageState[], indices: number[]): Promise<PDFOperationResult>;
+  buildPDF(
+    pages: PageState[],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult>;
+  buildPDFFromSubset(
+    pages: PageState[],
+    indices: number[],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult>;
   clearCache(): void;
 }
 
