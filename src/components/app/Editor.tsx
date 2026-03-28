@@ -232,6 +232,7 @@ export default function Editor() {
     e.stopPropagation();
     if (isBusy()) return;
     setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
+    setStatusMessage(`Rotated page ${index + 1}.`);
   }
 
   function handleRotateSelected(): void {
