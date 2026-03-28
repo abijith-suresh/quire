@@ -17,10 +17,10 @@ export const ROTATION_STEP = 90;
 export const TOAST_DISMISS_TIMEOUT_MS = 3000;
 
 /** Default file name for the merged/reordered PDF output */
-export const OUTPUT_FILENAME = "pasta-output.pdf";
+export const OUTPUT_FILENAME = "quire-output.pdf";
 
 /** Default file name when extracting a page subset */
-export const EXTRACT_FILENAME = "pasta-extract.pdf";
+export const EXTRACT_FILENAME = "quire-extract.pdf";
 
 /** Title shown in the password prompt modal for encrypted PDFs */
 export const PASSWORD_MODAL_TITLE = "PASSWORD REQUIRED";

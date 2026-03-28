@@ -47,7 +47,7 @@ describe("PDFOperationsService", () => {
       const result = await service.buildPDF(pages);
 
       expect(result.data).toBeInstanceOf(Uint8Array);
-      expect(result.suggestedFileName).toBe("pasta-output.pdf");
+      expect(result.suggestedFileName).toBe("quire-output.pdf");
     });
 
     it("should handle multiple pages", async () => {
@@ -120,7 +120,7 @@ describe("PDFOperationsService", () => {
       const result = await service.buildPDFFromSubset(pages, [0]);
 
       expect(result.data).toBeInstanceOf(Uint8Array);
-      expect(result.suggestedFileName).toBe("pasta-extract.pdf");
+      expect(result.suggestedFileName).toBe("quire-extract.pdf");
     });
 
     it("should report progress while extracting", async () => {
