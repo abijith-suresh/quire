@@ -26,7 +26,7 @@
     "file-saver": "^2.0.5",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.4.624",
-    "satori": "^0.19.2",
+    "satori": "^0.26.0",
     "solid-js": "^1.9.11"
   },
   "devDependencies": {
