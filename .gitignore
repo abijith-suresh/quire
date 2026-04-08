@@ -35,6 +35,8 @@ Thumbs.db
 
 # Editor directories
 .idea/
+.vscode/*
+!.vscode/extensions.json
 *.suo
 *.ntvs*
 *.njsproj
