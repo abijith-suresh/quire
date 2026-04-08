@@ -7,42 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.0] - 2026-03-28
+## [0.6.0] - 2026-03-28
 
 ### Added
 
-- Quire branding, release polish, feedback toasts, and browser E2E coverage on top of the mature editor workflow.
-- Brand assets and SEO refinements for the renamed product.
+- Quire branding and release polish across the landing page, metadata, assets, and editor-facing copy.
 
 ### Changed
 
 - Renamed Pasta to Quire across the editor, site copy, metadata, and output filenames.
-- Hardened the editor with improved loading states, visual feedback, and stronger release readiness.
+- Prepared the mature editor workflow for a real public launch without using `1.0.0` yet.
+
+## [0.5.0] - 2026-02-27
+
+### Added
+
+- Pasta's mature browser editor phase with the Solid.js `/app` migration, unit tests for services and utilities, and a cleaner open-source site structure.
+
+### Changed
+
+- Removed the blog, reorganized footer/navigation, and polished assets for the last major pre-rebrand product line.
+
+## [0.4.1] - 2026-02-20
+
+### Changed
+
+- Improved drag-and-drop responsiveness with DOM-only reordering, insertion cues, and lighter rendering work.
 
 ### Fixed
 
-- The remaining launch-blocking accessibility, stability, and encrypted-PDF issues in the Pasta-to-Quire transition.
+- Render race conditions, accessibility violations, memory leaks, encrypted-PDF cleanup, and pre-release copy and CI issues.
+
+## [0.4.0] - 2026-02-19
+
+### Added
+
+- Encrypted PDF handling, SEO meta and OG image generation, and Pasta's first blog and changelog content collections.
+
+### Changed
+
+- Expanded the publishable web presence with feature, about, blog, and legal pages plus stronger release-ready metadata.
 
 ## [0.3.0] - 2026-02-19
 
 ### Added
 
-- Encrypted PDF handling so Pasta could work with password-protected documents in real-world usage.
-- Stronger landing-page SEO and share preview metadata for a publishable web presence.
+- The V6 hybrid Swiss design, shared navigation/footer, and SPA-like transitions that turned Pasta into a more polished editor and marketing site.
+
+### Changed
+
+- Redesigned both the landing experience and the editor UI for a stronger product identity.
 
 ## [0.2.0] - 2026-02-17
 
 ### Added
 
 - The first true single-page PDF editor with merge, extract, reorder, rotate, and delete operations.
+- Shared infrastructure and clean-architecture organization for the editor workflow.
 
 ## [0.1.0] - 2026-02-16
 
 ### Added
 
-- The first coherent Pasta baseline with PDF upload, viewing, and service/controller architecture.
+- Pasta's first usable baseline with PDF upload, viewing, rendering services, and drag-and-drop intake.
 
-[unreleased]: https://github.com/abijith-suresh/quire/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/abijith-suresh/quire/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/abijith-suresh/quire/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/abijith-suresh/quire/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/abijith-suresh/quire/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/abijith-suresh/quire/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/abijith-suresh/quire/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/abijith-suresh/quire/compare/v0.1.0...v0.2.0
