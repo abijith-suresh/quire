@@ -55,7 +55,12 @@ export interface IPDFOperationsService {
 }
 
 export interface IPDFRenderer {
-  renderPage(pageNumber: number, canvas: HTMLCanvasElement, scale: number): Promise<void>;
+  renderPage(
+    pageNumber: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+    rotation?: number
+  ): Promise<void>;
   getPageInfo(pageNumber: number): Promise<PDFPageInfo>;
 }
 

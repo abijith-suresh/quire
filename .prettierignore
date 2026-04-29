@@ -16,3 +16,8 @@ yarn.lock
 
 # Cache
 .cache/
+
+# Agent planning files
+PLAN*.md
+IMPROVE.md
+REVIEW.md

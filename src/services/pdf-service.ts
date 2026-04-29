@@ -11,13 +11,11 @@ export class PDFService implements IPDFService {
   private pdfDocument: PDFDocument | null = null;
   private pdfjsDocument: pdfjsLib.PDFDocumentProxy | null = null;
   private fileName: string = "";
-  private arrayBuffer: ArrayBuffer | null = null;
   private currentFile: File | null = null;
   private passwordRegistry = new Map<File, string>();
 
   async loadPDF(file: File): Promise<void> {
     const buffer = await file.arrayBuffer();
-    this.arrayBuffer = buffer;
     this.fileName = file.name;
     this.currentFile = file;
 
@@ -44,7 +42,6 @@ export class PDFService implements IPDFService {
             // Truly locked: requires a real user password
             this.pdfDocument = null;
             this.pdfjsDocument = null;
-            this.arrayBuffer = null;
             this.currentFile = null;
             this.fileName = "";
             throw new PDFPasswordRequiredError(file, "needs-password");
@@ -61,7 +58,6 @@ export class PDFService implements IPDFService {
 
   async loadPDFWithPassword(file: File, password: string): Promise<void> {
     const buffer = await file.arrayBuffer();
-    this.arrayBuffer = buffer;
     this.fileName = file.name;
     this.currentFile = file;
 
@@ -77,7 +73,6 @@ export class PDFService implements IPDFService {
       if (e instanceof Error && e.name === "PasswordException") {
         this.pdfDocument = null;
         this.pdfjsDocument = null;
-        this.arrayBuffer = null;
         this.currentFile = null;
         this.fileName = "";
         throw new PDFPasswordRequiredError(file, "wrong-password");
@@ -111,14 +106,15 @@ export class PDFService implements IPDFService {
   async renderPage(
     pageNumber: number,
     canvas: HTMLCanvasElement,
-    scale: number = 1.5
+    scale: number = 1.5,
+    rotation: number = 0
   ): Promise<void> {
     if (!this.pdfjsDocument) {
       throw new Error("No PDF loaded");
     }
 
     const page = await this.pdfjsDocument.getPage(pageNumber);
-    const viewport = page.getViewport({ scale });
+    const viewport = page.getViewport({ scale, rotation });
 
     canvas.width = viewport.width;
     canvas.height = viewport.height;
@@ -161,7 +157,6 @@ export class PDFService implements IPDFService {
     this.pdfDocument = null;
     this.pdfjsDocument = null;
     this.fileName = "";
-    this.arrayBuffer = null;
     this.currentFile = null;
   }
 
