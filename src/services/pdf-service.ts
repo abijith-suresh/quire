@@ -111,14 +111,15 @@ export class PDFService implements IPDFService {
   async renderPage(
     pageNumber: number,
     canvas: HTMLCanvasElement,
-    scale: number = 1.5
+    scale: number = 1.5,
+    rotation: number = 0
   ): Promise<void> {
     if (!this.pdfjsDocument) {
       throw new Error("No PDF loaded");
     }
 
     const page = await this.pdfjsDocument.getPage(pageNumber);
-    const viewport = page.getViewport({ scale });
+    const viewport = page.getViewport({ scale, rotation });
 
     canvas.width = viewport.width;
     canvas.height = viewport.height;

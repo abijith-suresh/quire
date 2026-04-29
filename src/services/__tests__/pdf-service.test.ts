@@ -15,39 +15,29 @@ vi.mock("pdf-lib", () => ({
 
 vi.mock("pdfjs-dist", () => ({
   getDocument: vi.fn().mockImplementation((options) => {
+    const mockPage = {
+      getViewport: vi
+        .fn()
+        .mockImplementation(({ rotation = 0 } = {}) =>
+          rotation === 90 || rotation === 270
+            ? { width: 200, height: 100 }
+            : { width: 100, height: 200 }
+        ),
+      render: vi.fn().mockReturnValue({ promise: Promise.resolve() }),
+    };
+    const mockDoc = {
+      getPage: vi.fn().mockResolvedValue(mockPage),
+    };
+
     if (!options) {
-      return {
-        promise: Promise.resolve({
-          getPage: vi.fn().mockResolvedValue({
-            getViewport: vi.fn().mockReturnValue({ width: 100, height: 200 }),
-            render: vi.fn().mockReturnValue({ promise: Promise.resolve() }),
-          }),
-        }),
-      };
+      return { promise: Promise.resolve(mockDoc) };
     }
     if (options.password === "wrong") {
       return {
         promise: Promise.reject({ name: "PasswordException", message: "Password required" }),
       };
     }
-    if (options.password === "") {
-      return {
-        promise: Promise.resolve({
-          getPage: vi.fn().mockResolvedValue({
-            getViewport: vi.fn().mockReturnValue({ width: 100, height: 200 }),
-            render: vi.fn().mockReturnValue({ promise: Promise.resolve() }),
-          }),
-        }),
-      };
-    }
-    return {
-      promise: Promise.resolve({
-        getPage: vi.fn().mockResolvedValue({
-          getViewport: vi.fn().mockReturnValue({ width: 100, height: 200 }),
-          render: vi.fn().mockReturnValue({ promise: Promise.resolve() }),
-        }),
-      }),
-    };
+    return { promise: Promise.resolve(mockDoc) };
   }),
   GlobalWorkerOptions: { workerSrc: "" },
 }));
@@ -173,6 +163,38 @@ describe("PDFService", () => {
       const canvas = document.createElement("canvas");
 
       await expect(service.renderPage(1, canvas)).rejects.toThrow("No PDF loaded");
+    });
+
+    it("should produce a landscape canvas when rotation is 90", async () => {
+      // jsdom doesn't implement HTMLCanvasElement.getContext — stub it out
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+        {} as unknown as CanvasRenderingContext2D
+      );
+
+      const service = new PDFService();
+      const file = new File([""], "test.pdf", { type: "application/pdf" });
+      await service.loadPDF(file);
+
+      const canvas = document.createElement("canvas");
+      await service.renderPage(1, canvas, 1, 90);
+
+      expect(canvas.width).toBeGreaterThan(canvas.height);
+    });
+
+    it("should produce a portrait canvas when rotation is 0", async () => {
+      // jsdom doesn't implement HTMLCanvasElement.getContext — stub it out
+      vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+        {} as unknown as CanvasRenderingContext2D
+      );
+
+      const service = new PDFService();
+      const file = new File([""], "test.pdf", { type: "application/pdf" });
+      await service.loadPDF(file);
+
+      const canvas = document.createElement("canvas");
+      await service.renderPage(1, canvas, 1, 0);
+
+      expect(canvas.height).toBeGreaterThan(canvas.width);
     });
   });
 
