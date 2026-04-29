@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 vi.mock("pdf-lib", () => ({
   PDFDocument: {
-    load: vi.fn().mockImplementation((buffer, options) => {
+    load: vi.fn().mockImplementation((_buffer, options) => {
       if (options?.ignoreEncryption) {
         return Promise.resolve({
           getPageCount: vi.fn().mockReturnValue(5),
