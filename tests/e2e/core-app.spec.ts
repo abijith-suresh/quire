@@ -33,6 +33,10 @@ test("rotates, deletes, extracts, and downloads", async ({ page }) => {
   await page.getByTestId("editor-page-rotate-button").first().click();
   await expect(page.getByTestId("editor-status-message")).toContainText("Rotated");
 
+  // After a 90° rotation the canvas-container should switch to landscape aspect-ratio
+  const canvasContainer = firstTile.locator('[data-testid="editor-page-canvas"]');
+  await expect(canvasContainer).toHaveCSS("aspect-ratio", "4 / 3");
+
   await page.getByTestId("editor-delete-button").click();
   await expect(firstTile).toHaveAttribute("data-marked-for-deletion", "true");
 
