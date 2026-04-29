@@ -19,7 +19,9 @@ export default function EditorPageCanvas(props: Props) {
   // eslint-disable-next-line no-unassigned-vars
   let canvas!: HTMLCanvasElement;
 
-  // Landscape when rotated 90° or 270°
+  // Container switches to landscape aspect-ratio (4:3) for 90° / 270° rotations.
+  // Uses a CSS class (not inline style) so the browser treats it as a definite height
+  // — allowing max-height: 100% on the child canvas to resolve correctly.
   const isTransposed = () => props.rotation % 180 !== 0;
 
   onMount(() => {
@@ -37,7 +39,9 @@ export default function EditorPageCanvas(props: Props) {
               await pdfService.loadPDF(props.page.sourceFile);
             }
             if (!container.isConnected) return;
-            // pdf.js rotation is CCW; CSS/UI rotation is CW — convert direction
+            // Render at the current rotation so pages that are already rotated when
+            // they first enter the viewport get the correct orientation immediately.
+            // pdf.js rotation is CCW; UI rotation is CW — convert direction.
             const pdfjsRotation = (360 - props.rotation) % 360;
             await pdfService.renderPage(
               props.page.sourcePageNumber,
@@ -46,12 +50,10 @@ export default function EditorPageCanvas(props: Props) {
               pdfjsRotation
             );
             if (!container.isConnected) return;
-            container.classList.remove("thumbnail-placeholder");
             setRenderState("ready");
             setRendered(true);
           } catch (err) {
             console.error(`Failed to render page ${props.page.sourcePageNumber}:`, err);
-            if (container.isConnected) container.classList.remove("thumbnail-placeholder");
             setRenderState("error");
           }
         }
@@ -71,15 +73,18 @@ export default function EditorPageCanvas(props: Props) {
     });
   });
 
-  // Re-render when rotation changes after the first viewport render.
-  // `defer: true` prevents this from firing on initial mount — the IntersectionObserver
-  // already renders with the correct rotation on first entry.
+  // Re-render with fade-dissolve animation when rotation changes after first render.
+  // defer: true prevents this from firing on initial mount.
   createEffect(
     on(
       () => props.rotation,
       async (rotation) => {
         if (!rendered()) return;
         try {
+          // Fade out fast (80ms ease-in via CSS), then render while invisible,
+          // then remove the class to fade back in (120ms ease-out via CSS).
+          canvas.classList.add("is-rendering");
+          await new Promise<void>((r) => setTimeout(r, 80));
           const storedPassword = pdfService.getPassword(props.page.sourceFile);
           if (storedPassword !== undefined) {
             await pdfService.loadPDFWithPassword(props.page.sourceFile, storedPassword);
@@ -96,6 +101,8 @@ export default function EditorPageCanvas(props: Props) {
           );
         } catch (err) {
           console.error(`Failed to re-render rotated page:`, err);
+        } finally {
+          canvas.classList.remove("is-rendering");
         }
       },
       { defer: true }
@@ -107,8 +114,11 @@ export default function EditorPageCanvas(props: Props) {
       ref={container}
       data-testid="editor-page-canvas"
       data-render-state={renderState()}
-      class="canvas-container thumbnail-placeholder"
-      style={{ "aspect-ratio": isTransposed() ? "4/3" : "3/4" }}
+      classList={{
+        "canvas-container": true,
+        "thumbnail-placeholder": renderState() === "loading",
+        "is-transposed": isTransposed(),
+      }}
     >
       <canvas ref={canvas} class="page-canvas" />
     </div>

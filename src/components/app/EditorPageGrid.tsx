@@ -35,7 +35,7 @@ export default function EditorPageGrid(props: Props) {
         aria-label="PDF pages"
         aria-busy={props.busy}
         data-testid="editor-page-grid"
-        class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3"
+        class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3 items-start"
       >
         <For each={props.pages}>
           {(page, index) => (
