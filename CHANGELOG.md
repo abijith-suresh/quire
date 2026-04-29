@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-04-29
+
+### Changed
+
+- Reworked the editor's PDF backend to cache documents per source file, keeping mixed-PDF thumbnail rendering stable across upload, add, and rotate flows.
+- Pulled page-state mutations into a controller helper and deduplicated PDF build/extract internals to keep editor workflow logic easier to evolve and test.
+
+### Fixed
+
+- Removed the legacy `pdf-loaded` viewer path and hardened the unit/E2E regression coverage around encrypted-PDF workflows and editor session state.
+
 ## [0.6.0] - 2026-03-28
 
 ### Added
@@ -71,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pasta's first usable baseline with PDF upload, viewing, rendering services, and drag-and-drop intake.
 
-[unreleased]: https://github.com/abijith-suresh/quire/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/abijith-suresh/quire/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/abijith-suresh/quire/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/abijith-suresh/quire/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/abijith-suresh/quire/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/abijith-suresh/quire/compare/v0.4.0...v0.4.1
