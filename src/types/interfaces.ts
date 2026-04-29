@@ -3,6 +3,7 @@ export type EncryptionReason = "needs-password" | "wrong-password";
 export class PDFPasswordRequiredError extends Error {
   readonly file: File;
   readonly reason: EncryptionReason;
+
   constructor(file: File, reason: EncryptionReason = "needs-password") {
     super(`PDF requires a password: ${file.name}`);
     this.name = "PDFPasswordRequiredError";
@@ -15,12 +16,6 @@ export interface PDFPageInfo {
   pageNumber: number;
   width: number;
   height: number;
-}
-
-export interface PDFLoadedEvent {
-  fileName: string;
-  pageCount: number;
-  file: File;
 }
 
 export interface PageState {
@@ -56,12 +51,13 @@ export interface IPDFOperationsService {
 
 export interface IPDFRenderer {
   renderPage(
+    file: File,
     pageNumber: number,
     canvas: HTMLCanvasElement,
     scale: number,
     rotation?: number
   ): Promise<void>;
-  getPageInfo(pageNumber: number): Promise<PDFPageInfo>;
+  getPageInfo(file: File, pageNumber: number): Promise<PDFPageInfo>;
 }
 
 export interface IPDFLoader {
@@ -70,10 +66,10 @@ export interface IPDFLoader {
   getFileName(): string;
   isLoaded(): boolean;
   unload(): void;
+  reset(): void;
 }
 
 export interface IPDFService extends IPDFLoader, IPDFRenderer {
-  dispatchLoadedEvent(): void;
   loadPDFWithPassword(file: File, password: string): Promise<void>;
   getPassword(file: File): string | undefined;
   clearPasswordRegistry(): void;

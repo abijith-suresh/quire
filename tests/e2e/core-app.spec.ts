@@ -77,6 +77,28 @@ test("prompts for encrypted PDFs and accepts the correct password", async ({ pag
   await expect(page.getByTestId("editor-page-tile")).toHaveCount(1);
 });
 
+test("extracts and downloads after unlocking an encrypted PDF", async ({ page }) => {
+  await page.goto("/app");
+  await uploadPdf(page, encryptedPdf);
+
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByPlaceholder("Enter password").fill("623");
+  await page.getByRole("button", { name: "Unlock" }).click();
+
+  await waitForEditorReady(page);
+  await page.getByTestId("editor-page-tile").first().click();
+
+  const extractPromise = page.waitForEvent("download");
+  await page.getByTestId("editor-extract-button").click();
+  const extract = await extractPromise;
+  expect(extract.suggestedFilename()).toBe("quire-extract.pdf");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("editor-download-button").click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("quire-output.pdf");
+});
+
 test("keeps the password prompt open after a wrong password and allows retry", async ({ page }) => {
   await page.goto("/app");
   await uploadPdf(page, encryptedPdf);

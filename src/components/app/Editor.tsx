@@ -1,10 +1,16 @@
-import { createSignal, For, onCleanup, Show } from "solid-js";
+import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { ROTATION_STEP } from "../../constants";
 import type { PageState } from "../../types/interfaces";
 import { PDFPasswordRequiredError } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
 import { pdfOperationsService } from "../../services/pdf-operations-service";
+import {
+  createPageStates,
+  remapSelectionAfterMove,
+  toggleSelectAll,
+  toggleSelection,
+} from "../../controllers/editor-page-state";
 import { downloadPDF } from "../../utils/download";
 import { promptForPassword } from "../../utils/password-prompt";
 import {
@@ -45,8 +51,10 @@ export default function Editor() {
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
-  pdfService.clearPasswordRegistry();
-  pdfOperationsService.clearCache();
+  onMount(() => {
+    pdfService.reset();
+    pdfOperationsService.clearCache();
+  });
 
   const activePageCount = () => pages.filter((p) => !p.markedForDeletion).length;
   const isBusy = () => operation() !== "idle";
@@ -89,6 +97,8 @@ export default function Editor() {
       window.clearTimeout(timer);
     }
     toastTimers.clear();
+    pdfService.reset();
+    pdfOperationsService.clearCache();
   });
 
   function formatPageCount(pageCount: number) {
@@ -153,15 +163,7 @@ export default function Editor() {
   // --- File loading ---
 
   function handleFileLoaded(file: File, pageCount: number): void {
-    setPages(
-      Array.from({ length: pageCount }, (_, i) => ({
-        id: `${file.name}-${i + 1}-${Date.now()}`,
-        sourceFile: file,
-        sourcePageNumber: i + 1,
-        rotation: 0,
-        markedForDeletion: false,
-      }))
-    );
+    setPages(createPageStates(file, pageCount));
     setSelectedIndices(new Set<number>());
     setPhase("edit");
     setReadyStatus();
@@ -175,16 +177,8 @@ export default function Editor() {
     if (pageCount === null) return;
 
     setPages(
-      produce((p) => {
-        for (let i = 1; i <= pageCount; i++) {
-          p.push({
-            id: `${file.name}-${i}-${Date.now()}`,
-            sourceFile: file,
-            sourcePageNumber: i,
-            rotation: 0,
-            markedForDeletion: false,
-          });
-        }
+      produce((draftPages) => {
+        draftPages.push(...createPageStates(file, pageCount));
       })
     );
 
@@ -198,7 +192,6 @@ export default function Editor() {
     const pageCount = await loadPdfFile(file, "upload");
     if (pageCount === null) return;
 
-    pdfService.dispatchLoadedEvent();
     handleFileLoaded(file, pageCount);
   }
 
@@ -206,24 +199,12 @@ export default function Editor() {
 
   function handlePageClick(index: number): void {
     if (isBusy()) return;
-    setSelectedIndices((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
+    setSelectedIndices((previousSelection) => toggleSelection(previousSelection, index));
   }
 
   function handleSelectAll(): void {
     if (isBusy()) return;
-    if (selectedIndices().size === pages.length) {
-      setSelectedIndices(new Set<number>());
-    } else {
-      setSelectedIndices(new Set(pages.map((_, i) => i)));
-    }
+    setSelectedIndices((previousSelection) => toggleSelectAll(pages.length, previousSelection));
   }
 
   // --- Rotation ---
@@ -357,21 +338,7 @@ export default function Editor() {
     );
 
     // Remap selection indices after reorder
-    setSelectedIndices((prev) => {
-      const next = new Set<number>();
-      for (const oldIndex of prev) {
-        let newIndex = oldIndex;
-        if (oldIndex === from) {
-          newIndex = to;
-        } else if (from < to && oldIndex > from && oldIndex <= to) {
-          newIndex = oldIndex - 1;
-        } else if (from > to && oldIndex >= to && oldIndex < from) {
-          newIndex = oldIndex + 1;
-        }
-        next.add(newIndex);
-      }
-      return next;
-    });
+    setSelectedIndices((previousSelection) => remapSelectionAfterMove(previousSelection, from, to));
 
     setDragSourceIndex(null);
   }

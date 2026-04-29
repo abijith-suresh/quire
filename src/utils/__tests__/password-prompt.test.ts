@@ -22,8 +22,6 @@ describe("password-prompt utility", () => {
   it("should show error message when isRetry is true", async () => {
     const promise = promptForPassword("test.pdf", true);
 
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
     const errorMsg = document.querySelector('[aria-live="polite"]');
     expect(errorMsg).not.toBeNull();
     expect(errorMsg?.textContent).toContain("Incorrect password");
@@ -39,8 +37,6 @@ describe("password-prompt utility", () => {
   it("should resolve with entered password on submit", async () => {
     const promise = promptForPassword("test.pdf", false);
 
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
     const input = document.querySelector('input[type="password"]') as HTMLInputElement;
     const unlockBtn = document.querySelectorAll("button")[1];
 
@@ -53,10 +49,8 @@ describe("password-prompt utility", () => {
     expect(result).toBe("mypassword");
   });
 
-  it("should reject when cancel button is clicked", async () => {
+  it("should resolve to null when cancel button is clicked", async () => {
     const promise = promptForPassword("test.pdf", false);
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
 
     const cancelBtn = document.querySelector("button");
 
@@ -70,8 +64,6 @@ describe("password-prompt utility", () => {
 
   it("should submit on Enter key", async () => {
     const promise = promptForPassword("test.pdf", false);
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
 
     const input = document.querySelector('input[type="password"]') as HTMLInputElement;
 
