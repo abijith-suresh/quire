@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from "astro:transitions";
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 
 interface Props {
@@ -47,7 +47,7 @@ const resolvedOgImage = ogImage ?? `${siteOrigin}${base}og/${slug}.png`;
     <meta name="twitter:image" content={resolvedOgImage} />
     <slot name="head" />
     <title>{title}</title>
-    <ViewTransitions />
+    <ClientRouter />
   </head>
   <body>
     <slot />
