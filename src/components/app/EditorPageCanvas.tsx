@@ -32,18 +32,12 @@ export default function EditorPageCanvas(props: Props) {
           observer.disconnect();
 
           try {
-            const storedPassword = pdfService.getPassword(props.page.sourceFile);
-            if (storedPassword !== undefined) {
-              await pdfService.loadPDFWithPassword(props.page.sourceFile, storedPassword);
-            } else {
-              await pdfService.loadPDF(props.page.sourceFile);
-            }
-            if (!container.isConnected) return;
             // Render at the current rotation so pages that are already rotated when
             // they first enter the viewport get the correct orientation immediately.
             // pdf.js rotation is CCW; UI rotation is CW — convert direction.
             const pdfjsRotation = (360 - props.rotation) % 360;
             await pdfService.renderPage(
+              props.page.sourceFile,
               props.page.sourcePageNumber,
               canvas,
               THUMBNAIL_SCALE,
@@ -84,23 +78,18 @@ export default function EditorPageCanvas(props: Props) {
           // Fade out fast (80ms ease-in via CSS), then render while invisible,
           // then remove the class to fade back in (120ms ease-out via CSS).
           canvas.classList.add("is-rendering");
-          await new Promise<void>((r) => setTimeout(r, 80));
-          const storedPassword = pdfService.getPassword(props.page.sourceFile);
-          if (storedPassword !== undefined) {
-            await pdfService.loadPDFWithPassword(props.page.sourceFile, storedPassword);
-          } else {
-            await pdfService.loadPDF(props.page.sourceFile);
-          }
+          await new Promise<void>((resolve) => setTimeout(resolve, 80));
           if (!container.isConnected) return;
           const pdfjsRotation = (360 - rotation) % 360;
           await pdfService.renderPage(
+            props.page.sourceFile,
             props.page.sourcePageNumber,
             canvas,
             THUMBNAIL_SCALE,
             pdfjsRotation
           );
         } catch (err) {
-          console.error(`Failed to re-render rotated page:`, err);
+          console.error("Failed to re-render rotated page:", err);
         } finally {
           canvas.classList.remove("is-rendering");
         }

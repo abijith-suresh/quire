@@ -1,86 +1,34 @@
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import type { PDFPageInfo, IPDFService, PDFLoadedEvent } from "../types/interfaces";
+import type { PDFPageInfo, IPDFService } from "../types/interfaces";
 import { PDFPasswordRequiredError } from "../types/interfaces";
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
+interface LoadedPDFRecord {
+  file: File;
+  fileName: string;
+  pdfDocument: PDFDocument;
+  pdfjsDocument: pdfjsLib.PDFDocumentProxy;
+}
+
 export class PDFService implements IPDFService {
-  private pdfDocument: PDFDocument | null = null;
-  private pdfjsDocument: pdfjsLib.PDFDocumentProxy | null = null;
-  private fileName: string = "";
-  private currentFile: File | null = null;
+  private activeFile: File | null = null;
   private passwordRegistry = new Map<File, string>();
+  private documentCache = new Map<File, LoadedPDFRecord>();
+  private loadPromises = new Map<File, Promise<LoadedPDFRecord>>();
 
   async loadPDF(file: File): Promise<void> {
-    const buffer = await file.arrayBuffer();
-    this.fileName = file.name;
-    this.currentFile = file;
-
-    const typedArray = new Uint8Array(buffer);
-
-    try {
-      // Attempt normal load — throws EncryptedPDFError for any encrypted PDF
-      this.pdfDocument = await PDFDocument.load(buffer);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("is encrypted")) {
-        // Bypass pdf-lib's encryption guard (no decryption; content streams stay encrypted
-        // for user-password PDFs, but owner-password PDFs often work fine in practice)
-        this.pdfDocument = await PDFDocument.load(buffer, { ignoreEncryption: true });
-
-        try {
-          // pdf.js performs actual decryption — try with an empty user password first
-          this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password: "" })
-            .promise;
-          // Success: this is an owner-password PDF (empty user password)
-          this.passwordRegistry.set(file, "");
-          return;
-        } catch (pdfjsError) {
-          if (pdfjsError instanceof Error && pdfjsError.name === "PasswordException") {
-            // Truly locked: requires a real user password
-            this.pdfDocument = null;
-            this.pdfjsDocument = null;
-            this.currentFile = null;
-            this.fileName = "";
-            throw new PDFPasswordRequiredError(file, "needs-password");
-          }
-          throw pdfjsError;
-        }
-      }
-      throw error;
-    }
-
-    // Unencrypted PDF: load with pdf.js normally
-    this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray }).promise;
+    const record = await this.getOrLoadDocument(file, () => this.loadDocument(file));
+    this.activeFile = record.file;
   }
 
   async loadPDFWithPassword(file: File, password: string): Promise<void> {
-    const buffer = await file.arrayBuffer();
-    this.fileName = file.name;
-    this.currentFile = file;
-
-    const typedArray = new Uint8Array(buffer);
-
-    // pdf-lib: bypass encryption guard (no decryption capability in pdf-lib)
-    this.pdfDocument = await PDFDocument.load(buffer, { ignoreEncryption: true });
-
-    try {
-      // pdf.js: actual decryption happens here with the provided password
-      this.pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password }).promise;
-    } catch (e) {
-      if (e instanceof Error && e.name === "PasswordException") {
-        this.pdfDocument = null;
-        this.pdfjsDocument = null;
-        this.currentFile = null;
-        this.fileName = "";
-        throw new PDFPasswordRequiredError(file, "wrong-password");
-      }
-      throw e;
-    }
-
+    const record = await this.getOrLoadDocument(file, () => this.loadDocument(file, password));
     this.passwordRegistry.set(file, password);
+    this.activeFile = record.file;
   }
 
   getPassword(file: File): string | undefined {
@@ -92,28 +40,30 @@ export class PDFService implements IPDFService {
   }
 
   getPageCount(): number {
-    return this.pdfDocument?.getPageCount() ?? 0;
+    if (!this.activeFile) {
+      return 0;
+    }
+
+    return this.documentCache.get(this.activeFile)?.pdfDocument.getPageCount() ?? 0;
   }
 
   getFileName(): string {
-    return this.fileName;
-  }
+    if (!this.activeFile) {
+      return "";
+    }
 
-  getPDFDocument(): PDFDocument | null {
-    return this.pdfDocument;
+    return this.documentCache.get(this.activeFile)?.fileName ?? "";
   }
 
   async renderPage(
+    file: File,
     pageNumber: number,
     canvas: HTMLCanvasElement,
     scale: number = 1.5,
     rotation: number = 0
   ): Promise<void> {
-    if (!this.pdfjsDocument) {
-      throw new Error("No PDF loaded");
-    }
-
-    const page = await this.pdfjsDocument.getPage(pageNumber);
+    const record = await this.getOrLoadDocument(file);
+    const page = await record.pdfjsDocument.getPage(pageNumber);
     const viewport = page.getViewport({ scale, rotation });
 
     canvas.width = viewport.width;
@@ -126,17 +76,14 @@ export class PDFService implements IPDFService {
 
     await page.render({
       canvasContext: context,
-      viewport: viewport,
-      canvas: canvas,
+      viewport,
+      canvas,
     }).promise;
   }
 
-  async getPageInfo(pageNumber: number): Promise<PDFPageInfo> {
-    if (!this.pdfjsDocument) {
-      throw new Error("No PDF loaded");
-    }
-
-    const page = await this.pdfjsDocument.getPage(pageNumber);
+  async getPageInfo(file: File, pageNumber: number): Promise<PDFPageInfo> {
+    const record = await this.getOrLoadDocument(file);
+    const page = await record.pdfjsDocument.getPage(pageNumber);
     const viewport = page.getViewport({ scale: 1 });
 
     return {
@@ -147,33 +94,138 @@ export class PDFService implements IPDFService {
   }
 
   isLoaded(): boolean {
-    return this.pdfDocument !== null && this.pdfjsDocument !== null;
+    return this.activeFile !== null && this.documentCache.has(this.activeFile);
   }
 
   unload(): void {
-    if (this.currentFile) {
-      this.passwordRegistry.delete(this.currentFile);
+    if (!this.activeFile) {
+      return;
     }
-    this.pdfDocument = null;
-    this.pdfjsDocument = null;
-    this.fileName = "";
-    this.currentFile = null;
+
+    const activeFile = this.activeFile;
+    this.activeFile = null;
+    this.passwordRegistry.delete(activeFile);
+    this.disposeDocument(activeFile);
   }
 
-  getFile(): File | null {
-    return this.currentFile;
+  reset(): void {
+    this.activeFile = null;
+    this.clearPasswordRegistry();
+
+    for (const file of this.documentCache.keys()) {
+      this.disposeDocument(file);
+    }
+
+    this.loadPromises.clear();
   }
 
-  dispatchLoadedEvent(): void {
-    if (!this.currentFile) return;
-    const event = new CustomEvent<PDFLoadedEvent>("pdf-loaded", {
-      detail: {
-        fileName: this.fileName,
-        pageCount: this.getPageCount(),
-        file: this.currentFile,
-      },
-    });
-    document.dispatchEvent(event);
+  private async getOrLoadDocument(
+    file: File,
+    loader?: () => Promise<LoadedPDFRecord>
+  ): Promise<LoadedPDFRecord> {
+    const cachedRecord = this.documentCache.get(file);
+    if (cachedRecord) {
+      return cachedRecord;
+    }
+
+    const inFlightRecord = this.loadPromises.get(file);
+    if (inFlightRecord) {
+      return inFlightRecord;
+    }
+
+    const loadRecord = loader ?? (() => this.loadDocumentWithStoredPassword(file));
+    const loadPromise = loadRecord()
+      .then((record) => {
+        this.documentCache.set(file, record);
+        return record;
+      })
+      .finally(() => {
+        this.loadPromises.delete(file);
+      });
+
+    this.loadPromises.set(file, loadPromise);
+    return loadPromise;
+  }
+
+  private loadDocumentWithStoredPassword(file: File): Promise<LoadedPDFRecord> {
+    const storedPassword = this.passwordRegistry.get(file);
+    if (storedPassword !== undefined) {
+      return this.loadDocument(file, storedPassword);
+    }
+
+    return this.loadDocument(file);
+  }
+
+  private async loadDocument(file: File, password?: string): Promise<LoadedPDFRecord> {
+    const buffer = await file.arrayBuffer();
+    const typedArray = new Uint8Array(buffer);
+
+    if (password !== undefined) {
+      const encryptedRecord = await this.loadEncryptedDocument(file, typedArray, buffer, password);
+      this.passwordRegistry.set(file, password);
+      return encryptedRecord;
+    }
+
+    try {
+      const pdfDocument = await PDFDocument.load(buffer);
+      const pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray }).promise;
+
+      return {
+        file,
+        fileName: file.name,
+        pdfDocument,
+        pdfjsDocument,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("is encrypted")) {
+        return this.loadEncryptedDocument(file, typedArray, buffer, "");
+      }
+
+      throw error;
+    }
+  }
+
+  private async loadEncryptedDocument(
+    file: File,
+    typedArray: Uint8Array,
+    buffer: ArrayBuffer,
+    password: string
+  ): Promise<LoadedPDFRecord> {
+    const pdfDocument = await PDFDocument.load(buffer, { ignoreEncryption: true });
+
+    try {
+      const pdfjsDocument = await pdfjsLib.getDocument({ data: typedArray, password }).promise;
+
+      if (password === "") {
+        this.passwordRegistry.set(file, "");
+      }
+
+      return {
+        file,
+        fileName: file.name,
+        pdfDocument,
+        pdfjsDocument,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.name === "PasswordException") {
+        throw new PDFPasswordRequiredError(
+          file,
+          password === "" ? "needs-password" : "wrong-password"
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  private disposeDocument(file: File): void {
+    const record = this.documentCache.get(file);
+    if (record) {
+      void record.pdfjsDocument.destroy();
+    }
+
+    this.documentCache.delete(file);
+    this.loadPromises.delete(file);
   }
 }
 

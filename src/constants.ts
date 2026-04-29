@@ -7,9 +7,6 @@ export const THUMBNAIL_SCALE = 0.5;
 /** IntersectionObserver rootMargin for pre-loading thumbnails before they enter view */
 export const THUMBNAIL_INTERSECTION_MARGIN = "200px";
 
-/** Number of pages to render on initial PDF load in the legacy viewer */
-export const INITIAL_PAGE_LIMIT = 5;
-
 /** Degrees to rotate a page per rotation action */
 export const ROTATION_STEP = 90;
 
