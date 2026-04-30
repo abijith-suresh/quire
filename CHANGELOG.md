@@ -1,3 +1,5 @@
+<!-- Entries below this line were manually maintained prior to automated release management -->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
