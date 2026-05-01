@@ -21,7 +21,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@astrojs/solid-js": "^5.1.3",
+    "@astrojs/solid-js": "^6.0.0",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/typography": "^0.5.19",
     "astro": "^6.2.1",
@@ -53,6 +53,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.1",
+    "vite": "^7.3.0",
     "vitest": "^4.1.5"
   }
 }
