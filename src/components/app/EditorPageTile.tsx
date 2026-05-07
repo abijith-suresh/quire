@@ -48,6 +48,10 @@ export default function EditorPageTile(props: Props) {
       <button
         type="button"
         data-testid="editor-page-tile"
+        data-page-index={props.index}
+        data-source-page={props.page.sourcePageNumber}
+        data-selected={props.selected}
+        data-marked-for-deletion={props.page.markedForDeletion}
         class="editor-page-hitarea"
         role="option"
         aria-selected={props.selected}
@@ -72,7 +76,8 @@ export default function EditorPageTile(props: Props) {
           data-testid="editor-page-rotate-button"
           class="btn-page-rotate"
           title="Rotate 90°"
-          aria-label="Rotate page 90 degrees"
+          aria-hidden="true"
+          tabIndex={-1}
           disabled={props.busy}
           onClick={props.onRotate}
         >
