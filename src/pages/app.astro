@@ -7,9 +7,9 @@ import Editor from "../components/app/Editor";
   title="Quire — Editor"
   description="Open your PDF and start editing. Merge, split, reorder, rotate, and delete pages — all client-side, nothing leaves your device."
 >
-  <div data-page="editor" transition:animate="none">
+  <main data-page="editor" transition:animate="none">
     <Editor client:only="solid-js" />
-  </div>
+  </main>
 </Layout>
 
 <style is:global>
@@ -27,8 +27,27 @@ import Editor from "../components/app/Editor";
     flex-direction: column;
     align-items: center;
     background: #fff;
-    cursor: pointer;
     user-select: none;
+  }
+
+  .editor-page-hitarea {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .editor-page-hitarea:disabled {
+    cursor: not-allowed;
+  }
+
+  .editor-page-hitarea:focus-visible {
+    outline: 2px solid #111;
+    outline-offset: 2px;
   }
 
   .editor-page.selected {

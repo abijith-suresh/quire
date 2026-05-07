@@ -34,6 +34,7 @@ for (const route of ["/", "/about", "/features", "/faq", "/privacy", "/terms"]) 
 
 test("app upload surface has no accessibility violations", async ({ page }) => {
   await page.goto("/app");
+  await expect(page.getByTestId("editor-upload-dropzone")).toBeVisible();
 
   await expectNoAccessibilityViolations(page, {
     include: ["[data-testid='editor-upload-dropzone']", "[data-testid='editor-upload-status']"],

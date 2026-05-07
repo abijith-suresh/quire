@@ -13,94 +13,96 @@ const base = import.meta.env.BASE_URL;
 >
   <div class="page" transition:animate={contentSlide}>
     <Nav base={base} currentPage="home" />
-    <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-left">
-          <p class="hero-label">Client-side PDF editor</p>
-          <h1 class="hero-title">Quire</h1>
-          <div class="hero-tagline">
-            <span class="red-bar"></span>
-            <p class="hero-tagline-text">Edit, merge, split — all in your browser.</p>
+    <main>
+      <section class="hero">
+        <div class="hero-grid">
+          <div class="hero-left">
+            <p class="hero-label">Client-side PDF editor</p>
+            <h1 class="hero-title">Quire</h1>
+            <div class="hero-tagline">
+              <span class="red-bar"></span>
+              <p class="hero-tagline-text">Edit, merge, split — all in your browser.</p>
+            </div>
+          </div>
+          <div class="hero-right">
+            <div class="hero-right-inner">
+              <p class="hero-right-text">
+                No file uploads. No server processing. Every operation runs entirely in your
+                browser. Your documents stay private.
+              </p>
+              <a href={`${base}app`} class="cta-underline">Open Editor</a>
+            </div>
           </div>
         </div>
-        <div class="hero-right">
-          <div class="hero-right-inner">
-            <p class="hero-right-text">
-              No file uploads. No server processing. Every operation runs entirely in your browser.
-              Your documents stay private.
-            </p>
-            <a href={`${base}app`} class="cta-underline">Open Editor</a>
+      </section>
+
+      <section class="features">
+        <div class="features-inner">
+          <div class="features-header animate-on-scroll">
+            <h2 class="features-title">Features</h2>
+            <p class="features-subtitle">Five core operations, zero compromises.</p>
+          </div>
+
+          <div class="feature-list">
+            {
+              [
+                {
+                  num: "01",
+                  title: "Merge",
+                  text: "Combine multiple PDF files into one cohesive document.",
+                  accent: false,
+                },
+                {
+                  num: "02",
+                  title: "Split",
+                  text: "Extract specific pages into separate PDF files.",
+                  accent: false,
+                },
+                {
+                  num: "03",
+                  title: "Reorder",
+                  text: "Drag and drop pages to arrange them in any order you need.",
+                  accent: false,
+                },
+                {
+                  num: "04",
+                  title: "Rotate",
+                  text: "Rotate any page to 90, 180, or 270 degrees.",
+                  accent: false,
+                },
+                {
+                  num: "05",
+                  title: "Delete",
+                  text: "Remove unwanted pages cleanly from any PDF.",
+                  accent: true,
+                },
+              ].map((f, i) => (
+                <div
+                  class:list={[
+                    "feature-row animate-on-scroll",
+                    { "feature-row-last": f.accent },
+                    `stagger-${Math.min(i + 1, 8)}`,
+                  ]}
+                >
+                  <span class="feature-num">{f.num}</span>
+                  <h3 class:list={["feature-name", { "feature-name-red": f.accent }]}>{f.title}</h3>
+                  <p class="feature-desc">{f.text}</p>
+                </div>
+              ))
+            }
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="features">
-      <div class="features-inner">
-        <div class="features-header animate-on-scroll">
-          <h2 class="features-title">Features</h2>
-          <p class="features-subtitle">Five core operations, zero compromises.</p>
+      <section class="bottom-cta animate-on-scroll">
+        <div class="bottom-cta-inner">
+          <h2 class="bottom-title">Start<br />editing.</h2>
+          <div class="bottom-action">
+            <a href={`${base}app`} class="cta-filled press-feedback">Launch Quire</a>
+          </div>
         </div>
-
-        <div class="feature-list">
-          {
-            [
-              {
-                num: "01",
-                title: "Merge",
-                text: "Combine multiple PDF files into one cohesive document.",
-                accent: false,
-              },
-              {
-                num: "02",
-                title: "Split",
-                text: "Extract specific pages into separate PDF files.",
-                accent: false,
-              },
-              {
-                num: "03",
-                title: "Reorder",
-                text: "Drag and drop pages to arrange them in any order you need.",
-                accent: false,
-              },
-              {
-                num: "04",
-                title: "Rotate",
-                text: "Rotate any page to 90, 180, or 270 degrees.",
-                accent: false,
-              },
-              {
-                num: "05",
-                title: "Delete",
-                text: "Remove unwanted pages cleanly from any PDF.",
-                accent: true,
-              },
-            ].map((f, i) => (
-              <div
-                class:list={[
-                  "feature-row animate-on-scroll",
-                  { "feature-row-last": f.accent },
-                  `stagger-${Math.min(i + 1, 8)}`,
-                ]}
-              >
-                <span class="feature-num">{f.num}</span>
-                <h3 class:list={["feature-name", { "feature-name-red": f.accent }]}>{f.title}</h3>
-                <p class="feature-desc">{f.text}</p>
-              </div>
-            ))
-          }
-        </div>
-      </div>
-    </section>
-
-    <section class="bottom-cta animate-on-scroll">
-      <div class="bottom-cta-inner">
-        <h2 class="bottom-title">Start<br />editing.</h2>
-        <div class="bottom-action">
-          <a href={`${base}app`} class="cta-filled press-feedback">Launch Quire</a>
-        </div>
-      </div>
-    </section>
+      </section>
+    </main>
 
     <Footer base={base} />
   </div>
