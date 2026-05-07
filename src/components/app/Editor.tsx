@@ -49,6 +49,7 @@ export default function Editor() {
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
   const [operation, setOperation] = createSignal<EditorOperation>("idle");
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
+  const [watermarkText, setWatermarkText] = createSignal("");
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
@@ -165,6 +166,7 @@ export default function Editor() {
   function handleFileLoaded(file: File, pageCount: number): void {
     setPages(createPageStates(file, pageCount));
     setSelectedIndices(new Set<number>());
+    setWatermarkText("");
     setPhase("edit");
     setReadyStatus();
     dispatchToast(`${file.name} loaded with ${formatPageCount(pageCount)}.`, "success");
@@ -282,6 +284,30 @@ export default function Editor() {
     } catch (err) {
       console.error("Failed to build PDF:", err);
       dispatchToast("Failed to build the PDF.", "error");
+    } finally {
+      setReadyStatus();
+    }
+  }
+
+  async function handleWatermarkDownload(): Promise<void> {
+    if (isBusy()) return;
+
+    const text = watermarkText().trim();
+    if (!text) {
+      dispatchToast("Enter watermark text to continue.", "error");
+      return;
+    }
+
+    setOperation("building");
+    setStatusMessage("Applying watermark...");
+
+    try {
+      const result = await pdfOperationsService.addWatermark(pages, text);
+      downloadPDF(result);
+      dispatchToast("Watermarked PDF download started.", "success");
+    } catch (err) {
+      console.error("Failed to apply watermark:", err);
+      dispatchToast("Failed to apply watermark.", "error");
     } finally {
       setReadyStatus();
     }
@@ -423,6 +449,9 @@ export default function Editor() {
             <EditorSidebar
               busy={isBusy()}
               selectedCount={selectedIndices().size}
+              watermarkText={watermarkText()}
+              onWatermarkTextChange={setWatermarkText}
+              onWatermarkDownload={handleWatermarkDownload}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}

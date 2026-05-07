@@ -1,6 +1,9 @@
 interface Props {
   busy: boolean;
   selectedCount: number;
+  watermarkText: string;
+  onWatermarkTextChange: (value: string) => void;
+  onWatermarkDownload: () => void;
   onSelectAll: () => void;
   onRotate: () => void;
   onDelete: () => void;
@@ -92,16 +95,38 @@ export default function EditorSidebar(props: Props) {
       </div>
 
       {/* Export — pinned to bottom */}
-      <div class="p-4 border-t border-[#ddd] flex-shrink-0">
-        <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
-        <button
-          data-testid="editor-download-button"
-          onClick={props.onDownload}
-          disabled={props.busy}
-          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {props.busy ? "Working..." : "Download"}
-        </button>
+      <div class="p-4 border-t border-[#ddd] flex-shrink-0 space-y-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Watermark</p>
+          <input
+            data-testid="editor-watermark-input"
+            type="text"
+            value={props.watermarkText}
+            placeholder="CONFIDENTIAL"
+            disabled={props.busy}
+            onInput={(e) => props.onWatermarkTextChange(e.currentTarget.value)}
+            class="w-full border border-[#ddd] px-3 py-2 text-xs tracking-[0.08em] uppercase text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+          />
+          <button
+            data-testid="editor-watermark-button"
+            onClick={props.onWatermarkDownload}
+            disabled={props.busy}
+            class="mt-3 w-full border border-[#111] text-[#111] text-[11px] uppercase tracking-[0.15em] font-semibold py-3 bg-transparent cursor-pointer hover:bg-[#111] hover:text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Apply Watermark & Download
+          </button>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
+          <button
+            data-testid="editor-download-button"
+            onClick={props.onDownload}
+            disabled={props.busy}
+            class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {props.busy ? "Working..." : "Download"}
+          </button>
+        </div>
       </div>
     </aside>
   );
