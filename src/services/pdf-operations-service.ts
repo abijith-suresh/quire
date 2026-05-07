@@ -1,5 +1,5 @@
-import { PDFDocument, degrees } from "pdf-lib";
-import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
+import { PDFDocument, StandardFonts, degrees, grayscale } from "pdf-lib";
+import { EXTRACT_FILENAME, OUTPUT_FILENAME, WATERMARK_FILENAME } from "../constants";
 import type {
   PageState,
   PDFOperationResult,
@@ -67,6 +67,61 @@ export class PDFOperationsService implements IPDFOperationsService {
       EXTRACT_FILENAME,
       onProgress
     );
+  }
+
+  /**
+   * Builds a new PDF with a centered diagonal watermark applied to each active page.
+   *
+   * @param pages - The current editor page state to watermark.
+   * @param text - The watermark text to apply.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages or the watermark text is blank.
+   */
+  async addWatermark(pages: PageState[], text: string): Promise<PDFOperationResult> {
+    const trimmedText = text.trim();
+    if (!trimmedText) {
+      throw new Error("Watermark text is required");
+    }
+
+    const activePages = pages.filter((page) => !page.markedForDeletion);
+    if (activePages.length === 0) {
+      throw new Error("No pages to include in the PDF");
+    }
+
+    const outputDoc = await PDFDocument.create();
+    const font = await outputDoc.embedFont(StandardFonts.Helvetica);
+
+    for (const page of activePages) {
+      const sourceDoc = await this.getOrLoadSourceDoc(page.sourceFile);
+      const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
+
+      if (page.rotation !== 0) {
+        copiedPage.setRotation(degrees(page.rotation));
+      }
+
+      const { width, height } = copiedPage.getSize();
+      const fontSize = Math.min(width, height) / 6;
+      const textWidth = font.widthOfTextAtSize(trimmedText, fontSize);
+
+      copiedPage.drawText(trimmedText, {
+        x: (width - textWidth) / 2,
+        y: height / 2,
+        size: fontSize,
+        font,
+        color: grayscale(0.65),
+        opacity: 0.5,
+        rotate: degrees(45),
+      });
+
+      outputDoc.addPage(copiedPage);
+    }
+
+    const data = await outputDoc.save();
+
+    return {
+      data: new Uint8Array(data),
+      suggestedFileName: WATERMARK_FILENAME,
+    };
   }
 
   private async buildOutputFromPages(

@@ -66,6 +66,16 @@ export interface IPDFOperationsService {
   ): Promise<PDFOperationResult>;
 
   /**
+   * Builds a new PDF with a text watermark applied to each active page.
+   *
+   * @param pages - The current editor page state to watermark.
+   * @param text - The watermark text to apply.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages or the watermark text is blank.
+   */
+  addWatermark(pages: PageState[], text: string): Promise<PDFOperationResult>;
+
+  /**
    * Clears any cached source documents held for the current editor session.
    *
    * @returns Nothing.

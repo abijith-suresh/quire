@@ -65,6 +65,22 @@ test("adds another PDF to the current session", async ({ page }) => {
   await expect(page.getByTestId("editor-toast").last()).toContainText("Added 2 pages");
 });
 
+test("downloads a watermarked PDF", async ({ page }) => {
+  await page.goto("/app");
+  await uploadPdf(page, samplePdf);
+  await waitForEditorReady(page);
+
+  await page.getByTestId("editor-watermark-input").fill("CONFIDENTIAL");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("editor-watermark-button").click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe("quire-watermarked.pdf");
+  await expect(page.getByTestId("editor-toast").last()).toContainText(
+    "Watermarked PDF download started."
+  );
+});
+
 test("prompts for encrypted PDFs and accepts the correct password", async ({ page }) => {
   await page.goto("/app");
   await uploadPdf(page, encryptedPdf);
