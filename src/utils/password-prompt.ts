@@ -45,6 +45,8 @@ export function promptForPassword(fileName: string, isRetry: boolean): Promise<s
     const input = document.createElement("input");
     input.type = "password";
     input.placeholder = "Enter password";
+    input.setAttribute("aria-label", "PDF password");
+    input.autocomplete = "current-password";
     input.className =
       "w-full box-border px-3 py-2.5 border border-[#ddd] outline-none text-sm font-mono mb-5 focus:border-[#111]";
 

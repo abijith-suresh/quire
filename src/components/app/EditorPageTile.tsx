@@ -39,7 +39,7 @@ export default function EditorPageTile(props: Props) {
       data-marked-for-deletion={props.page.markedForDeletion}
       class={tileClass()}
       draggable={!props.busy}
-      tabindex="0"
+      tabIndex={0}
       role="option"
       aria-selected={props.selected}
       aria-label={
