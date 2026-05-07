@@ -66,6 +66,15 @@ export interface IPDFOperationsService {
   ): Promise<PDFOperationResult>;
 
   /**
+   * Converts one or more PNG or JPEG images into a downloadable PDF.
+   *
+   * @param files - The image files to embed as PDF pages.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When no supported image files are provided.
+   */
+  imagesToPDF(files: File[]): Promise<PDFOperationResult>;
+
+  /**
    * Clears any cached source documents held for the current editor session.
    *
    * @returns Nothing.

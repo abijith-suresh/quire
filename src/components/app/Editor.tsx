@@ -186,6 +186,24 @@ export default function Editor() {
     dispatchToast(`Added ${formatPageCount(pageCount)} from ${file.name}.`, "success");
   }
 
+  async function handleImagesToPdf(files: File[]): Promise<void> {
+    if (isBusy()) return;
+
+    setOperation("building");
+    setStatusMessage(`Converting images... 0/${files.length}`);
+
+    try {
+      const result = await pdfOperationsService.imagesToPDF(files);
+      downloadPDF(result);
+      dispatchToast("Image-to-PDF download started.", "success");
+    } catch (err) {
+      console.error("Failed to convert images:", err);
+      dispatchToast("Failed to convert selected images.", "error");
+    } finally {
+      setReadyStatus();
+    }
+  }
+
   async function handleInitialUpload(file: File): Promise<void> {
     if (isBusy()) return;
 
@@ -416,6 +434,7 @@ export default function Editor() {
               busy={isBusy()}
               statusMessage={statusMessage()}
               onFileSelected={handleInitialUpload}
+              onImagesSelected={handleImagesToPdf}
             />
           }
         >
@@ -429,6 +448,7 @@ export default function Editor() {
               onExtract={handleExtract}
               onDownload={handleDownload}
               onAddPdf={handleAddPdf}
+              onImagesSelected={handleImagesToPdf}
             />
 
             <main class="flex-1 flex flex-col min-h-0">

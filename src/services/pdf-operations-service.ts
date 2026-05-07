@@ -1,5 +1,5 @@
 import { PDFDocument, degrees } from "pdf-lib";
-import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
+import { EXTRACT_FILENAME, IMAGES_OUTPUT_FILENAME, OUTPUT_FILENAME } from "../constants";
 import type {
   PageState,
   PDFOperationResult,
@@ -67,6 +67,49 @@ export class PDFOperationsService implements IPDFOperationsService {
       EXTRACT_FILENAME,
       onProgress
     );
+  }
+
+  /**
+   * Converts one or more PNG or JPEG images into a PDF document.
+   *
+   * @param files - The image files to embed as PDF pages.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When no supported image files are provided.
+   */
+  async imagesToPDF(files: File[]): Promise<PDFOperationResult> {
+    const supportedFiles = files.filter(
+      (file) => file.type === "image/png" || file.type === "image/jpeg"
+    );
+
+    if (supportedFiles.length === 0) {
+      throw new Error("No supported images selected for conversion");
+    }
+
+    const outputDoc = await PDFDocument.create();
+
+    for (const file of supportedFiles) {
+      const bytes = await file.arrayBuffer();
+      const image =
+        file.type === "image/png"
+          ? await outputDoc.embedPng(bytes)
+          : await outputDoc.embedJpg(bytes);
+      const dimensions = image.scale(1);
+      const page = outputDoc.addPage([dimensions.width, dimensions.height]);
+
+      page.drawImage(image, {
+        x: 0,
+        y: 0,
+        width: dimensions.width,
+        height: dimensions.height,
+      });
+    }
+
+    const data = await outputDoc.save();
+
+    return {
+      data: new Uint8Array(data),
+      suggestedFileName: IMAGES_OUTPUT_FILENAME,
+    };
   }
 
   private async buildOutputFromPages(

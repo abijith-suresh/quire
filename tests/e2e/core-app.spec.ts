@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import path from "node:path";
 
 const samplePdf = path.resolve("tests/fixtures/sample.pdf");
+const samplePng = path.resolve("tests/fixtures/sample.png");
+const sampleJpg = path.resolve("tests/fixtures/sample.jpg");
 const encryptedPdf = path.resolve("tests/fixtures/encrypted.pdf");
 
 async function uploadPdf(page: import("@playwright/test").Page, filePath: string) {
@@ -63,6 +65,20 @@ test("adds another PDF to the current session", async ({ page }) => {
   await expect(page.getByTestId("editor-root")).toHaveAttribute("data-operation", "idle");
   await expect(page.getByTestId("editor-page-tile")).toHaveCount(4);
   await expect(page.getByTestId("editor-toast").last()).toContainText("Added 2 pages");
+});
+
+test("converts images to a PDF from the upload screen", async ({ page }) => {
+  await page.goto("/app");
+  await expect(page.getByText("PDF to images — coming soon")).toBeVisible();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("editor-convert-images-input").setInputFiles([samplePng, sampleJpg]);
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe("quire-images.pdf");
+  await expect(page.getByTestId("editor-toast").last()).toContainText(
+    "Image-to-PDF download started."
+  );
 });
 
 test("prompts for encrypted PDFs and accepts the correct password", async ({ page }) => {

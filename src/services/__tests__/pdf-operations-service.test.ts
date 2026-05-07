@@ -10,9 +10,19 @@ const createMockPage = (overrides: Partial<PageState> = {}): PageState => ({
   ...overrides,
 });
 
+const mockPdfPage = {
+  drawImage: vi.fn(),
+};
+
 const mockPDFDoc = {
   copyPages: vi.fn().mockResolvedValue([{ setRotation: vi.fn() }]),
-  addPage: vi.fn(),
+  addPage: vi.fn().mockReturnValue(mockPdfPage),
+  embedPng: vi
+    .fn()
+    .mockResolvedValue({ scale: vi.fn().mockReturnValue({ width: 200, height: 100 }) }),
+  embedJpg: vi
+    .fn()
+    .mockResolvedValue({ scale: vi.fn().mockReturnValue({ width: 320, height: 240 }) }),
   save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
   getPageCount: vi.fn().mockReturnValue(1),
 };
@@ -158,6 +168,33 @@ describe("PDFOperationsService", () => {
       await expect(service.buildPDFFromSubset(pages, [])).rejects.toThrow(
         "No pages selected for extraction"
       );
+    });
+  });
+
+  describe("imagesToPDF", () => {
+    it("converts supported images into a PDF", async () => {
+      const service = new PDFOperationsService();
+      const files = [
+        new File(["png"], "one.png", { type: "image/png" }),
+        new File(["jpg"], "two.jpg", { type: "image/jpeg" }),
+      ];
+
+      const result = await service.imagesToPDF(files);
+
+      expect(mockPDFDoc.embedPng).toHaveBeenCalledTimes(1);
+      expect(mockPDFDoc.embedJpg).toHaveBeenCalledTimes(1);
+      expect(mockPDFDoc.addPage).toHaveBeenNthCalledWith(1, [200, 100]);
+      expect(mockPDFDoc.addPage).toHaveBeenNthCalledWith(2, [320, 240]);
+      expect(mockPdfPage.drawImage).toHaveBeenCalledTimes(2);
+      expect(result.suggestedFileName).toBe("quire-images.pdf");
+    });
+
+    it("rejects unsupported image selections", async () => {
+      const service = new PDFOperationsService();
+
+      await expect(
+        service.imagesToPDF([new File(["gif"], "animated.gif", { type: "image/gif" })])
+      ).rejects.toThrow("No supported images selected for conversion");
     });
   });
 
