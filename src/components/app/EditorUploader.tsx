@@ -27,7 +27,7 @@ export default function EditorUploader(props: Props) {
         <div
           data-testid="editor-upload-dropzone"
           role="button"
-          tabindex="0"
+          tabIndex={0}
           aria-busy={props.busy}
           aria-label="Click or drag a PDF file here to upload"
           class={`border-2 border-dashed transition-colors py-20 text-center ${

@@ -352,7 +352,9 @@ export default function Editor() {
     <div class="font-['Work_Sans',sans-serif] bg-white text-[#111] h-dvh flex flex-col overflow-hidden">
       <div
         data-testid="editor-toast-region"
+        role="status"
         aria-live="polite"
+        aria-atomic="true"
         class="pointer-events-none fixed right-4 top-4 z-50 flex max-w-sm flex-col gap-2"
       >
         <For each={toasts()}>

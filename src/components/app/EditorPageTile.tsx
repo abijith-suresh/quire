@@ -32,32 +32,12 @@ export default function EditorPageTile(props: Props) {
 
   return (
     <div
-      data-testid="editor-page-tile"
       data-page-index={props.index}
       data-source-page={props.page.sourcePageNumber}
       data-selected={props.selected}
       data-marked-for-deletion={props.page.markedForDeletion}
       class={tileClass()}
       draggable={!props.busy}
-      tabindex="0"
-      role="option"
-      aria-selected={props.selected}
-      aria-label={
-        props.page.markedForDeletion
-          ? `Page ${props.index + 1}, marked for deletion`
-          : `Page ${props.index + 1}`
-      }
-      onClick={() => {
-        if (props.busy) return;
-        props.onClick();
-      }}
-      onKeyDown={(e) => {
-        if (props.busy) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          props.onClick();
-        }
-      }}
       onDragStart={props.onDragStart}
       onDragOver={props.onDragOver}
       onDragEnter={props.onDragEnter}
@@ -65,18 +45,39 @@ export default function EditorPageTile(props: Props) {
       onDrop={props.onDrop}
       onDragEnd={props.onDragEnd}
     >
-      <EditorPageCanvas
-        page={props.page}
-        rotation={props.page.rotation}
-        scrollRoot={props.scrollRoot}
-      />
+      <button
+        type="button"
+        data-testid="editor-page-tile"
+        data-page-index={props.index}
+        data-source-page={props.page.sourcePageNumber}
+        data-selected={props.selected}
+        data-marked-for-deletion={props.page.markedForDeletion}
+        class="editor-page-hitarea"
+        role="option"
+        aria-selected={props.selected}
+        aria-label={
+          props.page.markedForDeletion
+            ? `Page ${props.index + 1}, marked for deletion`
+            : `Page ${props.index + 1}`
+        }
+        disabled={props.busy}
+        onClick={props.onClick}
+      >
+        <EditorPageCanvas
+          page={props.page}
+          rotation={props.page.rotation}
+          scrollRoot={props.scrollRoot}
+        />
+      </button>
       <div class="page-controls">
         <span class="page-label">Page {props.index + 1}</span>
         <button
+          type="button"
           data-testid="editor-page-rotate-button"
           class="btn-page-rotate"
           title="Rotate 90°"
-          aria-label="Rotate page 90 degrees"
+          aria-hidden="true"
+          tabIndex={-1}
           disabled={props.busy}
           onClick={props.onRotate}
         >
