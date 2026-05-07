@@ -385,7 +385,7 @@ export default function Editor() {
             href={base}
             class="font-['Bebas_Neue',sans-serif] text-2xl tracking-wide text-white no-underline"
           >
-            Pasta
+            Quire
           </a>
           <span class="w-px h-6 bg-[#555] mx-5" />
           <Show when={phase() === "edit"}>
