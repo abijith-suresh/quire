@@ -7,7 +7,7 @@
 
 ## Stack
 
-- Astro 5
+- Astro 6
 - SolidJS editor UI
 - Tailwind CSS v4
 - TypeScript
@@ -24,11 +24,13 @@
 
 ## Project Map
 
-- `src/components/app/`: editor UI
-- `src/controllers/`: DOM orchestration and interaction wiring
+- `src/components/app/`: editor UI, tiles, canvases, sidebar, and uploader
+- `src/controllers/`: editor page-state helpers and orchestration utilities
 - `src/services/`: PDF load, render, and manipulation logic
-- `src/utils/`: download, password prompt, transitions, and helpers
+- `src/pages/`: marketing, legal, editor, and OG routes
+- `src/utils/`: download, password prompt, toast, transitions, and helpers
 - `tests/e2e/`: Playwright coverage for core editor flows
+- `tests/fixtures/`: sample PDFs used by browser tests
 
 ## Hard Rules
 
