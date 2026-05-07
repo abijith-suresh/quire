@@ -2,7 +2,10 @@ import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { ROTATION_STEP } from "../../constants";
 import type { PageState } from "../../types/interfaces";
-import { PDFPasswordRequiredError } from "../../types/interfaces";
+import {
+  EncryptedPDFExportUnsupportedError,
+  PDFPasswordRequiredError,
+} from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
 import { pdfOperationsService } from "../../services/pdf-operations-service";
 import {
@@ -56,12 +59,23 @@ export default function Editor() {
     pdfOperationsService.clearCache();
   });
 
+  const encryptedExportMessage =
+    "Encrypted PDFs can be viewed and reorganized, but download and extract are disabled because export is not reliable yet.";
   const activePageCount = () => pages.filter((p) => !p.markedForDeletion).length;
+  const hasEncryptedSources = () => pages.some((page) => page.sourceEncrypted);
   const isBusy = () => operation() !== "idle";
+
+  function getReadyStatusMessage() {
+    if (phase() !== "edit") {
+      return "Drop a PDF to begin";
+    }
+
+    return hasEncryptedSources() ? "Encrypted PDF loaded. Export is unavailable." : "Ready";
+  }
 
   function setReadyStatus() {
     setOperation("idle");
-    setStatusMessage(phase() === "edit" ? "Ready" : "Drop a PDF to begin");
+    setStatusMessage(getReadyStatusMessage());
   }
 
   function dismissToast(id: number) {
@@ -162,8 +176,14 @@ export default function Editor() {
 
   // --- File loading ---
 
+  function createSessionPages(file: File, pageCount: number): PageState[] {
+    return createPageStates(file, pageCount, {
+      sourceEncrypted: pdfService.getPassword(file) !== undefined,
+    });
+  }
+
   function handleFileLoaded(file: File, pageCount: number): void {
-    setPages(createPageStates(file, pageCount));
+    setPages(createSessionPages(file, pageCount));
     setSelectedIndices(new Set<number>());
     setPhase("edit");
     setReadyStatus();
@@ -178,7 +198,7 @@ export default function Editor() {
 
     setPages(
       produce((draftPages) => {
-        draftPages.push(...createPageStates(file, pageCount));
+        draftPages.push(...createSessionPages(file, pageCount));
       })
     );
 
@@ -242,6 +262,11 @@ export default function Editor() {
 
   async function handleExtract(): Promise<void> {
     if (isBusy()) return;
+    if (hasEncryptedSources()) {
+      dispatchToast(encryptedExportMessage, "error");
+      return;
+    }
+
     const indices = Array.from(selectedIndices()).sort((a, b) => a - b);
     if (indices.length === 0) return;
 
@@ -260,7 +285,12 @@ export default function Editor() {
       dispatchToast("Extracted PDF download started.", "success");
     } catch (err) {
       console.error("Failed to extract pages:", err);
-      dispatchToast("Failed to extract selected pages.", "error");
+      dispatchToast(
+        err instanceof EncryptedPDFExportUnsupportedError
+          ? encryptedExportMessage
+          : "Failed to extract selected pages.",
+        "error"
+      );
     } finally {
       setReadyStatus();
     }
@@ -268,6 +298,11 @@ export default function Editor() {
 
   async function handleDownload(): Promise<void> {
     if (isBusy()) return;
+    if (hasEncryptedSources()) {
+      dispatchToast(encryptedExportMessage, "error");
+      return;
+    }
+
     const totalPages = activePageCount();
 
     setOperation("building");
@@ -281,7 +316,12 @@ export default function Editor() {
       dispatchToast("Download started.", "success");
     } catch (err) {
       console.error("Failed to build PDF:", err);
-      dispatchToast("Failed to build the PDF.", "error");
+      dispatchToast(
+        err instanceof EncryptedPDFExportUnsupportedError
+          ? encryptedExportMessage
+          : "Failed to build the PDF.",
+        "error"
+      );
     } finally {
       setReadyStatus();
     }
@@ -422,6 +462,7 @@ export default function Editor() {
           <div class="flex h-[calc(100dvh-3.5rem)] min-h-0">
             <EditorSidebar
               busy={isBusy()}
+              exportDisabled={hasEncryptedSources()}
               selectedCount={selectedIndices().size}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
@@ -448,6 +489,16 @@ export default function Editor() {
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
               />
+
+              <Show when={hasEncryptedSources()}>
+                <div
+                  data-testid="editor-encrypted-export-note"
+                  role="note"
+                  class="border-t border-[#ddd] bg-[#fff9f0] px-4 py-3 text-xs leading-relaxed text-[#6f4e1f]"
+                >
+                  {encryptedExportMessage}
+                </div>
+              </Show>
 
               {/* Mobile toolbar */}
               <div class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center">
@@ -495,7 +546,7 @@ export default function Editor() {
                 </button>
                 <button
                   data-testid="editor-extract-button-mobile"
-                  disabled={isBusy()}
+                  disabled={isBusy() || hasEncryptedSources()}
                   onClick={handleExtract}
                   class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
@@ -503,7 +554,7 @@ export default function Editor() {
                 </button>
                 <button
                   data-testid="editor-download-button-mobile"
-                  disabled={isBusy()}
+                  disabled={isBusy() || hasEncryptedSources()}
                   onClick={handleDownload}
                   class="text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >

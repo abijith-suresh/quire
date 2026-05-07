@@ -1,5 +1,6 @@
 interface Props {
   busy: boolean;
+  exportDisabled: boolean;
   selectedCount: number;
   onSelectAll: () => void;
   onRotate: () => void;
@@ -83,7 +84,7 @@ export default function EditorSidebar(props: Props) {
             data-testid="editor-extract-button"
             onClick={props.onExtract}
             aria-label="Extract selected pages to a new PDF"
-            disabled={props.busy}
+            disabled={props.busy || props.exportDisabled}
             class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             Extract
@@ -97,7 +98,7 @@ export default function EditorSidebar(props: Props) {
         <button
           data-testid="editor-download-button"
           onClick={props.onDownload}
-          disabled={props.busy}
+          disabled={props.busy || props.exportDisabled}
           class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
         >
           {props.busy ? "Working..." : "Download"}

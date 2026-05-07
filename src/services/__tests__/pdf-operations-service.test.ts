@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { PageState } from "../../types/interfaces";
+import { EncryptedPDFExportUnsupportedError, type PageState } from "../../types/interfaces";
 
 const createMockPage = (overrides: Partial<PageState> = {}): PageState => ({
   id: "page-1",
   sourceFile: new File([""], "test.pdf"),
   sourcePageNumber: 1,
+  sourceEncrypted: false,
   rotation: 0,
   markedForDeletion: false,
   ...overrides,
@@ -98,6 +99,15 @@ describe("PDFOperationsService", () => {
       expect(result.data).toBeInstanceOf(Uint8Array);
     });
 
+    it("should reject exports from encrypted source pages", async () => {
+      const service = new PDFOperationsService();
+      const encryptedPage = createMockPage({ sourceEncrypted: true });
+
+      await expect(service.buildPDF([encryptedPage])).rejects.toBeInstanceOf(
+        EncryptedPDFExportUnsupportedError
+      );
+    });
+
     it("should report progress while building", async () => {
       const service = new PDFOperationsService();
       const onProgress = vi.fn();
@@ -157,6 +167,15 @@ describe("PDFOperationsService", () => {
 
       await expect(service.buildPDFFromSubset(pages, [])).rejects.toThrow(
         "No pages selected for extraction"
+      );
+    });
+
+    it("should reject extracting pages from encrypted source PDFs", async () => {
+      const service = new PDFOperationsService();
+      const pages = [createMockPage({ sourceEncrypted: true })];
+
+      await expect(service.buildPDFFromSubset(pages, [0])).rejects.toBeInstanceOf(
+        EncryptedPDFExportUnsupportedError
       );
     });
   });
