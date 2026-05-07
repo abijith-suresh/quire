@@ -20,25 +20,56 @@ export class PDFService implements IPDFService {
   private documentCache = new Map<File, LoadedPDFRecord>();
   private loadPromises = new Map<File, Promise<LoadedPDFRecord>>();
 
+  /**
+   * Loads a PDF into the active session without an explicit password.
+   *
+   * @param file - The PDF file to load.
+   * @returns A promise that resolves when the file becomes active.
+   * @throws {PDFPasswordRequiredError} When the PDF is user-password protected.
+   */
   async loadPDF(file: File): Promise<void> {
     const record = await this.getOrLoadDocument(file, () => this.loadDocument(file));
     this.activeFile = record.file;
   }
 
+  /**
+   * Loads a password-protected PDF with the supplied password.
+   *
+   * @param file - The PDF file to load.
+   * @param password - The password to try for the document.
+   * @returns A promise that resolves when the file becomes active.
+   * @throws {PDFPasswordRequiredError} When the password is missing or incorrect.
+   */
   async loadPDFWithPassword(file: File, password: string): Promise<void> {
     const record = await this.getOrLoadDocument(file, () => this.loadDocument(file, password));
     this.passwordRegistry.set(file, password);
     this.activeFile = record.file;
   }
 
+  /**
+   * Returns the cached password previously used for a file in this session.
+   *
+   * @param file - The PDF file whose cached password should be read.
+   * @returns The cached password, or `undefined` when none is stored.
+   */
   getPassword(file: File): string | undefined {
     return this.passwordRegistry.get(file);
   }
 
+  /**
+   * Clears all cached passwords for the current session.
+   *
+   * @returns Nothing.
+   */
   clearPasswordRegistry(): void {
     this.passwordRegistry.clear();
   }
 
+  /**
+   * Returns the page count for the active PDF.
+   *
+   * @returns The active page count, or 0 when no PDF is loaded.
+   */
   getPageCount(): number {
     if (!this.activeFile) {
       return 0;
@@ -47,6 +78,11 @@ export class PDFService implements IPDFService {
     return this.documentCache.get(this.activeFile)?.pdfDocument.getPageCount() ?? 0;
   }
 
+  /**
+   * Returns the filename for the active PDF.
+   *
+   * @returns The active filename, or an empty string when no PDF is loaded.
+   */
   getFileName(): string {
     if (!this.activeFile) {
       return "";
@@ -55,6 +91,18 @@ export class PDFService implements IPDFService {
     return this.documentCache.get(this.activeFile)?.fileName ?? "";
   }
 
+  /**
+   * Renders a page from the requested PDF onto a canvas.
+   *
+   * @param file - The source PDF file to render from.
+   * @param pageNumber - The 1-based page number to render.
+   * @param canvas - The destination canvas element.
+   * @param scale - The render scale multiplier.
+   * @param rotation - Optional clockwise rotation in degrees.
+   * @returns A promise that resolves after rendering completes.
+   * @throws {Error} When a canvas context cannot be created.
+   * @throws {PDFPasswordRequiredError} When the source PDF requires a password.
+   */
   async renderPage(
     file: File,
     pageNumber: number,
@@ -81,6 +129,14 @@ export class PDFService implements IPDFService {
     }).promise;
   }
 
+  /**
+   * Returns the natural dimensions of a page from the requested PDF.
+   *
+   * @param file - The source PDF file to inspect.
+   * @param pageNumber - The 1-based page number to inspect.
+   * @returns The page number and viewport dimensions at scale 1.
+   * @throws {PDFPasswordRequiredError} When the source PDF requires a password.
+   */
   async getPageInfo(file: File, pageNumber: number): Promise<PDFPageInfo> {
     const record = await this.getOrLoadDocument(file);
     const page = await record.pdfjsDocument.getPage(pageNumber);
@@ -93,10 +149,20 @@ export class PDFService implements IPDFService {
     };
   }
 
+  /**
+   * Reports whether an active PDF session is currently loaded.
+   *
+   * @returns `true` when an active document is loaded, otherwise `false`.
+   */
   isLoaded(): boolean {
     return this.activeFile !== null && this.documentCache.has(this.activeFile);
   }
 
+  /**
+   * Unloads the active PDF and clears its session-specific password entry.
+   *
+   * @returns Nothing.
+   */
   unload(): void {
     if (!this.activeFile) {
       return;
@@ -108,6 +174,11 @@ export class PDFService implements IPDFService {
     this.disposeDocument(activeFile);
   }
 
+  /**
+   * Clears the full PDF session, including cached documents and passwords.
+   *
+   * @returns Nothing.
+   */
   reset(): void {
     this.activeFile = null;
     this.clearPasswordRegistry();
