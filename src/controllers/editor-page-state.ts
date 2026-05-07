@@ -1,14 +1,22 @@
 import type { PageState } from "../types/interfaces";
 
+interface CreatePageStatesOptions {
+  createdAt?: number;
+  sourceEncrypted?: boolean;
+}
+
 export function createPageStates(
   file: File,
   pageCount: number,
-  createdAt: number = Date.now()
+  options: CreatePageStatesOptions = {}
 ): PageState[] {
+  const { createdAt = Date.now(), sourceEncrypted = false } = options;
+
   return Array.from({ length: pageCount }, (_, index) => ({
     id: `${file.name}-${index + 1}-${createdAt}`,
     sourceFile: file,
     sourcePageNumber: index + 1,
+    sourceEncrypted,
     rotation: 0,
     markedForDeletion: false,
   }));

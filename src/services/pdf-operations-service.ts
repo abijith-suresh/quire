@@ -1,10 +1,11 @@
 import { PDFDocument, degrees } from "pdf-lib";
 import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
-import type {
-  PageState,
-  PDFOperationResult,
-  IPDFOperationsService,
-  PDFBuildProgress,
+import {
+  EncryptedPDFExportUnsupportedError,
+  type PageState,
+  type PDFOperationResult,
+  type IPDFOperationsService,
+  type PDFBuildProgress,
 } from "../types/interfaces";
 
 export class PDFOperationsService implements IPDFOperationsService {
@@ -79,6 +80,10 @@ export class PDFOperationsService implements IPDFOperationsService {
       throw new Error(emptyStateMessage);
     }
 
+    if (pagesToBuild.some((page) => page.sourceEncrypted)) {
+      throw new EncryptedPDFExportUnsupportedError();
+    }
+
     const outputDoc = await PDFDocument.create();
 
     for (const [index, page] of pagesToBuild.entries()) {
@@ -108,9 +113,6 @@ export class PDFOperationsService implements IPDFOperationsService {
     }
 
     const buffer = await file.arrayBuffer();
-    // ignoreEncryption: true is a no-op for unencrypted PDFs and allows loading
-    // owner-password PDFs. For user-password PDFs, content streams remain encrypted
-    // (pdf-lib has no decryption support), so output quality is not guaranteed.
     const sourceDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
     this.sourceDocCache.set(file, sourceDoc);
     return sourceDoc;

@@ -3,6 +3,7 @@ import path from "node:path";
 
 const samplePdf = path.resolve("tests/fixtures/sample.pdf");
 const encryptedPdf = path.resolve("tests/fixtures/encrypted.pdf");
+const ownerEncryptedPdf = path.resolve("tests/fixtures/owner-encrypted.pdf");
 
 async function uploadPdf(page: import("@playwright/test").Page, filePath: string) {
   await page.getByTestId("editor-upload-input").setInputFiles(filePath);
@@ -77,7 +78,7 @@ test("prompts for encrypted PDFs and accepts the correct password", async ({ pag
   await expect(page.getByTestId("editor-page-tile")).toHaveCount(1);
 });
 
-test("extracts and downloads after unlocking an encrypted PDF", async ({ page }) => {
+test("disables export after unlocking a user-password encrypted PDF", async ({ page }) => {
   await page.goto("/app");
   await uploadPdf(page, encryptedPdf);
 
@@ -86,17 +87,23 @@ test("extracts and downloads after unlocking an encrypted PDF", async ({ page })
   await page.getByRole("button", { name: "Unlock" }).click();
 
   await waitForEditorReady(page);
-  await page.getByTestId("editor-page-tile").first().click();
+  await expect(page.getByTestId("editor-encrypted-export-note")).toContainText(
+    "Encrypted PDFs can be viewed and reorganized"
+  );
+  await expect(page.getByTestId("editor-extract-button")).toBeDisabled();
+  await expect(page.getByTestId("editor-download-button")).toBeDisabled();
+});
 
-  const extractPromise = page.waitForEvent("download");
-  await page.getByTestId("editor-extract-button").click();
-  const extract = await extractPromise;
-  expect(extract.suggestedFilename()).toBe("quire-extract.pdf");
+test("disables export for owner-password encrypted PDFs too", async ({ page }) => {
+  await page.goto("/app");
+  await uploadPdf(page, ownerEncryptedPdf);
 
-  const downloadPromise = page.waitForEvent("download");
-  await page.getByTestId("editor-download-button").click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("quire-output.pdf");
+  await waitForEditorReady(page);
+  await expect(page.getByTestId("editor-encrypted-export-note")).toContainText(
+    "Encrypted PDFs can be viewed and reorganized"
+  );
+  await expect(page.getByTestId("editor-extract-button")).toBeDisabled();
+  await expect(page.getByTestId("editor-download-button")).toBeDisabled();
 });
 
 test("keeps the password prompt open after a wrong password and allows retry", async ({ page }) => {

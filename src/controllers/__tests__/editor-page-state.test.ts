@@ -10,13 +10,14 @@ describe("editor page state controller", () => {
   const file = new File(["plain"], "sample.pdf", { type: "application/pdf" });
 
   it("creates page state entries for each source page", () => {
-    const pageStates = createPageStates(file, 3, 1234);
+    const pageStates = createPageStates(file, 3, { createdAt: 1234 });
 
     expect(pageStates).toEqual([
       {
         id: "sample.pdf-1-1234",
         sourceFile: file,
         sourcePageNumber: 1,
+        sourceEncrypted: false,
         rotation: 0,
         markedForDeletion: false,
       },
@@ -24,6 +25,7 @@ describe("editor page state controller", () => {
         id: "sample.pdf-2-1234",
         sourceFile: file,
         sourcePageNumber: 2,
+        sourceEncrypted: false,
         rotation: 0,
         markedForDeletion: false,
       },
@@ -31,10 +33,17 @@ describe("editor page state controller", () => {
         id: "sample.pdf-3-1234",
         sourceFile: file,
         sourcePageNumber: 3,
+        sourceEncrypted: false,
         rotation: 0,
         markedForDeletion: false,
       },
     ]);
+  });
+
+  it("marks page states created from encrypted PDFs", () => {
+    const pageStates = createPageStates(file, 2, { createdAt: 1234, sourceEncrypted: true });
+
+    expect(pageStates.map((page) => page.sourceEncrypted)).toEqual([true, true]);
   });
 
   it("toggles an individual selection", () => {

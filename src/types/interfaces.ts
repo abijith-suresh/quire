@@ -12,6 +12,13 @@ export class PDFPasswordRequiredError extends Error {
   }
 }
 
+export class EncryptedPDFExportUnsupportedError extends Error {
+  constructor(message: string = "Encrypted PDFs cannot be exported reliably yet.") {
+    super(message);
+    this.name = "EncryptedPDFExportUnsupportedError";
+  }
+}
+
 export interface PDFPageInfo {
   pageNumber: number;
   width: number;
@@ -22,6 +29,7 @@ export interface PageState {
   id: string;
   sourceFile: File;
   sourcePageNumber: number;
+  sourceEncrypted: boolean;
   rotation: number;
   markedForDeletion: boolean;
 }
