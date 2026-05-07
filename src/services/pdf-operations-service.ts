@@ -12,10 +12,23 @@ export class PDFOperationsService implements IPDFOperationsService {
   // calls within one session. Cleared on session reset via clearCache().
   private sourceDocCache = new Map<File, PDFDocument>();
 
+  /**
+   * Clears cached source documents for the current editor session.
+   *
+   * @returns Nothing.
+   */
   clearCache(): void {
     this.sourceDocCache.clear();
   }
 
+  /**
+   * Builds a new PDF from every page that is not marked for deletion.
+   *
+   * @param pages - The current editor page state to export.
+   * @param onProgress - Optional callback invoked after each page is copied.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
   async buildPDF(
     pages: PageState[],
     onProgress?: (progress: PDFBuildProgress) => void
@@ -30,6 +43,15 @@ export class PDFOperationsService implements IPDFOperationsService {
     );
   }
 
+  /**
+   * Builds a new PDF from a subset of the current editor pages.
+   *
+   * @param pages - The full editor page state for the current session.
+   * @param indices - The page indices to include in the extracted output.
+   * @param onProgress - Optional callback invoked after each selected page is copied.
+   * @returns The generated PDF bytes and a suggested extract filename.
+   * @throws {Error} When the requested subset resolves to no exportable pages.
+   */
   async buildPDFFromSubset(
     pages: PageState[],
     indices: number[],
