@@ -1,34 +1,19 @@
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
-import { createStore, produce } from "solid-js/store";
-import { ROTATION_STEP } from "../../constants";
-import type { PageState } from "../../types/interfaces";
-import { PDFPasswordRequiredError } from "../../types/interfaces";
-import { pdfService } from "../../services/pdf-service";
+import { createEditorSessionController } from "../../controllers/editor-session-controller";
 import { pdfOperationsService } from "../../services/pdf-operations-service";
-import {
-  createPageStates,
-  remapSelectionAfterMove,
-  toggleSelectAll,
-  toggleSelection,
-} from "../../controllers/editor-page-state";
+import { pdfService } from "../../services/pdf-service";
 import { downloadPDF } from "../../utils/download";
 import { promptForPassword } from "../../utils/password-prompt";
 import {
   getToastDismissTimeout,
-  showToast as dispatchToast,
   TOAST_EVENT_NAME,
   type ToastDetail,
+  showToast,
 } from "../../utils/toast";
-import EditorUploader from "./EditorUploader";
-import EditorSidebar from "./EditorSidebar";
 import EditorPageGrid from "./EditorPageGrid";
+import EditorSidebar from "./EditorSidebar";
+import EditorUploader from "./EditorUploader";
 
-interface DragOverTarget {
-  index: number;
-  direction: "before" | "after";
-}
-
-type EditorOperation = "idle" | "uploading" | "adding" | "extracting" | "building";
 type ToastTone = "success" | "error" | "info";
 
 interface Toast {
@@ -39,30 +24,21 @@ interface Toast {
 
 export default function Editor() {
   const base = import.meta.env.BASE_URL;
+  const controller = createEditorSessionController({
+    pdfService,
+    pdfOperationsService,
+    promptForPassword,
+    downloadPDF,
+    showToast,
+  });
+
   let nextToastId = 0;
   const toastTimers = new Map<number, number>();
-
-  const [phase, setPhase] = createSignal<"upload" | "edit">("upload");
-  const [pages, setPages] = createStore<PageState[]>([]);
-  const [selectedIndices, setSelectedIndices] = createSignal<Set<number>>(new Set<number>());
-  const [dragSourceIndex, setDragSourceIndex] = createSignal<number | null>(null);
-  const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
-  const [operation, setOperation] = createSignal<EditorOperation>("idle");
-  const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
-    pdfService.reset();
-    pdfOperationsService.clearCache();
+    controller.resetSession();
   });
-
-  const activePageCount = () => pages.filter((p) => !p.markedForDeletion).length;
-  const isBusy = () => operation() !== "idle";
-
-  function setReadyStatus() {
-    setOperation("idle");
-    setStatusMessage(phase() === "edit" ? "Ready" : "Drop a PDF to begin");
-  }
 
   function dismissToast(id: number) {
     const timer = toastTimers.get(id);
@@ -70,6 +46,7 @@ export default function Editor() {
       window.clearTimeout(timer);
       toastTimers.delete(id);
     }
+
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }
 
@@ -93,260 +70,14 @@ export default function Editor() {
     if (typeof document !== "undefined") {
       document.removeEventListener(TOAST_EVENT_NAME, handleToast);
     }
+
     for (const timer of toastTimers.values()) {
       window.clearTimeout(timer);
     }
+
     toastTimers.clear();
-    pdfService.reset();
-    pdfOperationsService.clearCache();
+    controller.disposeSession();
   });
-
-  function formatPageCount(pageCount: number) {
-    return `${pageCount} page${pageCount === 1 ? "" : "s"}`;
-  }
-
-  function getLoadErrorMessage(file: File, error: unknown) {
-    if (error instanceof Error && error.message) {
-      return `Failed to load ${file.name}: ${error.message}`;
-    }
-    return `Failed to load ${file.name}.`;
-  }
-
-  async function unlockPdf(file: File, isRetry: boolean): Promise<number | null> {
-    const password = await promptForPassword(file.name, isRetry);
-    if (password === null) {
-      setReadyStatus();
-      return null;
-    }
-
-    setStatusMessage("Unlocking PDF...");
-
-    try {
-      await pdfService.loadPDFWithPassword(file, password);
-      return pdfService.getPageCount();
-    } catch (err) {
-      if (err instanceof PDFPasswordRequiredError) {
-        return unlockPdf(file, true);
-      }
-
-      console.error("Failed to unlock PDF:", err);
-      dispatchToast(getLoadErrorMessage(file, err), "error");
-      setReadyStatus();
-      return null;
-    }
-  }
-
-  async function loadPdfFile(file: File, mode: "upload" | "add"): Promise<number | null> {
-    if (file.type !== "application/pdf") {
-      dispatchToast("Please upload a valid PDF file.", "error");
-      return null;
-    }
-
-    setOperation(mode === "upload" ? "uploading" : "adding");
-    setStatusMessage(mode === "upload" ? "Loading PDF..." : "Adding PDF...");
-
-    try {
-      await pdfService.loadPDF(file);
-      return pdfService.getPageCount();
-    } catch (err) {
-      if (err instanceof PDFPasswordRequiredError) {
-        return unlockPdf(file, err.reason === "wrong-password");
-      }
-
-      console.error("Failed to load PDF:", err);
-      dispatchToast(getLoadErrorMessage(file, err), "error");
-      setReadyStatus();
-      return null;
-    }
-  }
-
-  // --- File loading ---
-
-  function handleFileLoaded(file: File, pageCount: number): void {
-    setPages(createPageStates(file, pageCount));
-    setSelectedIndices(new Set<number>());
-    setPhase("edit");
-    setReadyStatus();
-    dispatchToast(`${file.name} loaded with ${formatPageCount(pageCount)}.`, "success");
-  }
-
-  async function handleAddPdf(file: File): Promise<void> {
-    if (isBusy()) return;
-
-    const pageCount = await loadPdfFile(file, "add");
-    if (pageCount === null) return;
-
-    setPages(
-      produce((draftPages) => {
-        draftPages.push(...createPageStates(file, pageCount));
-      })
-    );
-
-    setReadyStatus();
-    dispatchToast(`Added ${formatPageCount(pageCount)} from ${file.name}.`, "success");
-  }
-
-  async function handleInitialUpload(file: File): Promise<void> {
-    if (isBusy()) return;
-
-    const pageCount = await loadPdfFile(file, "upload");
-    if (pageCount === null) return;
-
-    handleFileLoaded(file, pageCount);
-  }
-
-  // --- Selection ---
-
-  function handlePageClick(index: number): void {
-    if (isBusy()) return;
-    setSelectedIndices((previousSelection) => toggleSelection(previousSelection, index));
-  }
-
-  function handleSelectAll(): void {
-    if (isBusy()) return;
-    setSelectedIndices((previousSelection) => toggleSelectAll(pages.length, previousSelection));
-  }
-
-  // --- Rotation ---
-
-  function handlePageRotate(index: number, e: MouseEvent): void {
-    e.stopPropagation();
-    if (isBusy()) return;
-    setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
-    setStatusMessage(`Rotated page ${index + 1}.`);
-  }
-
-  function handleRotateSelected(): void {
-    if (isBusy() || selectedIndices().size === 0) return;
-    for (const index of selectedIndices()) {
-      setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
-    }
-    setStatusMessage(
-      `Rotated ${selectedIndices().size} selected page${selectedIndices().size === 1 ? "" : "s"}.`
-    );
-  }
-
-  // --- Delete ---
-
-  function handleDeleteSelected(): void {
-    if (isBusy() || selectedIndices().size === 0) return;
-    for (const index of selectedIndices()) {
-      setPages(index, "markedForDeletion", (v) => !v);
-    }
-    setStatusMessage(
-      `Updated deletion state for ${selectedIndices().size} selected page${selectedIndices().size === 1 ? "" : "s"}.`
-    );
-  }
-
-  // --- Extract / Download ---
-
-  async function handleExtract(): Promise<void> {
-    if (isBusy()) return;
-    const indices = Array.from(selectedIndices()).sort((a, b) => a - b);
-    if (indices.length === 0) return;
-
-    setOperation("extracting");
-    setStatusMessage(`Extracting pages... 0/${indices.length}`);
-
-    try {
-      const result = await pdfOperationsService.buildPDFFromSubset(
-        pages,
-        indices,
-        ({ completed, total }) => {
-          setStatusMessage(`Extracting pages... ${completed}/${total}`);
-        }
-      );
-      downloadPDF(result);
-      dispatchToast("Extracted PDF download started.", "success");
-    } catch (err) {
-      console.error("Failed to extract pages:", err);
-      dispatchToast("Failed to extract selected pages.", "error");
-    } finally {
-      setReadyStatus();
-    }
-  }
-
-  async function handleDownload(): Promise<void> {
-    if (isBusy()) return;
-    const totalPages = activePageCount();
-
-    setOperation("building");
-    setStatusMessage(`Building PDF... 0/${totalPages}`);
-
-    try {
-      const result = await pdfOperationsService.buildPDF(pages, ({ completed, total }) => {
-        setStatusMessage(`Building PDF... ${completed}/${total}`);
-      });
-      downloadPDF(result);
-      dispatchToast("Download started.", "success");
-    } catch (err) {
-      console.error("Failed to build PDF:", err);
-      dispatchToast("Failed to build the PDF.", "error");
-    } finally {
-      setReadyStatus();
-    }
-  }
-
-  // --- Drag and drop ---
-
-  function handleDragStart(index: number, e: DragEvent): void {
-    if (isBusy()) return;
-    setDragSourceIndex(index);
-    e.dataTransfer!.effectAllowed = "move";
-  }
-
-  function handleDragOver(e: DragEvent): void {
-    if (isBusy()) return;
-    e.preventDefault();
-    e.dataTransfer!.dropEffect = "move";
-  }
-
-  function handleDragEnter(targetIndex: number, e: DragEvent): void {
-    if (isBusy()) return;
-    e.preventDefault();
-    const from = dragSourceIndex();
-    if (from === null) return;
-    if (from < targetIndex) {
-      setDragOverTarget({ index: targetIndex, direction: "after" });
-    } else if (from > targetIndex) {
-      setDragOverTarget({ index: targetIndex, direction: "before" });
-    }
-  }
-
-  function handleDragLeave(): void {
-    if (isBusy()) return;
-    setDragOverTarget(null);
-  }
-
-  function handleDrop(targetIndex: number, e: DragEvent): void {
-    if (isBusy()) return;
-    e.preventDefault();
-    setDragOverTarget(null);
-
-    const from = dragSourceIndex();
-    if (from === null || from === targetIndex) {
-      setDragSourceIndex(null);
-      return;
-    }
-    const to = targetIndex;
-
-    setPages(
-      produce((p) => {
-        const [moved] = p.splice(from, 1);
-        p.splice(to, 0, moved);
-      })
-    );
-
-    // Remap selection indices after reorder
-    setSelectedIndices((previousSelection) => remapSelectionAfterMove(previousSelection, from, to));
-
-    setDragSourceIndex(null);
-  }
-
-  function handleDragEnd(): void {
-    setDragSourceIndex(null);
-    setDragOverTarget(null);
-  }
 
   return (
     <div class="font-['Work_Sans',sans-serif] bg-white text-[#111] h-dvh flex flex-col overflow-hidden">
@@ -377,11 +108,10 @@ export default function Editor() {
 
       <div
         data-testid="editor-root"
-        data-operation={operation()}
-        aria-busy={isBusy()}
+        data-operation={controller.operation()}
+        aria-busy={controller.isBusy()}
         class="contents"
       >
-        {/* Dark header */}
         <header class="bg-[#111] text-white h-14 flex items-center px-6 flex-shrink-0">
           <a
             href={base}
@@ -390,14 +120,14 @@ export default function Editor() {
             Pasta
           </a>
           <span class="w-px h-6 bg-[#555] mx-5" />
-          <Show when={phase() === "edit"}>
+          <Show when={controller.phase() === "edit"}>
             <span class="text-sm text-[#888]">
-              {pages.length} pages ({activePageCount()} active)
+              {controller.pages.length} pages ({controller.activePageCount()} active)
             </span>
           </Show>
           <span class="flex-1" />
-          <Show when={phase() === "edit" && selectedIndices().size > 0}>
-            <span class="text-sm text-[#888]">{selectedIndices().size} selected</span>
+          <Show when={controller.phase() === "edit" && controller.selectedIndices().size > 0}>
+            <span class="text-sm text-[#888]">{controller.selectedIndices().size} selected</span>
             <span class="w-px h-6 bg-[#555] mx-5" />
           </Show>
           <a
@@ -408,84 +138,81 @@ export default function Editor() {
           </a>
         </header>
 
-        {/* Content — upload or edit */}
         <Show
-          when={phase() === "edit"}
+          when={controller.phase() === "edit"}
           fallback={
             <EditorUploader
-              busy={isBusy()}
-              statusMessage={statusMessage()}
-              onFileSelected={handleInitialUpload}
+              busy={controller.isBusy()}
+              statusMessage={controller.statusMessage()}
+              onFileSelected={controller.handleInitialUpload}
             />
           }
         >
           <div class="flex h-[calc(100dvh-3.5rem)] min-h-0">
             <EditorSidebar
-              busy={isBusy()}
-              selectedCount={selectedIndices().size}
-              onSelectAll={handleSelectAll}
-              onRotate={handleRotateSelected}
-              onDelete={handleDeleteSelected}
-              onExtract={handleExtract}
-              onDownload={handleDownload}
-              onAddPdf={handleAddPdf}
+              busy={controller.isBusy()}
+              selectedCount={controller.selectedIndices().size}
+              onSelectAll={controller.handleSelectAll}
+              onRotate={controller.handleRotateSelected}
+              onDelete={controller.handleDeleteSelected}
+              onExtract={controller.handleExtract}
+              onDownload={controller.handleDownload}
+              onAddPdf={controller.handleAddPdf}
             />
 
             <main class="flex-1 flex flex-col min-h-0">
-              {/* Dense page grid — only this scrolls */}
               <EditorPageGrid
-                busy={isBusy()}
-                pages={pages}
-                selectedIndices={selectedIndices()}
-                dragSourceIndex={dragSourceIndex()}
-                dragOverTarget={dragOverTarget()}
-                onPageClick={handlePageClick}
-                onPageRotate={handlePageRotate}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onDragEnd={handleDragEnd}
+                busy={controller.isBusy()}
+                pages={controller.pages}
+                selectedIndices={controller.selectedIndices()}
+                dragSourceIndex={controller.dragSourceIndex()}
+                dragOverTarget={controller.dragOverTarget()}
+                onPageClick={controller.handlePageClick}
+                onPageRotate={controller.handlePageRotate}
+                onDragStart={controller.handleDragStart}
+                onDragOver={controller.handleDragOver}
+                onDragEnter={controller.handleDragEnter}
+                onDragLeave={controller.handleDragLeave}
+                onDrop={controller.handleDrop}
+                onDragEnd={controller.handleDragEnd}
               />
 
-              {/* Mobile toolbar */}
               <div class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center">
                 <button
                   data-testid="editor-select-all-button-mobile"
-                  disabled={isBusy()}
-                  onClick={handleSelectAll}
+                  disabled={controller.isBusy()}
+                  onClick={controller.handleSelectAll}
                   class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Select All
                 </button>
                 <button
                   data-testid="editor-rotate-button-mobile"
-                  disabled={isBusy()}
-                  onClick={handleRotateSelected}
+                  disabled={controller.isBusy()}
+                  onClick={controller.handleRotateSelected}
                   class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Rotate
                 </button>
                 <button
                   data-testid="editor-delete-button-mobile"
-                  disabled={isBusy()}
-                  onClick={handleDeleteSelected}
+                  disabled={controller.isBusy()}
+                  onClick={controller.handleDeleteSelected}
                   class="text-[11px] uppercase tracking-wider text-[#ff0000] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Delete
                 </button>
                 <button
                   data-testid="editor-add-pdf-button-mobile"
-                  disabled={isBusy()}
+                  disabled={controller.isBusy()}
                   onClick={() => {
-                    if (isBusy()) return;
+                    if (controller.isBusy()) return;
                     const input = document.createElement("input");
                     input.type = "file";
                     input.accept = "application/pdf";
                     input.onchange = () => {
                       const file = input.files?.[0];
-                      if (file) handleAddPdf(file);
+                      if (file) void controller.handleAddPdf(file);
                     };
                     input.click();
                   }}
@@ -495,23 +222,22 @@ export default function Editor() {
                 </button>
                 <button
                   data-testid="editor-extract-button-mobile"
-                  disabled={isBusy()}
-                  onClick={handleExtract}
+                  disabled={controller.isBusy()}
+                  onClick={() => void controller.handleExtract()}
                   class="text-[11px] uppercase tracking-wider text-[#555] bg-transparent border border-[#ddd] px-3 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Extract
                 </button>
                 <button
                   data-testid="editor-download-button-mobile"
-                  disabled={isBusy()}
-                  onClick={handleDownload}
+                  disabled={controller.isBusy()}
+                  onClick={() => void controller.handleDownload()}
                   class="text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isBusy() ? "Working..." : "Download"}
+                  {controller.isBusy() ? "Working..." : "Download"}
                 </button>
               </div>
 
-              {/* Status bar */}
               <div
                 role="status"
                 aria-live="polite"
@@ -520,14 +246,16 @@ export default function Editor() {
                 class="h-8 bg-[#f5f5f5] border-t border-[#ddd] flex items-center px-5 text-[11px] text-[#888] flex-shrink-0"
               >
                 <span>
-                  {pages.length} pages ({activePageCount()} active)
+                  {controller.pages.length} pages ({controller.activePageCount()} active)
                 </span>
                 <span class="flex-1 text-center">
-                  {selectedIndices().size > 0 ? `${selectedIndices().size} selected` : ""}
+                  {controller.selectedIndices().size > 0
+                    ? `${controller.selectedIndices().size} selected`
+                    : ""}
                 </span>
                 <span class="flex items-center gap-1.5" data-testid="editor-status-message">
                   <span class="w-1.5 h-1.5 bg-[#ff0000] inline-block" />
-                  {statusMessage()}
+                  {controller.statusMessage()}
                 </span>
               </div>
             </main>
