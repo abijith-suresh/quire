@@ -1,6 +1,6 @@
 # Quire
 
-Quire is a fully client-side PDF editor for the five tasks people reach for most: merge, extract, reorder, rotate, and delete. Every operation runs in your browser with `pdf-lib` and `pdf.js`, so your files never leave your device.
+Quire is a fully client-side PDF editor for the core tasks people reach for most: merge, extract, reorder, rotate, delete, and unlock. Every operation runs in your browser with `pdf-lib` and `pdf.js`, so your files never leave your device.
 
 ## Product Scope
 
@@ -10,10 +10,11 @@ Quire is a fully client-side PDF editor for the five tasks people reach for most
 - Rotate individual pages or selections in 90 degree steps
 - Mark pages for deletion before export
 - Unlock password-protected PDFs with an in-browser prompt
+- Render page thumbnails locally with pdf.js for inspection before export
 
 ## Stack
 
-- [Astro 5](https://astro.build) for the site shell and content pages
+- [Astro 6](https://astro.build) for the site shell and content pages
 - [SolidJS](https://www.solidjs.com/) for the editor interface
 - [Tailwind CSS v4](https://tailwindcss.com) for styling
 - [pdf-lib](https://pdf-lib.js.org) and [pdf.js](https://mozilla.github.io/pdf.js/) for PDF processing/rendering
@@ -33,6 +34,12 @@ The app runs at `http://localhost:4321` by default.
 ## Quality Checks
 
 ```sh
+bun run verify
+```
+
+Or run the individual steps:
+
+```sh
 bun run type-check
 bun run lint
 bun run format:check
@@ -45,13 +52,14 @@ bun run build
 
 ```text
 src/
-  components/app/      Solid editor UI
-  components/shared/   Shared site chrome
-  content/changelog/   Changelog content collection
-  layouts/             Shared page layout and SEO
+  components/app/      Solid editor UI and page tiles/canvases
+  components/shared/   Shared marketing-site chrome
+  controllers/         Editor page-state helpers and orchestration logic
+  fonts/               Self-hosted application assets
+  layouts/             Shared page layout and SEO tags
   pages/               Marketing, legal, editor, and OG routes
-  services/            PDF load/render/build services
-  styles/              Global design tokens and animations
+  services/            PDF load, render, and build services
+  styles/              Global styles and motion primitives
   utils/               Download, password, toast, and transition helpers
 tests/
   e2e/                 Playwright coverage for the core editor flow
@@ -68,4 +76,5 @@ tests/
 
 - Open an issue for bugs, polish work, or roadmap ideas
 - Keep changes atomic and follow Conventional Commits
-- Run lint, unit tests, E2E, and build checks before opening a PR
+- Preserve the browser-only privacy model: do not add uploads or server-side PDF handling
+- Run `bun run verify` before opening a PR, and run `bun run test:e2e` when changing core editor workflows
