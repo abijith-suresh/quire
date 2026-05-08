@@ -10,10 +10,16 @@ const createMockPage = (overrides: Partial<PageState> = {}): PageState => ({
   ...overrides,
 });
 
+const mockCopiedPage = { setRotation: vi.fn() };
+
 const mockPDFDoc = {
-  copyPages: vi.fn().mockResolvedValue([{ setRotation: vi.fn() }]),
+  copyPages: vi.fn().mockResolvedValue([mockCopiedPage]),
   addPage: vi.fn(),
   save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+  setTitle: vi.fn(),
+  setAuthor: vi.fn(),
+  setSubject: vi.fn(),
+  setKeywords: vi.fn(),
   getPageCount: vi.fn().mockReturnValue(1),
 };
 
@@ -158,6 +164,41 @@ describe("PDFOperationsService", () => {
       await expect(service.buildPDFFromSubset(pages, [])).rejects.toThrow(
         "No pages selected for extraction"
       );
+    });
+  });
+
+  describe("buildPDFWithMetadata", () => {
+    it("applies provided metadata to the built PDF", async () => {
+      const service = new PDFOperationsService();
+
+      const result = await service.buildPDFWithMetadata([createMockPage()], {
+        title: "My Title",
+        author: "Jane Smith",
+        subject: "Quarterly Report",
+        keywords: "finance, quarterly",
+      });
+
+      expect(mockPDFDoc.setTitle).toHaveBeenCalledWith("My Title");
+      expect(mockPDFDoc.setAuthor).toHaveBeenCalledWith("Jane Smith");
+      expect(mockPDFDoc.setSubject).toHaveBeenCalledWith("Quarterly Report");
+      expect(mockPDFDoc.setKeywords).toHaveBeenCalledWith(["finance", "quarterly"]);
+      expect(result.suggestedFileName).toBe("quire-output.pdf");
+    });
+
+    it("skips blank metadata fields", async () => {
+      const service = new PDFOperationsService();
+
+      await service.buildPDFWithMetadata([createMockPage()], {
+        title: "  ",
+        author: "",
+        subject: "",
+        keywords: "  ",
+      });
+
+      expect(mockPDFDoc.setTitle).not.toHaveBeenCalled();
+      expect(mockPDFDoc.setAuthor).not.toHaveBeenCalled();
+      expect(mockPDFDoc.setSubject).not.toHaveBeenCalled();
+      expect(mockPDFDoc.setKeywords).not.toHaveBeenCalled();
     });
   });
 

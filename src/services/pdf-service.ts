@@ -1,7 +1,7 @@
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import type { PDFPageInfo, IPDFService } from "../types/interfaces";
+import type { PDFDocumentMetadata, PDFPageInfo, IPDFService } from "../types/interfaces";
 import { PDFPasswordRequiredError } from "../types/interfaces";
 
 // Configure PDF.js worker
@@ -127,6 +127,24 @@ export class PDFService implements IPDFService {
       viewport,
       canvas,
     }).promise;
+  }
+
+  /**
+   * Returns metadata for the requested PDF file.
+   *
+   * @param file - The source PDF file to inspect.
+   * @returns The title, author, subject, and keywords currently stored in the document.
+   * @throws {PDFPasswordRequiredError} When the source PDF requires a password.
+   */
+  async getMetadata(file: File): Promise<PDFDocumentMetadata> {
+    const record = await this.getOrLoadDocument(file);
+
+    return {
+      title: record.pdfDocument.getTitle() ?? "",
+      author: record.pdfDocument.getAuthor() ?? "",
+      subject: record.pdfDocument.getSubject() ?? "",
+      keywords: record.pdfDocument.getKeywords() ?? "",
+    };
   }
 
   /**

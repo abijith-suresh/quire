@@ -1,7 +1,7 @@
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { ROTATION_STEP } from "../../constants";
-import type { PageState } from "../../types/interfaces";
+import type { PDFDocumentMetadata, PageState } from "../../types/interfaces";
 import { PDFPasswordRequiredError } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
 import { pdfOperationsService } from "../../services/pdf-operations-service";
@@ -37,6 +37,13 @@ interface Toast {
   tone: ToastTone;
 }
 
+const EMPTY_METADATA: PDFDocumentMetadata = {
+  title: "",
+  author: "",
+  subject: "",
+  keywords: "",
+};
+
 export default function Editor() {
   const base = import.meta.env.BASE_URL;
   let nextToastId = 0;
@@ -49,6 +56,10 @@ export default function Editor() {
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
   const [operation, setOperation] = createSignal<EditorOperation>("idle");
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
+  const [sourceMetadata, setSourceMetadata] = createStore<PDFDocumentMetadata>({
+    ...EMPTY_METADATA,
+  });
+  const [metadata, setMetadata] = createStore<PDFDocumentMetadata>({ ...EMPTY_METADATA });
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
@@ -162,6 +173,18 @@ export default function Editor() {
 
   // --- File loading ---
 
+  async function syncMetadataFromFile(file: File): Promise<void> {
+    try {
+      const loadedMetadata = await pdfService.getMetadata(file);
+      setSourceMetadata(loadedMetadata);
+      setMetadata(loadedMetadata);
+    } catch (err) {
+      console.error("Failed to read PDF metadata:", err);
+      setSourceMetadata({ ...EMPTY_METADATA });
+      setMetadata({ ...EMPTY_METADATA });
+    }
+  }
+
   function handleFileLoaded(file: File, pageCount: number): void {
     setPages(createPageStates(file, pageCount));
     setSelectedIndices(new Set<number>());
@@ -192,6 +215,7 @@ export default function Editor() {
     const pageCount = await loadPdfFile(file, "upload");
     if (pageCount === null) return;
 
+    await syncMetadataFromFile(file);
     handleFileLoaded(file, pageCount);
   }
 
@@ -282,6 +306,36 @@ export default function Editor() {
     } catch (err) {
       console.error("Failed to build PDF:", err);
       dispatchToast("Failed to build the PDF.", "error");
+    } finally {
+      setReadyStatus();
+    }
+  }
+
+  async function handleMetadataDownload(): Promise<void> {
+    if (isBusy()) return;
+
+    const totalPages = activePageCount();
+    setOperation("building");
+    setStatusMessage(`Applying metadata... 0/${totalPages}`);
+
+    try {
+      const result = await pdfOperationsService.buildPDFWithMetadata(
+        pages,
+        {
+          title: metadata.title.trim() || sourceMetadata.title,
+          author: metadata.author.trim() || sourceMetadata.author,
+          subject: metadata.subject.trim() || sourceMetadata.subject,
+          keywords: metadata.keywords.trim() || sourceMetadata.keywords,
+        },
+        ({ completed, total }) => {
+          setStatusMessage(`Applying metadata... ${completed}/${total}`);
+        }
+      );
+      downloadPDF(result);
+      dispatchToast("Metadata download started.", "success");
+    } catch (err) {
+      console.error("Failed to apply metadata:", err);
+      dispatchToast("Failed to apply metadata.", "error");
     } finally {
       setReadyStatus();
     }
@@ -423,6 +477,9 @@ export default function Editor() {
             <EditorSidebar
               busy={isBusy()}
               selectedCount={selectedIndices().size}
+              metadata={metadata}
+              onMetadataChange={(field, value) => setMetadata(field, value)}
+              onMetadataDownload={handleMetadataDownload}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}

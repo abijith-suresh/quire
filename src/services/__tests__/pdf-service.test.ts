@@ -22,6 +22,10 @@ const pdfLibLoadMock = vi.fn().mockImplementation(async (buffer: ArrayBuffer, op
 
   return {
     getPageCount: vi.fn().mockReturnValue(label.includes("two-pages") ? 2 : 5),
+    getTitle: vi.fn().mockReturnValue(label.includes("metadata") ? "Source Title" : undefined),
+    getAuthor: vi.fn().mockReturnValue(label.includes("metadata") ? "Source Author" : undefined),
+    getSubject: vi.fn().mockReturnValue(label.includes("metadata") ? "Source Subject" : undefined),
+    getKeywords: vi.fn().mockReturnValue(label.includes("metadata") ? "one, two" : undefined),
   };
 });
 
@@ -198,6 +202,20 @@ describe("PDFService", () => {
     await service.renderPage(file, 1, canvas, 1, 90);
 
     expect(canvas.width).toBeGreaterThan(canvas.height);
+  });
+
+  it("returns metadata for the requested file", async () => {
+    const service = new PDFService();
+    const file = new File(["metadata"], "metadata.pdf", { type: "application/pdf" });
+
+    await service.loadPDF(file);
+
+    await expect(service.getMetadata(file)).resolves.toEqual({
+      title: "Source Title",
+      author: "Source Author",
+      subject: "Source Subject",
+      keywords: "one, two",
+    });
   });
 
   it("returns page info for the requested file", async () => {
