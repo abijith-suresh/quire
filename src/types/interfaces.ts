@@ -36,6 +36,17 @@ export interface PDFBuildProgress {
   total: number;
 }
 
+export type PageNumberPosition = "bottom-center" | "bottom-right" | "bottom-left" | "top-right";
+
+export type PageNumberFormat = "number" | "page-number" | "number-of-total";
+
+export interface PageNumberOptions {
+  position: PageNumberPosition;
+  startNumber: number;
+  format: PageNumberFormat;
+  fontSize: number;
+}
+
 export interface IPDFOperationsService {
   /**
    * Builds a new PDF from every page that is not marked for deletion.
@@ -64,6 +75,16 @@ export interface IPDFOperationsService {
     indices: number[],
     onProgress?: (progress: PDFBuildProgress) => void
   ): Promise<PDFOperationResult>;
+
+  /**
+   * Builds a new PDF with page numbers applied to each active page.
+   *
+   * @param pages - The current editor page state to export.
+   * @param options - The page-number placement and formatting options.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  addPageNumbers(pages: PageState[], options: PageNumberOptions): Promise<PDFOperationResult>;
 
   /**
    * Clears any cached source documents held for the current editor session.

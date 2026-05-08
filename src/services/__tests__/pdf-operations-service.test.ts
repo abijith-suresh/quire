@@ -10,9 +10,16 @@ const createMockPage = (overrides: Partial<PageState> = {}): PageState => ({
   ...overrides,
 });
 
+const mockCopiedPage = {
+  setRotation: vi.fn(),
+  getSize: vi.fn().mockReturnValue({ width: 600, height: 800 }),
+  drawText: vi.fn(),
+};
+
 const mockPDFDoc = {
-  copyPages: vi.fn().mockResolvedValue([{ setRotation: vi.fn() }]),
+  copyPages: vi.fn().mockResolvedValue([mockCopiedPage]),
   addPage: vi.fn(),
+  embedFont: vi.fn().mockResolvedValue({ widthOfTextAtSize: vi.fn().mockReturnValue(48) }),
   save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
   getPageCount: vi.fn().mockReturnValue(1),
 };
@@ -27,6 +34,7 @@ vi.mock("pdf-lib", () => ({
     load: mockPDFDocument.load,
     create: mockPDFDocument.create,
   },
+  StandardFonts: { Helvetica: "Helvetica" },
   degrees: vi.fn((deg) => deg),
 }));
 
@@ -158,6 +166,42 @@ describe("PDFOperationsService", () => {
       await expect(service.buildPDFFromSubset(pages, [])).rejects.toThrow(
         "No pages selected for extraction"
       );
+    });
+  });
+
+  describe("addPageNumbers", () => {
+    it("adds page numbers using the provided format and position", async () => {
+      const service = new PDFOperationsService();
+
+      const result = await service.addPageNumbers(
+        [createMockPage(), createMockPage({ id: "page-2", sourcePageNumber: 2 })],
+        {
+          position: "bottom-right",
+          startNumber: 3,
+          format: "number-of-total",
+          fontSize: 18,
+        }
+      );
+
+      expect(mockPDFDoc.embedFont).toHaveBeenCalledWith("Helvetica");
+      expect(mockCopiedPage.drawText).toHaveBeenCalledWith(
+        "3 / 2",
+        expect.objectContaining({ size: 18, x: 528, y: 24 })
+      );
+      expect(result.suggestedFileName).toBe("quire-numbered.pdf");
+    });
+
+    it("rejects empty exports", async () => {
+      const service = new PDFOperationsService();
+
+      await expect(
+        service.addPageNumbers([], {
+          position: "bottom-center",
+          startNumber: 1,
+          format: "number",
+          fontSize: 16,
+        })
+      ).rejects.toThrow("No pages to include in the PDF");
     });
   });
 

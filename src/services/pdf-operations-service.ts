@@ -1,6 +1,7 @@
-import { PDFDocument, degrees } from "pdf-lib";
-import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
+import { PDFDocument, StandardFonts, degrees } from "pdf-lib";
+import { EXTRACT_FILENAME, OUTPUT_FILENAME, PAGE_NUMBERS_FILENAME } from "../constants";
 import type {
+  PageNumberOptions,
   PageState,
   PDFOperationResult,
   IPDFOperationsService,
@@ -69,6 +70,66 @@ export class PDFOperationsService implements IPDFOperationsService {
     );
   }
 
+  /**
+   * Builds a new PDF with page numbers applied to each active page.
+   *
+   * @param pages - The current editor page state to export.
+   * @param options - The page-number placement and formatting options.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  async addPageNumbers(
+    pages: PageState[],
+    options: PageNumberOptions
+  ): Promise<PDFOperationResult> {
+    const activePages = pages.filter((page) => !page.markedForDeletion);
+
+    if (activePages.length === 0) {
+      throw new Error("No pages to include in the PDF");
+    }
+
+    const outputDoc = await PDFDocument.create();
+    const font = await outputDoc.embedFont(StandardFonts.Helvetica);
+
+    for (const [index, page] of activePages.entries()) {
+      const sourceDoc = await this.getOrLoadSourceDoc(page.sourceFile);
+      const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
+
+      if (page.rotation !== 0) {
+        copiedPage.setRotation(degrees(page.rotation));
+      }
+
+      const number = options.startNumber + index;
+      const text = this.formatPageNumber(number, activePages.length, options.format);
+      const { width, height } = copiedPage.getSize();
+      const textWidth = font.widthOfTextAtSize(text, options.fontSize);
+      const margin = 24;
+      const x =
+        options.position === "bottom-center"
+          ? (width - textWidth) / 2
+          : options.position === "bottom-left"
+            ? margin
+            : width - textWidth - margin;
+      const y = options.position === "top-right" ? height - options.fontSize - margin : margin;
+
+      copiedPage.drawText(text, {
+        x,
+        y,
+        size: options.fontSize,
+        font,
+      });
+
+      outputDoc.addPage(copiedPage);
+    }
+
+    const data = await outputDoc.save();
+
+    return {
+      data: new Uint8Array(data),
+      suggestedFileName: PAGE_NUMBERS_FILENAME,
+    };
+  }
+
   private async buildOutputFromPages(
     pagesToBuild: PageState[],
     emptyStateMessage: string,
@@ -99,6 +160,21 @@ export class PDFOperationsService implements IPDFOperationsService {
       data: new Uint8Array(data),
       suggestedFileName,
     };
+  }
+
+  private formatPageNumber(
+    number: number,
+    totalPages: number,
+    format: PageNumberOptions["format"]
+  ): string {
+    switch (format) {
+      case "page-number":
+        return `Page ${number}`;
+      case "number-of-total":
+        return `${number} / ${totalPages}`;
+      default:
+        return `${number}`;
+    }
   }
 
   private async getOrLoadSourceDoc(file: File): Promise<PDFDocument> {
