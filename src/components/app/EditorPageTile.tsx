@@ -30,10 +30,13 @@ export default function EditorPageTile(props: Props) {
     return classes.join(" ");
   };
 
+  const sourcePage =
+    props.page.source.kind === "source-pdf" ? props.page.source.pageNumber : "generated";
+
   return (
     <div
       data-page-index={props.index}
-      data-source-page={props.page.sourcePageNumber}
+      data-source-page={sourcePage}
       data-selected={props.selected}
       data-marked-for-deletion={props.page.markedForDeletion}
       class={tileClass()}
@@ -49,7 +52,7 @@ export default function EditorPageTile(props: Props) {
         type="button"
         data-testid="editor-page-tile"
         data-page-index={props.index}
-        data-source-page={props.page.sourcePageNumber}
+        data-source-page={sourcePage}
         data-selected={props.selected}
         data-marked-for-deletion={props.page.markedForDeletion}
         class="editor-page-hitarea"

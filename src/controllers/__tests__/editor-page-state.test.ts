@@ -1,59 +1,59 @@
 import { describe, expect, it } from "vitest";
-import {
-  createPageStates,
-  remapSelectionAfterMove,
-  toggleSelectAll,
-  toggleSelection,
-} from "../editor-page-state";
+import { createPageStates, toggleSelectAll, toggleSelection } from "../editor-page-state";
 
 describe("editor page state controller", () => {
   const file = new File(["plain"], "sample.pdf", { type: "application/pdf" });
 
-  it("creates page state entries for each source page", () => {
+  it("creates page state entries with source origins for each source page", () => {
     const pageStates = createPageStates(file, 3, 1234);
 
     expect(pageStates).toEqual([
       {
         id: "sample.pdf-1-1234",
-        sourceFile: file,
-        sourcePageNumber: 1,
+        source: {
+          kind: "source-pdf",
+          file,
+          pageNumber: 1,
+        },
         rotation: 0,
         markedForDeletion: false,
       },
       {
         id: "sample.pdf-2-1234",
-        sourceFile: file,
-        sourcePageNumber: 2,
+        source: {
+          kind: "source-pdf",
+          file,
+          pageNumber: 2,
+        },
         rotation: 0,
         markedForDeletion: false,
       },
       {
         id: "sample.pdf-3-1234",
-        sourceFile: file,
-        sourcePageNumber: 3,
+        source: {
+          kind: "source-pdf",
+          file,
+          pageNumber: 3,
+        },
         rotation: 0,
         markedForDeletion: false,
       },
     ]);
   });
 
-  it("toggles an individual selection", () => {
-    expect(toggleSelection(new Set<number>(), 1)).toEqual(new Set([1]));
-    expect(toggleSelection(new Set([1, 2]), 1)).toEqual(new Set([2]));
+  it("toggles an individual selection by page id", () => {
+    expect(toggleSelection(new Set<string>(), "page-1")).toEqual(new Set(["page-1"]));
+    expect(toggleSelection(new Set(["page-1", "page-2"]), "page-1")).toEqual(new Set(["page-2"]));
   });
 
-  it("toggles select-all against the total page count", () => {
-    expect(toggleSelectAll(3, new Set([0]))).toEqual(new Set([0, 1, 2]));
-    expect(toggleSelectAll(3, new Set([0, 1, 2]))).toEqual(new Set<number>());
-  });
+  it("toggles select-all against the current page ids", () => {
+    const pages = createPageStates(file, 3, 1234);
 
-  it("remaps selections when an item moves forward", () => {
-    const remapped = remapSelectionAfterMove(new Set([0, 1, 3]), 1, 3);
-    expect(remapped).toEqual(new Set([0, 2, 3]));
-  });
-
-  it("remaps selections when an item moves backward", () => {
-    const remapped = remapSelectionAfterMove(new Set([1, 2, 4]), 4, 1);
-    expect(remapped).toEqual(new Set([2, 3, 1]));
+    expect(toggleSelectAll(pages, new Set([pages[0].id]))).toEqual(
+      new Set([pages[0].id, pages[1].id, pages[2].id])
+    );
+    expect(toggleSelectAll(pages, new Set(pages.map((page) => page.id)))).toEqual(
+      new Set<string>()
+    );
   });
 });

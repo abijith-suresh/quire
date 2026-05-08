@@ -18,10 +18,24 @@ export interface PDFPageInfo {
   height: number;
 }
 
+export interface SourcePdfPageOrigin {
+  kind: "source-pdf";
+  file: File;
+  pageNumber: number;
+}
+
+export interface GeneratedPageOrigin {
+  kind: "generated";
+  generatedType: "blank";
+  width: number;
+  height: number;
+}
+
+export type PageOrigin = SourcePdfPageOrigin | GeneratedPageOrigin;
+
 export interface PageState {
   id: string;
-  sourceFile: File;
-  sourcePageNumber: number;
+  source: PageOrigin;
   rotation: number;
   markedForDeletion: boolean;
 }
@@ -34,6 +48,17 @@ export interface PDFOperationResult {
 export interface PDFBuildProgress {
   completed: number;
   total: number;
+}
+
+export type PageNumberPosition = "bottom-center" | "bottom-right" | "bottom-left" | "top-right";
+
+export type PageNumberFormat = "number" | "page-number" | "number-of-total";
+
+export interface PageNumberOptions {
+  position: PageNumberPosition;
+  startNumber: number;
+  format: PageNumberFormat;
+  fontSize: number;
 }
 
 export interface IPDFOperationsService {
@@ -64,6 +89,16 @@ export interface IPDFOperationsService {
     indices: number[],
     onProgress?: (progress: PDFBuildProgress) => void
   ): Promise<PDFOperationResult>;
+
+  /**
+   * Builds a new PDF with page numbers applied to each active page.
+   *
+   * @param pages - The current editor page state to export.
+   * @param options - The page-number placement and formatting options.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  addPageNumbers(pages: PageState[], options: PageNumberOptions): Promise<PDFOperationResult>;
 
   /**
    * Clears any cached source documents held for the current editor session.

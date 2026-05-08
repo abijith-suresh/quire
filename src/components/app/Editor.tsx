@@ -7,7 +7,6 @@ import { pdfService } from "../../services/pdf-service";
 import { pdfOperationsService } from "../../services/pdf-operations-service";
 import {
   createPageStates,
-  remapSelectionAfterMove,
   toggleSelectAll,
   toggleSelection,
 } from "../../controllers/editor-page-state";
@@ -44,11 +43,17 @@ export default function Editor() {
 
   const [phase, setPhase] = createSignal<"upload" | "edit">("upload");
   const [pages, setPages] = createStore<PageState[]>([]);
-  const [selectedIndices, setSelectedIndices] = createSignal<Set<number>>(new Set<number>());
+  const [selectedPageIds, setSelectedPageIds] = createSignal<Set<string>>(new Set<string>());
   const [dragSourceIndex, setDragSourceIndex] = createSignal<number | null>(null);
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
   const [operation, setOperation] = createSignal<EditorOperation>("idle");
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
+  const [pageNumberOptions, setPageNumberOptions] = createStore({
+    position: "bottom-center" as const,
+    startNumber: 1,
+    format: "number" as const,
+    fontSize: 16,
+  });
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
@@ -164,7 +169,7 @@ export default function Editor() {
 
   function handleFileLoaded(file: File, pageCount: number): void {
     setPages(createPageStates(file, pageCount));
-    setSelectedIndices(new Set<number>());
+    setSelectedPageIds(new Set<string>());
     setPhase("edit");
     setReadyStatus();
     dispatchToast(`${file.name} loaded with ${formatPageCount(pageCount)}.`, "success");
@@ -199,12 +204,14 @@ export default function Editor() {
 
   function handlePageClick(index: number): void {
     if (isBusy()) return;
-    setSelectedIndices((previousSelection) => toggleSelection(previousSelection, index));
+    const pageId = pages[index]?.id;
+    if (!pageId) return;
+    setSelectedPageIds((previousSelection) => toggleSelection(previousSelection, pageId));
   }
 
   function handleSelectAll(): void {
     if (isBusy()) return;
-    setSelectedIndices((previousSelection) => toggleSelectAll(pages.length, previousSelection));
+    setSelectedPageIds((previousSelection) => toggleSelectAll(pages, previousSelection));
   }
 
   // --- Rotation ---
@@ -217,24 +224,30 @@ export default function Editor() {
   }
 
   function handleRotateSelected(): void {
-    if (isBusy() || selectedIndices().size === 0) return;
-    for (const index of selectedIndices()) {
-      setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
+    if (isBusy() || selectedPageIds().size === 0) return;
+    for (const pageId of selectedPageIds()) {
+      const index = pages.findIndex((page) => page.id === pageId);
+      if (index >= 0) {
+        setPages(index, "rotation", (r) => (r + ROTATION_STEP) % 360);
+      }
     }
     setStatusMessage(
-      `Rotated ${selectedIndices().size} selected page${selectedIndices().size === 1 ? "" : "s"}.`
+      `Rotated ${selectedPageIds().size} selected page${selectedPageIds().size === 1 ? "" : "s"}.`
     );
   }
 
   // --- Delete ---
 
   function handleDeleteSelected(): void {
-    if (isBusy() || selectedIndices().size === 0) return;
-    for (const index of selectedIndices()) {
-      setPages(index, "markedForDeletion", (v) => !v);
+    if (isBusy() || selectedPageIds().size === 0) return;
+    for (const pageId of selectedPageIds()) {
+      const index = pages.findIndex((page) => page.id === pageId);
+      if (index >= 0) {
+        setPages(index, "markedForDeletion", (v) => !v);
+      }
     }
     setStatusMessage(
-      `Updated deletion state for ${selectedIndices().size} selected page${selectedIndices().size === 1 ? "" : "s"}.`
+      `Updated deletion state for ${selectedPageIds().size} selected page${selectedPageIds().size === 1 ? "" : "s"}.`
     );
   }
 
@@ -242,7 +255,7 @@ export default function Editor() {
 
   async function handleExtract(): Promise<void> {
     if (isBusy()) return;
-    const indices = Array.from(selectedIndices()).sort((a, b) => a - b);
+    const indices = pages.flatMap((page, index) => (selectedPageIds().has(page.id) ? [index] : []));
     if (indices.length === 0) return;
 
     setOperation("extracting");
@@ -282,6 +295,24 @@ export default function Editor() {
     } catch (err) {
       console.error("Failed to build PDF:", err);
       dispatchToast("Failed to build the PDF.", "error");
+    } finally {
+      setReadyStatus();
+    }
+  }
+
+  async function handlePageNumbersDownload(): Promise<void> {
+    if (isBusy()) return;
+
+    setOperation("building");
+    setStatusMessage("Applying page numbers...");
+
+    try {
+      const result = await pdfOperationsService.addPageNumbers(pages, pageNumberOptions);
+      downloadPDF(result);
+      dispatchToast("Page-numbered PDF download started.", "success");
+    } catch (err) {
+      console.error("Failed to apply page numbers:", err);
+      dispatchToast("Failed to apply page numbers.", "error");
     } finally {
       setReadyStatus();
     }
@@ -336,9 +367,6 @@ export default function Editor() {
         p.splice(to, 0, moved);
       })
     );
-
-    // Remap selection indices after reorder
-    setSelectedIndices((previousSelection) => remapSelectionAfterMove(previousSelection, from, to));
 
     setDragSourceIndex(null);
   }
@@ -396,8 +424,8 @@ export default function Editor() {
             </span>
           </Show>
           <span class="flex-1" />
-          <Show when={phase() === "edit" && selectedIndices().size > 0}>
-            <span class="text-sm text-[#888]">{selectedIndices().size} selected</span>
+          <Show when={phase() === "edit" && selectedPageIds().size > 0}>
+            <span class="text-sm text-[#888]">{selectedPageIds().size} selected</span>
             <span class="w-px h-6 bg-[#555] mx-5" />
           </Show>
           <a
@@ -422,7 +450,23 @@ export default function Editor() {
           <div class="flex h-[calc(100dvh-3.5rem)] min-h-0">
             <EditorSidebar
               busy={isBusy()}
-              selectedCount={selectedIndices().size}
+              selectedCount={selectedPageIds().size}
+              pageNumberOptions={pageNumberOptions}
+              onPageNumberOptionChange={(field, value) => {
+                if (field === "startNumber" || field === "fontSize") {
+                  const parsed = Number.parseInt(value, 10);
+                  setPageNumberOptions(field, Number.isNaN(parsed) ? 1 : parsed);
+                  return;
+                }
+
+                if (field === "position") {
+                  setPageNumberOptions("position", value as typeof pageNumberOptions.position);
+                  return;
+                }
+
+                setPageNumberOptions("format", value as typeof pageNumberOptions.format);
+              }}
+              onPageNumberDownload={handlePageNumbersDownload}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}
@@ -436,7 +480,7 @@ export default function Editor() {
               <EditorPageGrid
                 busy={isBusy()}
                 pages={pages}
-                selectedIndices={selectedIndices()}
+                selectedPageIds={selectedPageIds()}
                 dragSourceIndex={dragSourceIndex()}
                 dragOverTarget={dragOverTarget()}
                 onPageClick={handlePageClick}
@@ -523,7 +567,7 @@ export default function Editor() {
                   {pages.length} pages ({activePageCount()} active)
                 </span>
                 <span class="flex-1 text-center">
-                  {selectedIndices().size > 0 ? `${selectedIndices().size} selected` : ""}
+                  {selectedPageIds().size > 0 ? `${selectedPageIds().size} selected` : ""}
                 </span>
                 <span class="flex items-center gap-1.5" data-testid="editor-status-message">
                   <span class="w-1.5 h-1.5 bg-[#ff0000] inline-block" />
