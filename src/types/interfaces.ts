@@ -18,6 +18,13 @@ export interface PDFPageInfo {
   height: number;
 }
 
+export interface PDFDocumentMetadata {
+  title: string;
+  author: string;
+  subject: string;
+  keywords: string;
+}
+
 export interface PageState {
   id: string;
   sourceFile: File;
@@ -62,6 +69,21 @@ export interface IPDFOperationsService {
   buildPDFFromSubset(
     pages: PageState[],
     indices: number[],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult>;
+
+  /**
+   * Builds a new PDF and applies document metadata to the output.
+   *
+   * @param pages - The current editor page state to export.
+   * @param metadata - The metadata values to apply to the output document.
+   * @param onProgress - Optional callback invoked after each page is copied.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  buildPDFWithMetadata(
+    pages: PageState[],
+    metadata: PDFDocumentMetadata,
     onProgress?: (progress: PDFBuildProgress) => void
   ): Promise<PDFOperationResult>;
 
@@ -161,6 +183,15 @@ export interface IPDFService extends IPDFLoader, IPDFRenderer {
    * @throws {PDFPasswordRequiredError} When the password is missing or incorrect.
    */
   loadPDFWithPassword(file: File, password: string): Promise<void>;
+
+  /**
+   * Returns metadata for the requested PDF file.
+   *
+   * @param file - The PDF file whose metadata should be read.
+   * @returns The title, author, subject, and keywords currently stored in the document.
+   * @throws {PDFPasswordRequiredError} When the source PDF requires a password.
+   */
+  getMetadata(file: File): Promise<PDFDocumentMetadata>;
 
   /**
    * Returns the cached password previously used for a file in this session.

@@ -5,6 +5,7 @@ import type {
   PDFOperationResult,
   IPDFOperationsService,
   PDFBuildProgress,
+  PDFDocumentMetadata,
 } from "../types/interfaces";
 
 export class PDFOperationsService implements IPDFOperationsService {
@@ -69,11 +70,37 @@ export class PDFOperationsService implements IPDFOperationsService {
     );
   }
 
+  /**
+   * Builds a new PDF and applies document metadata to the output.
+   *
+   * @param pages - The current editor page state to export.
+   * @param metadata - The metadata values to apply to the output document.
+   * @param onProgress - Optional callback invoked after each page is copied.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  async buildPDFWithMetadata(
+    pages: PageState[],
+    metadata: PDFDocumentMetadata,
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult> {
+    const activePages = pages.filter((page) => !page.markedForDeletion);
+
+    return this.buildOutputFromPages(
+      activePages,
+      "No pages to include in the PDF",
+      OUTPUT_FILENAME,
+      onProgress,
+      metadata
+    );
+  }
+
   private async buildOutputFromPages(
     pagesToBuild: PageState[],
     emptyStateMessage: string,
     suggestedFileName: string,
-    onProgress?: (progress: PDFBuildProgress) => void
+    onProgress?: (progress: PDFBuildProgress) => void,
+    metadata?: PDFDocumentMetadata
   ): Promise<PDFOperationResult> {
     if (pagesToBuild.length === 0) {
       throw new Error(emptyStateMessage);
@@ -91,6 +118,26 @@ export class PDFOperationsService implements IPDFOperationsService {
 
       outputDoc.addPage(copiedPage);
       onProgress?.({ completed: index + 1, total: pagesToBuild.length });
+    }
+
+    if (metadata) {
+      if (metadata.title.trim()) {
+        outputDoc.setTitle(metadata.title.trim());
+      }
+      if (metadata.author.trim()) {
+        outputDoc.setAuthor(metadata.author.trim());
+      }
+      if (metadata.subject.trim()) {
+        outputDoc.setSubject(metadata.subject.trim());
+      }
+      if (metadata.keywords.trim()) {
+        outputDoc.setKeywords(
+          metadata.keywords
+            .split(",")
+            .map((keyword) => keyword.trim())
+            .filter(Boolean)
+        );
+      }
     }
 
     const data = await outputDoc.save();

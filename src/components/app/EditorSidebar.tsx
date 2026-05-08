@@ -1,6 +1,14 @@
 interface Props {
   busy: boolean;
   selectedCount: number;
+  metadata: {
+    title: string;
+    author: string;
+    subject: string;
+    keywords: string;
+  };
+  onMetadataChange: (field: "title" | "author" | "subject" | "keywords", value: string) => void;
+  onMetadataDownload: () => void;
   onSelectAll: () => void;
   onRotate: () => void;
   onDelete: () => void;
@@ -92,16 +100,67 @@ export default function EditorSidebar(props: Props) {
       </div>
 
       {/* Export — pinned to bottom */}
-      <div class="p-4 border-t border-[#ddd] flex-shrink-0">
-        <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
-        <button
-          data-testid="editor-download-button"
-          onClick={props.onDownload}
-          disabled={props.busy}
-          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {props.busy ? "Working..." : "Download"}
-        </button>
+      <div class="p-4 border-t border-[#ddd] flex-shrink-0 space-y-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Metadata</p>
+          <div class="space-y-2">
+            <input
+              data-testid="editor-metadata-title"
+              type="text"
+              placeholder="Title"
+              value={props.metadata.title}
+              disabled={props.busy}
+              onInput={(e) => props.onMetadataChange("title", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+            <input
+              data-testid="editor-metadata-author"
+              type="text"
+              placeholder="Author"
+              value={props.metadata.author}
+              disabled={props.busy}
+              onInput={(e) => props.onMetadataChange("author", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+            <input
+              data-testid="editor-metadata-subject"
+              type="text"
+              placeholder="Subject"
+              value={props.metadata.subject}
+              disabled={props.busy}
+              onInput={(e) => props.onMetadataChange("subject", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+            <input
+              data-testid="editor-metadata-keywords"
+              type="text"
+              placeholder="Keywords"
+              value={props.metadata.keywords}
+              disabled={props.busy}
+              onInput={(e) => props.onMetadataChange("keywords", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+          </div>
+          <button
+            data-testid="editor-metadata-button"
+            onClick={props.onMetadataDownload}
+            disabled={props.busy}
+            class="mt-3 w-full border border-[#111] bg-transparent py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#111] transition-colors hover:bg-[#111] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Apply Metadata & Download
+          </button>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
+          <button
+            data-testid="editor-download-button"
+            onClick={props.onDownload}
+            disabled={props.busy}
+            class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {props.busy ? "Working..." : "Download"}
+          </button>
+        </div>
       </div>
     </aside>
   );
