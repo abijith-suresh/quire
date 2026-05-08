@@ -400,6 +400,12 @@ export default function Editor() {
             <span class="text-sm text-[#888]">{selectedIndices().size} selected</span>
             <span class="w-px h-6 bg-[#555] mx-5" />
           </Show>
+          <Show when={isBusy()}>
+            <div class="mr-4 flex items-center gap-2 rounded-full border border-[#333] bg-[#1a1a1a] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[#ddd]">
+              <span class="h-2 w-2 animate-pulse rounded-full bg-[#ff0000]" />
+              <span>{statusMessage()}</span>
+            </div>
+          </Show>
           <a
             href={base}
             class="text-sm text-[#888] hover:text-white no-underline transition-colors"
@@ -448,6 +454,13 @@ export default function Editor() {
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
               />
+
+              <Show when={isBusy()}>
+                <div class="border-t border-[#ddd] bg-[#f8f8f8] px-4 py-3 text-xs text-[#555] flex items-center gap-3">
+                  <span class="h-3 w-3 animate-spin rounded-full border border-[#bbb] border-t-[#111]" />
+                  <span>{statusMessage()}</span>
+                </div>
+              </Show>
 
               {/* Mobile toolbar */}
               <div class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center">
@@ -505,8 +518,11 @@ export default function Editor() {
                   data-testid="editor-download-button-mobile"
                   disabled={isBusy()}
                   onClick={handleDownload}
-                  class="text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                  class="flex items-center gap-2 text-[11px] uppercase tracking-wider bg-[#ff0000] text-white border-none px-4 py-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
+                  <Show when={isBusy()}>
+                    <span class="h-3 w-3 animate-spin rounded-full border border-white/50 border-t-white" />
+                  </Show>
                   {isBusy() ? "Working..." : "Download"}
                 </button>
               </div>

@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { Show, createSignal } from "solid-js";
 
 interface Props {
   busy: boolean;
@@ -30,7 +30,7 @@ export default function EditorUploader(props: Props) {
           tabIndex={0}
           aria-busy={props.busy}
           aria-label="Click or drag a PDF file here to upload"
-          class={`border-2 border-dashed transition-colors py-20 text-center ${
+          class={`relative overflow-hidden border-2 border-dashed transition-colors py-20 text-center ${
             props.busy
               ? "border-[#111] bg-[#f5f5f5] cursor-wait"
               : `cursor-pointer ${isDragOver() ? "border-[#111] bg-[#f5f5f5]" : "border-[#ddd] hover:border-[#111]"}`
@@ -56,6 +56,12 @@ export default function EditorUploader(props: Props) {
             handleFile(e.dataTransfer?.files[0]);
           }}
         >
+          <Show when={props.busy}>
+            <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/80">
+              <span class="h-8 w-8 animate-spin rounded-full border-2 border-[#ddd] border-t-[#111]" />
+              <span class="text-[11px] uppercase tracking-[0.18em] text-[#555]">Processing</span>
+            </div>
+          </Show>
           <p class="font-['Bebas_Neue',sans-serif] text-4xl text-[#111] mb-2">
             {props.busy ? "Working..." : "Drop PDF here"}
           </p>

@@ -1,3 +1,5 @@
+import { Show } from "solid-js";
+
 interface Props {
   busy: boolean;
   selectedCount: number;
@@ -23,11 +25,19 @@ export default function EditorSidebar(props: Props) {
             data-testid="editor-add-pdf-button"
             onClick={() => addPdfInput.click()}
             disabled={props.busy}
-            class="w-full border border-dashed border-[#ddd] hover:border-[#111] transition-colors py-6 text-center cursor-pointer bg-transparent disabled:cursor-not-allowed disabled:opacity-60"
+            class="flex w-full items-center justify-center gap-2 border border-dashed border-[#ddd] bg-transparent py-6 text-center transition-colors hover:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span class="text-[11px] text-[#888] uppercase tracking-wider">
-              {props.busy ? "Working..." : "+ Add PDF"}
-            </span>
+            <Show
+              when={props.busy}
+              fallback={
+                <span class="text-[11px] text-[#888] uppercase tracking-wider">+ Add PDF</span>
+              }
+            >
+              <>
+                <span class="h-3 w-3 animate-spin rounded-full border border-[#bbb] border-t-[#111]" />
+                <span class="text-[11px] text-[#888] uppercase tracking-wider">Working...</span>
+              </>
+            </Show>
           </button>
           <input
             ref={addPdfInput}
@@ -98,9 +108,14 @@ export default function EditorSidebar(props: Props) {
           data-testid="editor-download-button"
           onClick={props.onDownload}
           disabled={props.busy}
-          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          class="flex w-full items-center justify-center gap-2 border-none bg-[#ff0000] py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#111] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {props.busy ? "Working..." : "Download"}
+          <Show when={props.busy} fallback={<span>Download</span>}>
+            <>
+              <span class="h-3 w-3 animate-spin rounded-full border border-white/50 border-t-white" />
+              <span>Working...</span>
+            </>
+          </Show>
         </button>
       </div>
     </aside>
