@@ -1,6 +1,17 @@
 interface Props {
   busy: boolean;
   selectedCount: number;
+  pageNumberOptions: {
+    position: "bottom-center" | "bottom-right" | "bottom-left" | "top-right";
+    startNumber: number;
+    format: "number" | "page-number" | "number-of-total";
+    fontSize: number;
+  };
+  onPageNumberOptionChange: (
+    field: "position" | "startNumber" | "format" | "fontSize",
+    value: string
+  ) => void;
+  onPageNumberDownload: () => void;
   onSelectAll: () => void;
   onRotate: () => void;
   onDelete: () => void;
@@ -92,16 +103,72 @@ export default function EditorSidebar(props: Props) {
       </div>
 
       {/* Export — pinned to bottom */}
-      <div class="p-4 border-t border-[#ddd] flex-shrink-0">
-        <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
-        <button
-          data-testid="editor-download-button"
-          onClick={props.onDownload}
-          disabled={props.busy}
-          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {props.busy ? "Working..." : "Download"}
-        </button>
+      <div class="p-4 border-t border-[#ddd] flex-shrink-0 space-y-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Page Numbers</p>
+          <div class="space-y-2">
+            <select
+              data-testid="editor-page-numbers-position"
+              value={props.pageNumberOptions.position}
+              disabled={props.busy}
+              onChange={(e) => props.onPageNumberOptionChange("position", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="bottom-center">Bottom center</option>
+              <option value="bottom-right">Bottom right</option>
+              <option value="bottom-left">Bottom left</option>
+              <option value="top-right">Top right</option>
+            </select>
+            <input
+              data-testid="editor-page-numbers-start"
+              type="number"
+              min="1"
+              value={props.pageNumberOptions.startNumber}
+              disabled={props.busy}
+              onInput={(e) => props.onPageNumberOptionChange("startNumber", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+            <select
+              data-testid="editor-page-numbers-format"
+              value={props.pageNumberOptions.format}
+              disabled={props.busy}
+              onChange={(e) => props.onPageNumberOptionChange("format", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="number">1</option>
+              <option value="page-number">Page 1</option>
+              <option value="number-of-total">1 / N</option>
+            </select>
+            <input
+              data-testid="editor-page-numbers-font-size"
+              type="number"
+              min="8"
+              value={props.pageNumberOptions.fontSize}
+              disabled={props.busy}
+              onInput={(e) => props.onPageNumberOptionChange("fontSize", e.currentTarget.value)}
+              class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+          </div>
+          <button
+            data-testid="editor-page-numbers-button"
+            onClick={props.onPageNumberDownload}
+            disabled={props.busy}
+            class="mt-3 w-full border border-[#111] bg-transparent py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#111] transition-colors hover:bg-[#111] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Apply Page Numbers & Download
+          </button>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
+          <button
+            data-testid="editor-download-button"
+            onClick={props.onDownload}
+            disabled={props.busy}
+            class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {props.busy ? "Working..." : "Download"}
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -65,6 +65,26 @@ test("adds another PDF to the current session", async ({ page }) => {
   await expect(page.getByTestId("editor-toast").last()).toContainText("Added 2 pages");
 });
 
+test("downloads a PDF with page numbers", async ({ page }) => {
+  await page.goto("/app");
+  await uploadPdf(page, samplePdf);
+  await waitForEditorReady(page);
+
+  await page.getByTestId("editor-page-numbers-position").selectOption("bottom-right");
+  await page.getByTestId("editor-page-numbers-start").fill("3");
+  await page.getByTestId("editor-page-numbers-format").selectOption("number-of-total");
+  await page.getByTestId("editor-page-numbers-font-size").fill("18");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("editor-page-numbers-button").click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe("quire-numbered.pdf");
+  await expect(page.getByTestId("editor-toast").last()).toContainText(
+    "Page-numbered PDF download started."
+  );
+});
+
 test("prompts for encrypted PDFs and accepts the correct password", async ({ page }) => {
   await page.goto("/app");
   await uploadPdf(page, encryptedPdf);
