@@ -10,7 +10,7 @@ interface DragOverTarget {
 interface Props {
   busy: boolean;
   pages: PageState[];
-  selectedIndices: Set<number>;
+  selectedPageIds: Set<string>;
   dragSourceIndex: number | null;
   dragOverTarget: DragOverTarget | null;
   onPageClick: (index: number) => void;
@@ -42,7 +42,7 @@ export default function EditorPageGrid(props: Props) {
             <EditorPageTile
               page={page}
               index={index()}
-              selected={props.selectedIndices.has(index())}
+              selected={props.selectedPageIds.has(page.id)}
               isDragSource={props.dragSourceIndex === index()}
               dragOverDirection={
                 props.dragOverTarget?.index === index() ? props.dragOverTarget.direction : null

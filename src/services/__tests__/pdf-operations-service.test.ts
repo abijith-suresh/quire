@@ -3,15 +3,22 @@ import type { PageState } from "../../types/interfaces";
 
 const createMockPage = (overrides: Partial<PageState> = {}): PageState => ({
   id: "page-1",
-  sourceFile: new File([""], "test.pdf"),
-  sourcePageNumber: 1,
+  source: {
+    kind: "source-pdf",
+    file: new File([""], "test.pdf"),
+    pageNumber: 1,
+  },
   rotation: 0,
   markedForDeletion: false,
   ...overrides,
 });
 
+const mockCopiedPage = {
+  setRotation: vi.fn(),
+};
+
 const mockPDFDoc = {
-  copyPages: vi.fn().mockResolvedValue([{ setRotation: vi.fn() }]),
+  copyPages: vi.fn().mockResolvedValue([mockCopiedPage]),
   addPage: vi.fn(),
   save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
   getPageCount: vi.fn().mockReturnValue(1),
@@ -53,8 +60,11 @@ describe("PDFOperationsService", () => {
     it("should handle multiple pages", async () => {
       const service = new PDFOperationsService();
       const pages = [
-        createMockPage({ id: "page-1", sourcePageNumber: 1 }),
-        createMockPage({ id: "page-2", sourcePageNumber: 2 }),
+        createMockPage({ id: "page-1" }),
+        createMockPage({
+          id: "page-2",
+          source: { kind: "source-pdf", file: new File([""], "test.pdf"), pageNumber: 2 },
+        }),
       ];
 
       const result = await service.buildPDF(pages);
@@ -103,7 +113,13 @@ describe("PDFOperationsService", () => {
       const onProgress = vi.fn();
 
       await service.buildPDF(
-        [createMockPage(), createMockPage({ id: "page-2", sourcePageNumber: 2 })],
+        [
+          createMockPage(),
+          createMockPage({
+            id: "page-2",
+            source: { kind: "source-pdf", file: new File([""], "test.pdf"), pageNumber: 2 },
+          }),
+        ],
         onProgress
       );
 
@@ -135,8 +151,11 @@ describe("PDFOperationsService", () => {
     it("should handle multiple indices", async () => {
       const service = new PDFOperationsService();
       const pages = [
-        createMockPage({ id: "page-1", sourcePageNumber: 1 }),
-        createMockPage({ id: "page-2", sourcePageNumber: 2 }),
+        createMockPage({ id: "page-1" }),
+        createMockPage({
+          id: "page-2",
+          source: { kind: "source-pdf", file: new File([""], "test.pdf"), pageNumber: 2 },
+        }),
       ];
 
       const result = await service.buildPDFFromSubset(pages, [0, 1]);

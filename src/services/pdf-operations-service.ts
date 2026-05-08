@@ -2,9 +2,9 @@ import { PDFDocument, degrees } from "pdf-lib";
 import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
 import type {
   PageState,
+  PDFBuildProgress,
   PDFOperationResult,
   IPDFOperationsService,
-  PDFBuildProgress,
 } from "../types/interfaces";
 
 export class PDFOperationsService implements IPDFOperationsService {
@@ -82,8 +82,12 @@ export class PDFOperationsService implements IPDFOperationsService {
     const outputDoc = await PDFDocument.create();
 
     for (const [index, page] of pagesToBuild.entries()) {
-      const sourceDoc = await this.getOrLoadSourceDoc(page.sourceFile);
-      const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
+      if (page.source.kind !== "source-pdf") {
+        throw new Error("Unsupported page origin for PDF export");
+      }
+
+      const sourceDoc = await this.getOrLoadSourceDoc(page.source.file);
+      const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.source.pageNumber - 1]);
 
       if (page.rotation !== 0) {
         copiedPage.setRotation(degrees(page.rotation));

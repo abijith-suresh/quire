@@ -18,10 +18,24 @@ export interface PDFPageInfo {
   height: number;
 }
 
+export interface SourcePdfPageOrigin {
+  kind: "source-pdf";
+  file: File;
+  pageNumber: number;
+}
+
+export interface GeneratedPageOrigin {
+  kind: "generated";
+  generatedType: "blank";
+  width: number;
+  height: number;
+}
+
+export type PageOrigin = SourcePdfPageOrigin | GeneratedPageOrigin;
+
 export interface PageState {
   id: string;
-  sourceFile: File;
-  sourcePageNumber: number;
+  source: PageOrigin;
   rotation: number;
   markedForDeletion: boolean;
 }

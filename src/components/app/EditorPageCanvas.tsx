@@ -32,13 +32,18 @@ export default function EditorPageCanvas(props: Props) {
           observer.disconnect();
 
           try {
+            if (props.page.source.kind !== "source-pdf") {
+              setRenderState("error");
+              return;
+            }
+
             // Render at the current rotation so pages that are already rotated when
             // they first enter the viewport get the correct orientation immediately.
             // pdf.js rotation is CCW; UI rotation is CW — convert direction.
             const pdfjsRotation = (360 - props.rotation) % 360;
             await pdfService.renderPage(
-              props.page.sourceFile,
-              props.page.sourcePageNumber,
+              props.page.source.file,
+              props.page.source.pageNumber,
               canvas,
               THUMBNAIL_SCALE,
               pdfjsRotation
@@ -47,7 +52,10 @@ export default function EditorPageCanvas(props: Props) {
             setRenderState("ready");
             setRendered(true);
           } catch (err) {
-            console.error(`Failed to render page ${props.page.sourcePageNumber}:`, err);
+            console.error(
+              `Failed to render page ${props.page.source.kind === "source-pdf" ? props.page.source.pageNumber : props.page.id}:`,
+              err
+            );
             setRenderState("error");
           }
         }
@@ -80,10 +88,14 @@ export default function EditorPageCanvas(props: Props) {
           canvas.classList.add("is-rendering");
           await new Promise<void>((resolve) => setTimeout(resolve, 80));
           if (!container.isConnected) return;
+          if (props.page.source.kind !== "source-pdf") {
+            return;
+          }
+
           const pdfjsRotation = (360 - rotation) % 360;
           await pdfService.renderPage(
-            props.page.sourceFile,
-            props.page.sourcePageNumber,
+            props.page.source.file,
+            props.page.source.pageNumber,
             canvas,
             THUMBNAIL_SCALE,
             pdfjsRotation
