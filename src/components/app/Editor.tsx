@@ -48,12 +48,6 @@ export default function Editor() {
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
   const [operation, setOperation] = createSignal<EditorOperation>("idle");
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
-  const [pageNumberOptions, setPageNumberOptions] = createStore({
-    position: "bottom-center" as const,
-    startNumber: 1,
-    format: "number" as const,
-    fontSize: 16,
-  });
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
@@ -300,24 +294,6 @@ export default function Editor() {
     }
   }
 
-  async function handlePageNumbersDownload(): Promise<void> {
-    if (isBusy()) return;
-
-    setOperation("building");
-    setStatusMessage("Applying page numbers...");
-
-    try {
-      const result = await pdfOperationsService.addPageNumbers(pages, pageNumberOptions);
-      downloadPDF(result);
-      dispatchToast("Page-numbered PDF download started.", "success");
-    } catch (err) {
-      console.error("Failed to apply page numbers:", err);
-      dispatchToast("Failed to apply page numbers.", "error");
-    } finally {
-      setReadyStatus();
-    }
-  }
-
   // --- Drag and drop ---
 
   function handleDragStart(index: number, e: DragEvent): void {
@@ -451,22 +427,6 @@ export default function Editor() {
             <EditorSidebar
               busy={isBusy()}
               selectedCount={selectedPageIds().size}
-              pageNumberOptions={pageNumberOptions}
-              onPageNumberOptionChange={(field, value) => {
-                if (field === "startNumber" || field === "fontSize") {
-                  const parsed = Number.parseInt(value, 10);
-                  setPageNumberOptions(field, Number.isNaN(parsed) ? 1 : parsed);
-                  return;
-                }
-
-                if (field === "position") {
-                  setPageNumberOptions("position", value as typeof pageNumberOptions.position);
-                  return;
-                }
-
-                setPageNumberOptions("format", value as typeof pageNumberOptions.format);
-              }}
-              onPageNumberDownload={handlePageNumbersDownload}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}
