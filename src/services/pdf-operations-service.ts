@@ -7,6 +7,11 @@ import type {
   PDFBuildProgress,
 } from "../types/interfaces";
 
+export interface PasswordProtectOptions {
+  userPassword: string;
+  ownerPassword: string;
+}
+
 export class PDFOperationsService implements IPDFOperationsService {
   // Class-level cache: avoids re-reading the same File on multiple build/extract
   // calls within one session. Cleared on session reset via clearCache().
@@ -31,7 +36,8 @@ export class PDFOperationsService implements IPDFOperationsService {
    */
   async buildPDF(
     pages: PageState[],
-    onProgress?: (progress: PDFBuildProgress) => void
+    onProgress?: (progress: PDFBuildProgress) => void,
+    passwordOptions?: PasswordProtectOptions
   ): Promise<PDFOperationResult> {
     const activePages = pages.filter((page) => !page.markedForDeletion);
 
@@ -39,7 +45,8 @@ export class PDFOperationsService implements IPDFOperationsService {
       activePages,
       "No pages to include in the PDF",
       OUTPUT_FILENAME,
-      onProgress
+      onProgress,
+      passwordOptions
     );
   }
 
@@ -73,7 +80,8 @@ export class PDFOperationsService implements IPDFOperationsService {
     pagesToBuild: PageState[],
     emptyStateMessage: string,
     suggestedFileName: string,
-    onProgress?: (progress: PDFBuildProgress) => void
+    onProgress?: (progress: PDFBuildProgress) => void,
+    passwordOptions?: PasswordProtectOptions
   ): Promise<PDFOperationResult> {
     if (pagesToBuild.length === 0) {
       throw new Error(emptyStateMessage);
@@ -93,7 +101,13 @@ export class PDFOperationsService implements IPDFOperationsService {
       onProgress?.({ completed: index + 1, total: pagesToBuild.length });
     }
 
-    const data = await outputDoc.save();
+    const saveOptions: Record<string, unknown> = {};
+    if (passwordOptions?.userPassword) {
+      saveOptions.userPassword = passwordOptions.userPassword;
+      saveOptions.ownerPassword = passwordOptions.ownerPassword || passwordOptions.userPassword;
+    }
+
+    const data = await outputDoc.save(saveOptions);
 
     return {
       data: new Uint8Array(data),

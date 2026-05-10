@@ -65,6 +65,20 @@ test("adds another PDF to the current session", async ({ page }) => {
   await expect(page.getByTestId("editor-toast").last()).toContainText("Added 2 pages");
 });
 
+test("downloads a password-protected PDF", async ({ page }) => {
+  await page.goto("/app");
+  await uploadPdf(page, samplePdf);
+  await waitForEditorReady(page);
+
+  await page.getByTestId("editor-protect-password").fill("test-password");
+  await expect(page.getByText("cannot be recovered")).toBeVisible();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("editor-download-button").click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("quire-output.pdf");
+});
+
 test("prompts for encrypted PDFs and accepts the correct password", async ({ page }) => {
   await page.goto("/app");
   await uploadPdf(page, encryptedPdf);
