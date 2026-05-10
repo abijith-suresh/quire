@@ -65,6 +65,37 @@ test("adds another PDF to the current session", async ({ page }) => {
   await expect(page.getByTestId("editor-toast").last()).toContainText("Added 2 pages");
 });
 
+test("supports keyboard shortcuts for core editor actions", async ({ page, browserName }) => {
+  await page.goto("/app");
+  await uploadPdf(page, samplePdf);
+  await waitForEditorReady(page);
+
+  await expect(page.getByTestId("editor-shortcuts-help")).toBeVisible();
+
+  const modifier = browserName === "webkit" ? "Meta" : "Control";
+  await page.keyboard.press(`${modifier}+A`);
+  await expect(page.getByTestId("editor-page-tile").first()).toHaveAttribute(
+    "data-selected",
+    "true"
+  );
+  await expect(page.getByTestId("editor-page-tile").nth(1)).toHaveAttribute(
+    "data-selected",
+    "true"
+  );
+
+  await page.keyboard.press("r");
+  await expect(page.getByTestId("editor-page-canvas").first()).toHaveClass(/is-transposed/);
+
+  await page.keyboard.press("Delete");
+  await expect(page.getByTestId("editor-page-tile").first()).toHaveAttribute(
+    "data-marked-for-deletion",
+    "true"
+  );
+
+  // Ctrl+S download is tested via unit tests — Chromium intercepts Ctrl+S
+  // before the page keydown handler in some CI environments.
+});
+
 test("prompts for encrypted PDFs and accepts the correct password", async ({ page }) => {
   await page.goto("/app");
   await uploadPdf(page, encryptedPdf);

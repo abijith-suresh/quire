@@ -1,6 +1,7 @@
 import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { ROTATION_STEP } from "../../constants";
+import { isEditableTarget } from "../../controllers/editor-keyboard-shortcuts";
 import type { PageState } from "../../types/interfaces";
 import { PDFPasswordRequiredError } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
@@ -51,9 +52,48 @@ export default function Editor() {
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (phase() !== "edit" || isBusy() || isEditableTarget(event.target)) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+    const hasPrimaryModifier = event.ctrlKey || event.metaKey;
+
+    if (hasPrimaryModifier && !event.altKey && key === "a") {
+      event.preventDefault();
+      handleSelectAll();
+      return;
+    }
+
+    if (hasPrimaryModifier && !event.altKey && key === "s") {
+      event.preventDefault();
+      void handleDownload();
+      return;
+    }
+
+    if (hasPrimaryModifier) {
+      return;
+    }
+
+    if (key === "r") {
+      event.preventDefault();
+      handleRotateSelected();
+      return;
+    }
+
+    if (event.key === "Delete" || event.key === "Backspace") {
+      event.preventDefault();
+      handleDeleteSelected();
+    }
+  };
+
   onMount(() => {
     pdfService.reset();
     pdfOperationsService.clearCache();
+    if (typeof document !== "undefined") {
+      document.addEventListener("keydown", handleKeyDown);
+    }
   });
 
   const activePageCount = () => pages.filter((p) => !p.markedForDeletion).length;
@@ -97,6 +137,9 @@ export default function Editor() {
       window.clearTimeout(timer);
     }
     toastTimers.clear();
+    if (typeof document !== "undefined") {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
     pdfService.reset();
     pdfOperationsService.clearCache();
   });
@@ -448,6 +491,21 @@ export default function Editor() {
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
               />
+
+              <details
+                data-testid="editor-shortcuts-help"
+                class="border-t border-[#ddd] px-4 py-3 text-xs text-[#555]"
+              >
+                <summary class="cursor-pointer font-semibold uppercase tracking-[0.12em] text-[#111]">
+                  Keyboard shortcuts
+                </summary>
+                <ul class="mt-3 space-y-1 pl-4">
+                  <li>Ctrl/Cmd+A — select all pages</li>
+                  <li>R — rotate selected pages</li>
+                  <li>Delete / Backspace — mark selected pages for deletion</li>
+                  <li>Ctrl/Cmd+S — download</li>
+                </ul>
+              </details>
 
               {/* Mobile toolbar */}
               <div class="md:hidden border-t border-[#ddd] p-2.5 flex items-center gap-2 flex-wrap justify-center">
