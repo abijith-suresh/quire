@@ -7,11 +7,14 @@ interface Props {
   onExtract: () => void;
   onDownload: () => void;
   onAddPdf: (file: File) => void;
+  onImagesSelected: (files: File[]) => void;
 }
 
 export default function EditorSidebar(props: Props) {
   // eslint-disable-next-line no-unassigned-vars
   let addPdfInput!: HTMLInputElement;
+  // eslint-disable-next-line no-unassigned-vars
+  let convertImagesInput!: HTMLInputElement;
 
   return (
     <aside class="w-56 border-r border-[#ddd] flex-col flex-shrink-0 hidden md:flex">
@@ -42,6 +45,31 @@ export default function EditorSidebar(props: Props) {
               e.currentTarget.value = "";
             }}
           />
+          <button
+            data-testid="editor-convert-images-button"
+            onClick={() => convertImagesInput.click()}
+            disabled={props.busy}
+            class="mt-3 w-full border border-[#ddd] hover:border-[#111] transition-colors py-3 text-center cursor-pointer bg-transparent disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span class="text-[11px] text-[#888] uppercase tracking-wider">Convert Images</span>
+          </button>
+          <input
+            ref={convertImagesInput}
+            data-testid="editor-convert-images-input"
+            type="file"
+            accept="image/png,image/jpeg"
+            multiple
+            class="hidden"
+            disabled={props.busy}
+            onChange={(e) => {
+              const files = Array.from(e.currentTarget.files ?? []);
+              if (files.length > 0) props.onImagesSelected(files);
+              e.currentTarget.value = "";
+            }}
+          />
+          <p class="mt-3 text-[11px] uppercase tracking-wider text-[#888]">
+            PDF to images — coming soon
+          </p>
         </div>
 
         {/* Selection */}

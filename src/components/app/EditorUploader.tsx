@@ -4,12 +4,15 @@ interface Props {
   busy: boolean;
   statusMessage: string;
   onFileSelected: (file: File) => void;
+  onImagesSelected: (files: File[]) => void;
 }
 
 export default function EditorUploader(props: Props) {
   const [isDragOver, setIsDragOver] = createSignal(false);
   // eslint-disable-next-line no-unassigned-vars
   let fileInput!: HTMLInputElement;
+  // eslint-disable-next-line no-unassigned-vars
+  let imageInput!: HTMLInputElement;
 
   function pickFile() {
     if (props.busy) return;
@@ -75,6 +78,34 @@ export default function EditorUploader(props: Props) {
             e.currentTarget.value = "";
           }}
         />
+        <div class="mt-4 space-y-3 text-center">
+          <button
+            type="button"
+            data-testid="editor-convert-images-button"
+            disabled={props.busy}
+            onClick={() => imageInput.click()}
+            class="w-full border border-[#ddd] py-3 text-[11px] uppercase tracking-[0.15em] text-[#555] transition-colors hover:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Convert Images to PDF
+          </button>
+          <input
+            ref={imageInput}
+            data-testid="editor-convert-images-input"
+            type="file"
+            accept="image/png,image/jpeg"
+            multiple
+            class="hidden"
+            disabled={props.busy}
+            onChange={(e) => {
+              const files = Array.from(e.currentTarget.files ?? []);
+              if (files.length > 0) props.onImagesSelected(files);
+              e.currentTarget.value = "";
+            }}
+          />
+          <p class="text-[11px] uppercase tracking-[0.15em] text-[#888]">
+            PDF to images — coming soon
+          </p>
+        </div>
         <p
           class="text-[#888] text-xs mt-3 text-center min-h-[1em]"
           data-testid="editor-upload-status"
