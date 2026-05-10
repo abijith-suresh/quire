@@ -28,6 +28,9 @@ vi.mock("pdf-lib", () => ({
     create: mockPDFDocument.create,
   },
   degrees: vi.fn((deg) => deg),
+  PageSizes: {
+    Letter: [611.28, 792],
+  },
 }));
 
 describe("PDFOperationsService", () => {
@@ -158,6 +161,31 @@ describe("PDFOperationsService", () => {
       await expect(service.buildPDFFromSubset(pages, [])).rejects.toThrow(
         "No pages selected for extraction"
       );
+    });
+  });
+
+  describe("createBlankPageFile", () => {
+    it("should create a blank PDF file", async () => {
+      const service = new PDFOperationsService();
+      const file = await service.createBlankPageFile();
+
+      expect(file).toBeInstanceOf(File);
+      expect(file.name).toBe("blank.pdf");
+      expect(file.type).toBe("application/pdf");
+    });
+
+    it("should use default Letter dimensions", async () => {
+      const service = new PDFOperationsService();
+      await service.createBlankPageFile();
+
+      expect(mockPDFDoc.addPage).toHaveBeenCalledWith([611.28, 792]);
+    });
+
+    it("should accept custom dimensions", async () => {
+      const service = new PDFOperationsService();
+      await service.createBlankPageFile(500, 700);
+
+      expect(mockPDFDoc.addPage).toHaveBeenCalledWith([500, 700]);
     });
   });
 
