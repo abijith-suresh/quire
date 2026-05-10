@@ -1,5 +1,5 @@
 import { PDFDocument, degrees } from "pdf-lib";
-import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
+import { COMPRESSED_FILENAME, EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
 import type {
   PageState,
   PDFOperationResult,
@@ -67,6 +67,52 @@ export class PDFOperationsService implements IPDFOperationsService {
       EXTRACT_FILENAME,
       onProgress
     );
+  }
+
+  /**
+   * Builds a compressed PDF by re-encoding with object streams.
+   *
+   * @param pages - The current editor page state to compress.
+   * @param onProgress - Optional callback invoked after each page is copied.
+   * @returns The compressed PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  async compressPDF(
+    pages: PageState[],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult> {
+    const activePages = pages.filter((page) => !page.markedForDeletion);
+
+    if (activePages.length === 0) {
+      throw new Error("No pages to include in the PDF");
+    }
+
+    const outputDoc = await PDFDocument.create();
+
+    for (const [index, page] of activePages.entries()) {
+      const sourceDoc = await this.getOrLoadSourceDoc(page.sourceFile);
+      const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
+
+      if (page.rotation !== 0) {
+        copiedPage.setRotation(degrees(page.rotation));
+      }
+
+      outputDoc.addPage(copiedPage);
+      onProgress?.({ completed: index + 1, total: activePages.length });
+    }
+
+    // Strip metadata title/author/subject/keywords to reduce size
+    outputDoc.setTitle("");
+    outputDoc.setAuthor("");
+    outputDoc.setSubject("");
+    outputDoc.setKeywords([]);
+
+    const data = await outputDoc.save({ useObjectStreams: true });
+
+    return {
+      data: new Uint8Array(data),
+      suggestedFileName: COMPRESSED_FILENAME,
+    };
   }
 
   private async buildOutputFromPages(

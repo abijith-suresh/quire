@@ -287,6 +287,27 @@ export default function Editor() {
     }
   }
 
+  async function handleCompress(): Promise<void> {
+    if (isBusy()) return;
+    const totalPages = activePageCount();
+
+    setOperation("building");
+    setStatusMessage(`Compressing PDF... 0/${totalPages}`);
+
+    try {
+      const result = await pdfOperationsService.compressPDF(pages, ({ completed, total }) => {
+        setStatusMessage(`Compressing... ${completed}/${total}`);
+      });
+      downloadPDF(result);
+      dispatchToast("Compressed PDF download started.", "success");
+    } catch (err) {
+      console.error("Failed to compress PDF:", err);
+      dispatchToast("Failed to compress the PDF.", "error");
+    } finally {
+      setReadyStatus();
+    }
+  }
+
   // --- Drag and drop ---
 
   function handleDragStart(index: number, e: DragEvent): void {
@@ -428,6 +449,7 @@ export default function Editor() {
               onDelete={handleDeleteSelected}
               onExtract={handleExtract}
               onDownload={handleDownload}
+              onCompress={handleCompress}
               onAddPdf={handleAddPdf}
             />
 
