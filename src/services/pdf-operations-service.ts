@@ -1,4 +1,4 @@
-import { PDFDocument, degrees } from "pdf-lib";
+import { PDFDocument, PageSizes, degrees } from "pdf-lib";
 import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
 import type {
   PageState,
@@ -67,6 +67,77 @@ export class PDFOperationsService implements IPDFOperationsService {
       EXTRACT_FILENAME,
       onProgress
     );
+  }
+
+  /**
+   * Target page sizes for normalization.
+   */
+  static readonly TARGET_SIZES: Record<string, [number, number]> = {
+    letter: PageSizes.Letter,
+    a4: PageSizes.A4,
+  };
+
+  /**
+   * Builds a new PDF from every page that is not marked for deletion,
+   * with all pages scaled to fit a uniform target size.
+   *
+   * @param pages - The current editor page state to export.
+   * @param targetSize - The target dimensions as [width, height] in points.
+   * @param onProgress - Optional callback invoked after each page is copied.
+   * @returns The generated PDF bytes and a suggested download filename.
+   * @throws {Error} When there are no active pages to include in the output.
+   */
+  async buildNormalizedPDF(
+    pages: PageState[],
+    targetSize: [number, number],
+    onProgress?: (progress: PDFBuildProgress) => void
+  ): Promise<PDFOperationResult> {
+    const activePages = pages.filter((page) => !page.markedForDeletion);
+
+    if (activePages.length === 0) {
+      throw new Error("No pages to include in the PDF");
+    }
+
+    const outputDoc = await PDFDocument.create();
+
+    for (const [index, page] of activePages.entries()) {
+      const sourceDoc = await this.getOrLoadSourceDoc(page.sourceFile);
+      const [copiedPage] = await outputDoc.copyPages(sourceDoc, [page.sourcePageNumber - 1]);
+
+      if (page.rotation !== 0) {
+        copiedPage.setRotation(degrees(page.rotation));
+      }
+
+      outputDoc.addPage(copiedPage);
+      onProgress?.({ completed: index + 1, total: activePages.length });
+    }
+
+    // Normalize all pages to the target size
+    const targetWidth = targetSize[0];
+    const targetHeight = targetSize[1];
+
+    for (const page of outputDoc.getPages()) {
+      const { width: srcWidth, height: srcHeight } = page.getSize();
+      const scaleX = targetWidth / srcWidth;
+      const scaleY = targetHeight / srcHeight;
+      const scale = Math.min(scaleX, scaleY);
+
+      const scaledWidth = srcWidth * scale;
+      const scaledHeight = srcHeight * scale;
+      const x = (targetWidth - scaledWidth) / 2;
+      const y = (targetHeight - scaledHeight) / 2;
+
+      page.setSize(targetWidth, targetHeight);
+      page.scale(scale, scale);
+      page.translateContent(x, y);
+    }
+
+    const data = await outputDoc.save();
+
+    return {
+      data: new Uint8Array(data),
+      suggestedFileName: OUTPUT_FILENAME,
+    };
   }
 
   private async buildOutputFromPages(

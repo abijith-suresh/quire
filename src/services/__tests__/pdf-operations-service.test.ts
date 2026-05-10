@@ -10,11 +10,22 @@ const createMockPage = (overrides: Partial<PageState> = {}): PageState => ({
   ...overrides,
 });
 
+const createMockPdfPage = () => ({
+  setRotation: vi.fn(),
+  getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }),
+  setSize: vi.fn(),
+  scale: vi.fn(),
+  translateContent: vi.fn(),
+});
+
+const mockCopiedPage = createMockPdfPage();
+
 const mockPDFDoc = {
-  copyPages: vi.fn().mockResolvedValue([{ setRotation: vi.fn() }]),
+  copyPages: vi.fn().mockResolvedValue([mockCopiedPage]),
   addPage: vi.fn(),
   save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
   getPageCount: vi.fn().mockReturnValue(1),
+  getPages: vi.fn().mockReturnValue([mockCopiedPage]),
 };
 
 const mockPDFDocument = {
@@ -28,6 +39,10 @@ vi.mock("pdf-lib", () => ({
     create: mockPDFDocument.create,
   },
   degrees: vi.fn((deg) => deg),
+  PageSizes: {
+    Letter: [611.28, 792],
+    A4: [595.28, 841.89],
+  },
 }));
 
 describe("PDFOperationsService", () => {
@@ -158,6 +173,36 @@ describe("PDFOperationsService", () => {
       await expect(service.buildPDFFromSubset(pages, [])).rejects.toThrow(
         "No pages selected for extraction"
       );
+    });
+  });
+
+  describe("buildNormalizedPDF", () => {
+    it("should create a normalized PDF", async () => {
+      const service = new PDFOperationsService();
+      const result = await service.buildNormalizedPDF([createMockPage()], [611.28, 792]);
+
+      expect(result.data).toBeInstanceOf(Uint8Array);
+      expect(result.suggestedFileName).toBe("quire-output.pdf");
+    });
+
+    it("should throw when no active pages", async () => {
+      const service = new PDFOperationsService();
+      const deleted = createMockPage({ markedForDeletion: true });
+
+      await expect(service.buildNormalizedPDF([deleted], [611.28, 792])).rejects.toThrow(
+        "No pages to include in the PDF"
+      );
+    });
+
+    it("should report progress", async () => {
+      const service = new PDFOperationsService();
+      const onProgress = vi.fn();
+      const pages = [createMockPage(), createMockPage({ id: "page-2", sourcePageNumber: 2 })];
+
+      await service.buildNormalizedPDF(pages, [611.28, 792], onProgress);
+
+      expect(onProgress).toHaveBeenNthCalledWith(1, { completed: 1, total: 2 });
+      expect(onProgress).toHaveBeenNthCalledWith(2, { completed: 2, total: 2 });
     });
   });
 

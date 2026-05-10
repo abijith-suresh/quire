@@ -1,11 +1,14 @@
 interface Props {
   busy: boolean;
   selectedCount: number;
+  normalizeTarget: string;
+  onNormalizeTargetChange: (target: string) => void;
   onSelectAll: () => void;
   onRotate: () => void;
   onDelete: () => void;
   onExtract: () => void;
   onDownload: () => void;
+  onNormalizeDownload: () => void;
   onAddPdf: (file: File) => void;
 }
 
@@ -92,16 +95,42 @@ export default function EditorSidebar(props: Props) {
       </div>
 
       {/* Export — pinned to bottom */}
-      <div class="p-4 border-t border-[#ddd] flex-shrink-0">
-        <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
-        <button
-          data-testid="editor-download-button"
-          onClick={props.onDownload}
-          disabled={props.busy}
-          class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {props.busy ? "Working..." : "Download"}
-        </button>
+      <div class="p-4 border-t border-[#ddd] flex-shrink-0 space-y-3">
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-2">Normalize</p>
+          <select
+            data-testid="editor-normalize-target"
+            value={props.normalizeTarget}
+            disabled={props.busy}
+            onChange={(e) => props.onNormalizeTargetChange(e.currentTarget.value)}
+            class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <option value="">Off</option>
+            <option value="letter">US Letter</option>
+            <option value="a4">A4</option>
+          </select>
+        </div>
+        {props.normalizeTarget && (
+          <button
+            data-testid="editor-normalize-download-button"
+            onClick={props.onNormalizeDownload}
+            disabled={props.busy}
+            class="w-full border border-[#111] bg-transparent py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#111] transition-colors hover:bg-[#111] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Download Normalized
+          </button>
+        )}
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
+          <button
+            data-testid="editor-download-button"
+            onClick={props.onDownload}
+            disabled={props.busy}
+            class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {props.busy ? "Working..." : "Download"}
+          </button>
+        </div>
       </div>
     </aside>
   );

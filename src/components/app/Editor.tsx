@@ -4,7 +4,7 @@ import { ROTATION_STEP } from "../../constants";
 import type { PageState } from "../../types/interfaces";
 import { PDFPasswordRequiredError } from "../../types/interfaces";
 import { pdfService } from "../../services/pdf-service";
-import { pdfOperationsService } from "../../services/pdf-operations-service";
+import { pdfOperationsService, PDFOperationsService } from "../../services/pdf-operations-service";
 import {
   createPageStates,
   remapSelectionAfterMove,
@@ -49,6 +49,7 @@ export default function Editor() {
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
   const [operation, setOperation] = createSignal<EditorOperation>("idle");
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
+  const [normalizeTarget, setNormalizeTarget] = createSignal("");
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
@@ -287,6 +288,36 @@ export default function Editor() {
     }
   }
 
+  async function handleNormalizeDownload(): Promise<void> {
+    if (isBusy()) return;
+    const target = normalizeTarget();
+    if (!target) return;
+
+    const targetSize = PDFOperationsService.TARGET_SIZES[target];
+    if (!targetSize) return;
+
+    const totalPages = activePageCount();
+    setOperation("building");
+    setStatusMessage(`Normalizing to ${target}... 0/${totalPages}`);
+
+    try {
+      const result = await pdfOperationsService.buildNormalizedPDF(
+        pages,
+        targetSize,
+        ({ completed, total }) => {
+          setStatusMessage(`Normalizing... ${completed}/${total}`);
+        }
+      );
+      downloadPDF(result);
+      dispatchToast(`Normalized ${target} PDF download started.`, "success");
+    } catch (err) {
+      console.error("Failed to normalize PDF:", err);
+      dispatchToast("Failed to normalize the PDF.", "error");
+    } finally {
+      setReadyStatus();
+    }
+  }
+
   // --- Drag and drop ---
 
   function handleDragStart(index: number, e: DragEvent): void {
@@ -423,11 +454,14 @@ export default function Editor() {
             <EditorSidebar
               busy={isBusy()}
               selectedCount={selectedIndices().size}
+              normalizeTarget={normalizeTarget()}
+              onNormalizeTargetChange={setNormalizeTarget}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}
               onExtract={handleExtract}
               onDownload={handleDownload}
+              onNormalizeDownload={handleNormalizeDownload}
               onAddPdf={handleAddPdf}
             />
 
