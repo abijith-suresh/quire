@@ -1,6 +1,8 @@
 interface Props {
   busy: boolean;
   selectedCount: number;
+  protectPassword: string;
+  onProtectPasswordChange: (password: string) => void;
   onSelectAll: () => void;
   onRotate: () => void;
   onDelete: () => void;
@@ -93,6 +95,23 @@ export default function EditorSidebar(props: Props) {
 
       {/* Export — pinned to bottom */}
       <div class="p-4 border-t border-[#ddd] flex-shrink-0">
+        <div class="mb-3">
+          <p class="text-[11px] uppercase tracking-wider text-[#888] mb-2">Password Protect</p>
+          <input
+            data-testid="editor-protect-password"
+            type="password"
+            placeholder="Optional password"
+            value={props.protectPassword}
+            disabled={props.busy}
+            onInput={(e) => props.onProtectPasswordChange(e.currentTarget.value)}
+            class="w-full border border-[#ddd] px-2 py-2 text-xs text-[#111] outline-none focus:border-[#111] disabled:cursor-not-allowed disabled:opacity-60"
+          />
+          {props.protectPassword && (
+            <p class="text-[10px] text-[#ff0000] mt-1">
+              &#9888; This password cannot be recovered if forgotten.
+            </p>
+          )}
+        </div>
         <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Export</p>
         <button
           data-testid="editor-download-button"

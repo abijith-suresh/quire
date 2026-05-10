@@ -49,6 +49,7 @@ export default function Editor() {
   const [dragOverTarget, setDragOverTarget] = createSignal<DragOverTarget | null>(null);
   const [operation, setOperation] = createSignal<EditorOperation>("idle");
   const [statusMessage, setStatusMessage] = createSignal("Drop a PDF to begin");
+  const [protectPassword, setProtectPassword] = createSignal("");
   const [toasts, setToasts] = createSignal<Toast[]>([]);
 
   onMount(() => {
@@ -273,10 +274,18 @@ export default function Editor() {
     setOperation("building");
     setStatusMessage(`Building PDF... 0/${totalPages}`);
 
+    const password = protectPassword();
+    const passwordOptions =
+      password.length > 0 ? { userPassword: password, ownerPassword: password } : undefined;
+
     try {
-      const result = await pdfOperationsService.buildPDF(pages, ({ completed, total }) => {
-        setStatusMessage(`Building PDF... ${completed}/${total}`);
-      });
+      const result = await pdfOperationsService.buildPDF(
+        pages,
+        ({ completed, total }) => {
+          setStatusMessage(`Building PDF... ${completed}/${total}`);
+        },
+        passwordOptions
+      );
       downloadPDF(result);
       dispatchToast("Download started.", "success");
     } catch (err) {
@@ -423,6 +432,8 @@ export default function Editor() {
             <EditorSidebar
               busy={isBusy()}
               selectedCount={selectedIndices().size}
+              protectPassword={protectPassword()}
+              onProtectPasswordChange={setProtectPassword}
               onSelectAll={handleSelectAll}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}

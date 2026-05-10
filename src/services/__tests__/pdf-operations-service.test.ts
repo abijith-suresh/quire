@@ -110,6 +110,26 @@ describe("PDFOperationsService", () => {
       expect(onProgress).toHaveBeenNthCalledWith(1, { completed: 1, total: 2 });
       expect(onProgress).toHaveBeenNthCalledWith(2, { completed: 2, total: 2 });
     });
+
+    it("should pass password options to save when provided", async () => {
+      const service = new PDFOperationsService();
+      const passwordOptions = { userPassword: "secret", ownerPassword: "secret" };
+
+      await service.buildPDF([createMockPage()], undefined, passwordOptions);
+
+      expect(mockPDFDoc.save).toHaveBeenCalledWith({
+        userPassword: "secret",
+        ownerPassword: "secret",
+      });
+    });
+
+    it("should build without password when no options provided", async () => {
+      const service = new PDFOperationsService();
+
+      await service.buildPDF([createMockPage()]);
+
+      expect(mockPDFDoc.save).toHaveBeenCalledWith({});
+    });
   });
 
   describe("buildPDFFromSubset", () => {
