@@ -6,6 +6,7 @@ interface Props {
   onDelete: () => void;
   onExtract: () => void;
   onDownload: () => void;
+  onCompress: () => void;
   onAddPdf: (file: File) => void;
 }
 
@@ -101,6 +102,14 @@ export default function EditorSidebar(props: Props) {
           class="w-full bg-[#ff0000] text-white text-[11px] uppercase tracking-[0.15em] font-semibold py-3 border-none cursor-pointer hover:bg-[#111] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
         >
           {props.busy ? "Working..." : "Download"}
+        </button>
+        <button
+          data-testid="editor-compress-button"
+          onClick={props.onCompress}
+          disabled={props.busy}
+          class="mt-2 w-full border border-[#111] bg-transparent py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#111] transition-colors hover:bg-[#111] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Compress & Download
         </button>
       </div>
     </aside>

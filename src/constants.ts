@@ -19,5 +19,8 @@ export const OUTPUT_FILENAME = "quire-output.pdf";
 /** Default file name when extracting a page subset */
 export const EXTRACT_FILENAME = "quire-extract.pdf";
 
+/** Default file name for compressed PDF output */
+export const COMPRESSED_FILENAME = "quire-compressed.pdf";
+
 /** Title shown in the password prompt modal for encrypted PDFs */
 export const PASSWORD_MODAL_TITLE = "PASSWORD REQUIRED";
