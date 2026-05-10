@@ -1,4 +1,4 @@
-import { PDFDocument, degrees } from "pdf-lib";
+import { PDFDocument, degrees, PageSizes } from "pdf-lib";
 import { EXTRACT_FILENAME, OUTPUT_FILENAME } from "../constants";
 import type {
   PageState,
@@ -99,6 +99,24 @@ export class PDFOperationsService implements IPDFOperationsService {
       data: new Uint8Array(data),
       suggestedFileName,
     };
+  }
+
+  /**
+   * Creates a single-page blank PDF file with the given dimensions.
+   *
+   * @param width - Page width in points (defaults to US Letter width).
+   * @param height - Page height in points (defaults to US Letter height).
+   * @returns A File containing a one-page blank PDF.
+   */
+  async createBlankPageFile(
+    width: number = PageSizes.Letter[0],
+    height: number = PageSizes.Letter[1]
+  ): Promise<File> {
+    const doc = await PDFDocument.create();
+    doc.addPage([width, height]);
+    const data = await doc.save();
+    const blob = new Blob([new Uint8Array(data)], { type: "application/pdf" });
+    return new File([blob], "blank.pdf", { type: "application/pdf" });
   }
 
   private async getOrLoadSourceDoc(file: File): Promise<PDFDocument> {

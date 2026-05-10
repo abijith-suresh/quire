@@ -195,6 +195,35 @@ export default function Editor() {
     handleFileLoaded(file, pageCount);
   }
 
+  // --- Blank pages ---
+
+  async function handleInsertBlank(): Promise<void> {
+    if (isBusy()) return;
+
+    try {
+      const blankFile = await pdfOperationsService.createBlankPageFile();
+      const createdAt = Date.now();
+      const blankPage: PageState = {
+        id: `blank-${createdAt}`,
+        sourceFile: blankFile,
+        sourcePageNumber: 1,
+        rotation: 0,
+        markedForDeletion: false,
+      };
+
+      setPages(
+        produce((draftPages) => {
+          draftPages.push(blankPage);
+        })
+      );
+      setStatusMessage("Blank page inserted.");
+      dispatchToast("Blank page added.", "success");
+    } catch (err) {
+      console.error("Failed to create blank page:", err);
+      dispatchToast("Failed to create blank page.", "error");
+    }
+  }
+
   // --- Selection ---
 
   function handlePageClick(index: number): void {
@@ -424,6 +453,7 @@ export default function Editor() {
               busy={isBusy()}
               selectedCount={selectedIndices().size}
               onSelectAll={handleSelectAll}
+              onInsertBlank={handleInsertBlank}
               onRotate={handleRotateSelected}
               onDelete={handleDeleteSelected}
               onExtract={handleExtract}

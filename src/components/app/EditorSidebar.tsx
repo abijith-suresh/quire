@@ -2,6 +2,7 @@ interface Props {
   busy: boolean;
   selectedCount: number;
   onSelectAll: () => void;
+  onInsertBlank: () => void;
   onRotate: () => void;
   onDelete: () => void;
   onExtract: () => void;
@@ -61,6 +62,15 @@ export default function EditorSidebar(props: Props) {
         {/* Actions */}
         <div class="p-4 border-b border-[#ddd]">
           <p class="text-[11px] uppercase tracking-wider text-[#888] mb-3">Actions</p>
+          <button
+            data-testid="editor-insert-blank-button"
+            onClick={props.onInsertBlank}
+            aria-label="Insert a blank page after the last page"
+            disabled={props.busy}
+            class="w-full text-left text-xs text-[#555] hover:text-[#111] hover:bg-[#f5f5f5] bg-transparent border-none cursor-pointer py-2 px-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Insert Blank Page
+          </button>
           <button
             data-testid="editor-rotate-button"
             onClick={props.onRotate}

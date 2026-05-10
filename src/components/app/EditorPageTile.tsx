@@ -58,7 +58,9 @@ export default function EditorPageTile(props: Props) {
         aria-label={
           props.page.markedForDeletion
             ? `Page ${props.index + 1}, marked for deletion`
-            : `Page ${props.index + 1}`
+            : props.page.sourceFile.name === "blank.pdf"
+              ? `Page ${props.index + 1}, blank`
+              : `Page ${props.index + 1}`
         }
         disabled={props.busy}
         onClick={props.onClick}
@@ -70,7 +72,9 @@ export default function EditorPageTile(props: Props) {
         />
       </button>
       <div class="page-controls">
-        <span class="page-label">Page {props.index + 1}</span>
+        <span class="page-label">
+          {props.page.sourceFile.name === "blank.pdf" ? "BLANK" : `Page ${props.index + 1}`}
+        </span>
         <button
           type="button"
           data-testid="editor-page-rotate-button"
