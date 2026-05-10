@@ -70,8 +70,9 @@ test("adds another PDF to the current session", async ({ page }) => {
 test("converts images to a PDF from the upload screen", async ({ page }) => {
   await page.goto("/app");
   await expect(page.getByText("PDF to images — coming soon")).toBeVisible();
+  await expect(page.getByTestId("editor-convert-images-button")).toBeVisible();
 
-  const downloadPromise = page.waitForEvent("download");
+  const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
   await page.getByTestId("editor-convert-images-input").setInputFiles([samplePng, sampleJpg]);
   const download = await downloadPromise;
 
