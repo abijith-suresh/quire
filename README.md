@@ -1,6 +1,6 @@
-# Quire
+# Interleaf
 
-Quire is a fully client-side PDF editor for the core tasks people reach for most: merge, extract, reorder, rotate, delete, and unlock. Every operation runs in your browser with `pdf-lib` and `pdf.js`, so your files never leave your device.
+Interleaf is a fully client-side PDF editor for the core tasks people reach for most: merge, extract, reorder, rotate, delete, and unlock. Every operation runs in your browser with `pdf-lib` and `pdf.js`, so your files never leave your device.
 
 ## Product Scope
 
@@ -68,8 +68,8 @@ tests/
 
 ## Release Notes
 
-- Current canonical domain target: `https://quire.page`
-- Current GitHub repository: `https://github.com/abijith-suresh/quire`
+- Current canonical domain target: `https://interleaf.page`
+- Current GitHub repository: `https://github.com/abijith-suresh/interleaf`
 - License: [MIT](./LICENSE)
 
 ## Contributing

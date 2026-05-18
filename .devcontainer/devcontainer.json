@@ -1,5 +1,5 @@
 {
-  "name": "Quire Dev Environment",
+  "name": "Interleaf Dev Environment",
   "build": {
     "dockerfile": "Dockerfile"
   },

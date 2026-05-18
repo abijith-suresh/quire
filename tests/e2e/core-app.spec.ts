@@ -43,7 +43,7 @@ test("rotates, deletes, extracts, and downloads", async ({ page }) => {
   const extractPromise = page.waitForEvent("download");
   await page.getByTestId("editor-extract-button").click();
   const extract = await extractPromise;
-  expect(extract.suggestedFilename()).toBe("quire-extract.pdf");
+  expect(extract.suggestedFilename()).toBe("interleaf-extract.pdf");
   await expect(page.getByTestId("editor-toast").last()).toContainText(
     "Extracted PDF download started."
   );
@@ -51,7 +51,7 @@ test("rotates, deletes, extracts, and downloads", async ({ page }) => {
   const downloadPromise = page.waitForEvent("download");
   await page.getByTestId("editor-download-button").click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("quire-output.pdf");
+  expect(download.suggestedFilename()).toBe("interleaf-output.pdf");
 });
 
 test("adds another PDF to the current session", async ({ page }) => {
@@ -91,12 +91,12 @@ test("extracts and downloads after unlocking an encrypted PDF", async ({ page })
   const extractPromise = page.waitForEvent("download");
   await page.getByTestId("editor-extract-button").click();
   const extract = await extractPromise;
-  expect(extract.suggestedFilename()).toBe("quire-extract.pdf");
+  expect(extract.suggestedFilename()).toBe("interleaf-extract.pdf");
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByTestId("editor-download-button").click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("quire-output.pdf");
+  expect(download.suggestedFilename()).toBe("interleaf-output.pdf");
 });
 
 test("keeps the password prompt open after a wrong password and allows retry", async ({ page }) => {

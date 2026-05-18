@@ -5,7 +5,7 @@ import solid from "@astrojs/solid-js";
 // https://astro.build/config
 export default defineConfig({
   integrations: [solid()],
-  site: "https://quire.page",
+  site: "https://interleaf.page",
   vite: {
     plugins: [tailwindcss()],
     resolve: {
