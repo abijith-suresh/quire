@@ -7,7 +7,7 @@ vi.mock("file-saver", () => ({
 
 const mockPDFOperationResult: PDFOperationResult = {
   data: new Uint8Array([1, 2, 3, 4, 5]),
-  suggestedFileName: "quire-output.pdf",
+  suggestedFileName: "interleaf-output.pdf",
 };
 
 describe("download utility", () => {

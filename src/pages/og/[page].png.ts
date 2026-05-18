@@ -6,7 +6,7 @@ import { Resvg } from "@resvg/resvg-js";
 
 const pages: Record<string, { title: string; description: string }> = {
   index: {
-    title: "Quire",
+    title: "Interleaf",
     description: "Edit, merge, split — all in your browser.",
   },
   app: {
@@ -31,11 +31,11 @@ const pages: Record<string, { title: string; description: string }> = {
   },
   changelog: {
     title: "Changelog",
-    description: "A complete history of every Quire release.",
+    description: "A complete history of every Interleaf release.",
   },
   faq: {
     title: "FAQ",
-    description: "Everything you need to know about Quire.",
+    description: "Everything you need to know about Interleaf.",
   },
 };
 
@@ -84,7 +84,7 @@ export const GET: APIRoute = async ({ params }) => {
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
                   },
-                  children: "QUIRE",
+                  children: "INTERLEAF",
                 },
               },
               {
@@ -180,7 +180,7 @@ export const GET: APIRoute = async ({ params }) => {
                     color: "#555",
                     letterSpacing: "0.05em",
                   },
-                  children: "quire.page",
+                  children: "interleaf.page",
                 },
               },
             ],

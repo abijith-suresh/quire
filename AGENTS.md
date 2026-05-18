@@ -1,8 +1,8 @@
-# Agent Instructions — Quire
+# Agent Instructions — Interleaf
 
 ## Overview
 
-- Quire is a client-side PDF editor for merge, extract, reorder, rotate, delete, and unlock flows.
+- Interleaf is a client-side PDF editor for merge, extract, reorder, rotate, delete, and unlock flows.
 - Keep PDF processing in the browser. Do not add uploads or server-side document handling.
 
 ## Stack

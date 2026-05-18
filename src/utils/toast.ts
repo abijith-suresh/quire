@@ -7,7 +7,7 @@ export interface ToastDetail {
   type: ToastType;
 }
 
-export const TOAST_EVENT_NAME = "quire:toast";
+export const TOAST_EVENT_NAME = "interleaf:toast";
 
 export function showToast(message: string, type: ToastType): void {
   document.dispatchEvent(
